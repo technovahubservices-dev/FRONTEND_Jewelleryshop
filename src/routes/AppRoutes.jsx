@@ -6,6 +6,7 @@ import Cart from '../pages/Cart'
 import Checkout from '../pages/Checkout'
 import Account from '../pages/Account'
 import Login from '../pages/Login'
+import Register from '../pages/Register'
 import AdminLayout from '../admin/layouts/AdminLayout'
 import Dashboard from '../admin/pages/Dashboard'
 import Products from '../admin/pages/Products'
@@ -37,6 +38,7 @@ export default function AppRoutes() {
       <Route path="/checkout" element={<Checkout />} />
       <Route path="/account" element={<Account />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route
         path="/admin"
         element={

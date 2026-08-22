@@ -1,8 +1,10 @@
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useCart } from '../../context/CartContext'
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth()
+  const { totalItems } = useCart()
 
   return (
     <>
@@ -38,7 +40,7 @@ export default function Header() {
               )}
               <Link to="/cart" className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out relative">
                 <span className="material-symbols-outlined text-[24px]">shopping_bag</span>
-                <span className="absolute -top-1 -right-1 bg-regal-gold text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">2</span>
+                <span className="absolute -top-1 -right-1 bg-regal-gold text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{totalItems > 0 ? totalItems : 0}</span>
               </Link>
             </div>
           </div>

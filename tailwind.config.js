@@ -30,6 +30,8 @@ export default {
         "surface-container-lowest": "#ffffff",
         "inverse-primary": "#a2d1b7",
         "regal-gold": "#D4AF37",
+        "maroon": "#8B0000",
+        "maroon-hover": "#700000",
         "on-error": "#ffffff",
         "surface-container-high": "#e9e8e6",
         "primary-container": "#013220",
