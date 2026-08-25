@@ -1,4 +1,80 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+
 export default function Checkout() {
+  const navigate = useNavigate()
+  const { cartItems, subtotal, placeOrder, clearCart } = useCart()
+  const { user } = useAuth()
+  const [formData, setFormData] = useState({
+    fullName: user?.name || '',
+    pincode: '',
+    address: '',
+    landmark: '',
+    city: '',
+    state: '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+
+    if (!formData.fullName.trim() || !formData.address.trim() || !formData.city.trim() || !formData.state.trim()) {
+      setError('Please fill in all required fields')
+      return
+    }
+
+    if (cartItems.length === 0) {
+      setError('Your cart is empty')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const orderData = {
+        items: cartItems.map((item) => ({
+          product: item.id,
+          name: item.name,
+          image: item.image,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        shippingAddress: {
+          fullName: formData.fullName,
+          pincode: formData.pincode,
+          address: formData.address,
+          landmark: formData.landmark,
+          city: formData.city,
+          state: formData.state,
+        },
+        paymentMethod: 'cod',
+        itemsPrice: subtotal,
+        taxPrice: Math.round(subtotal * 0.03),
+        shippingPrice: subtotal >= 5000 ? 0 : 150,
+        totalPrice: subtotal + Math.round(subtotal * 0.03) + (subtotal >= 5000 ? 0 : 150),
+      }
+
+      await placeOrder(orderData)
+      navigate('/order-confirmation')
+    } catch (err) {
+      setError(err || 'Failed to place order. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const shippingCost = subtotal >= 5000 ? 0 : 150
+  const tax = Math.round(subtotal * 0.03)
+  const total = subtotal + tax + shippingCost
+
   return (
     <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
       {/* Main Checkout Content (Left Side) */}
@@ -10,42 +86,42 @@ export default function Checkout() {
               <div aria-hidden="true" className="absolute inset-0 flex items-center">
                 <div className="h-[1px] w-full bg-deep-emerald"></div>
               </div>
-              <a className="relative flex h-8 w-8 items-center justify-center rounded-full bg-deep-emerald hover:bg-surface-tint" href="#">
+              <button type="button" onClick={() => navigate('/login')} className="relative flex h-8 w-8 items-center justify-center rounded-full bg-deep-emerald hover:bg-surface-tint">
                 <span className="material-symbols-outlined text-white text-sm" data-icon="check" data-weight="fill" style={{fontVariationSettings: "'FILL' 1"}}>check</span>
-              </a>
+              </button>
               <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-label-caps text-label-caps text-deep-emerald whitespace-nowrap">LOGIN</span>
             </li>
             <li className="relative pr-8 sm:pr-20">
               <div aria-hidden="true" className="absolute inset-0 flex items-center">
-                <div className="h-[1px] w-full bg-outline-variant"></div>
+                <div className="h-[1px] w-full bg-deep-emerald"></div>
               </div>
-              <a aria-current="step" className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-deep-emerald bg-surface-white" href="#">
+              <button aria-current="step" type="button" className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-deep-emerald bg-surface-white">
                 <span className="font-label-caps text-label-caps text-deep-emerald">2</span>
-              </a>
+              </button>
               <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-label-caps text-label-caps text-deep-emerald whitespace-nowrap font-bold">ADDRESS</span>
             </li>
             <li className="relative pr-8 sm:pr-20">
               <div aria-hidden="true" className="absolute inset-0 flex items-center">
                 <div className="h-[1px] w-full bg-outline-variant"></div>
               </div>
-              <a className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant bg-surface-white hover:border-outline" href="#">
+              <button type="button" className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant bg-surface-white hover:border-outline">
                 <span className="font-label-caps text-label-caps text-outline-variant group-hover:text-outline">3</span>
-              </a>
+              </button>
               <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-label-caps text-label-caps text-outline-variant whitespace-nowrap">SHIPPING</span>
             </li>
             <li className="relative pr-8 sm:pr-20">
               <div aria-hidden="true" className="absolute inset-0 flex items-center">
                 <div className="h-[1px] w-full bg-outline-variant"></div>
               </div>
-              <a className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant bg-surface-white hover:border-outline" href="#">
+              <button type="button" className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant bg-surface-white hover:border-outline">
                 <span className="font-label-caps text-label-caps text-outline-variant group-hover:text-outline">4</span>
-              </a>
+              </button>
               <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-label-caps text-label-caps text-outline-variant whitespace-nowrap">PAYMENT</span>
             </li>
             <li className="relative">
-              <a className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant bg-surface-white hover:border-outline" href="#">
+              <button type="button" className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-outline-variant bg-surface-white hover:border-outline">
                 <span className="font-label-caps text-label-caps text-outline-variant group-hover:text-outline">5</span>
-              </a>
+              </button>
               <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-label-caps text-label-caps text-outline-variant whitespace-nowrap">DONE</span>
             </li>
           </ol>
@@ -56,30 +132,35 @@ export default function Checkout() {
             <span className="material-symbols-outlined" data-icon="location_on">location_on</span>
             Shipping Address
           </h2>
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+          {error && (
+            <div className="p-4 bg-error-container/10 border border-error-container/20 text-error rounded-lg mb-6 text-sm">
+              {error}
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
             <div className="col-span-1 md:col-span-2">
-              <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="full-name">Full Name</label>
-              <input autoComplete="name" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="full-name" name="full-name" placeholder="Enter your full name" type="text"/>
+              <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="fullName">Full Name</label>
+              <input autoComplete="name" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="fullName" name="fullName" placeholder="Enter your full name" type="text" value={formData.fullName} onChange={handleChange} required />
             </div>
             <div className="col-span-1">
               <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="pincode">Pincode</label>
-              <input autoComplete="postal-code" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="pincode" name="pincode" placeholder="e.g. 400001" type="text"/>
+              <input autoComplete="postal-code" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="pincode" name="pincode" placeholder="e.g. 400001" type="text" value={formData.pincode} onChange={handleChange} />
             </div>
             <div className="col-span-1 md:col-span-2">
               <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="address">Address (House No, Building, Street, Area)</label>
-              <input autoComplete="street-address" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="address" name="address" type="text"/>
+              <input autoComplete="street-address" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="address" name="address" type="text" value={formData.address} onChange={handleChange} required />
             </div>
             <div className="col-span-1 md:col-span-2">
               <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="landmark">Landmark (Optional)</label>
-              <input className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="landmark" name="landmark" type="text"/>
+              <input className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="landmark" name="landmark" type="text" value={formData.landmark} onChange={handleChange} />
             </div>
             <div className="col-span-1">
               <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="city">City</label>
-              <input autoComplete="address-level2" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="city" name="city" placeholder="e.g. Mumbai" type="text"/>
+              <input autoComplete="address-level2" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="city" name="city" placeholder="e.g. Mumbai" type="text" value={formData.city} onChange={handleChange} required />
             </div>
             <div className="col-span-1">
               <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="state">State</label>
-              <select autoComplete="address-level1" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="state" name="state">
+              <select autoComplete="address-level1" className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors" id="state" name="state" value={formData.state} onChange={handleChange} required>
                 <option value="">Select State</option>
                 <option value="MH">Maharashtra</option>
                 <option value="DL">Delhi</option>
@@ -87,57 +168,74 @@ export default function Checkout() {
               </select>
             </div>
             <div className="col-span-1 md:col-span-2 mt-6">
-              <button className="w-full md:w-auto bg-deep-emerald text-white px-8 py-4 font-label-caps text-label-caps rounded hover:bg-surface-tint transition-colors flex items-center justify-center gap-2" type="button">
-                CONTINUE TO PAYMENT
-                <span className="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+              <button
+                className="w-full md:w-auto bg-deep-emerald text-white px-8 py-4 font-label-caps text-label-caps rounded hover:bg-surface-tint transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    Placing Order...
+                  </>
+                ) : (
+                  <>
+                    PLACE ORDER
+                    <span className="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+                  </>
+                )}
               </button>
             </div>
           </form>
         </section>
-        {/* Payment Options (Disabled Preview for structural purposes) */}
-        <section className="opacity-50 pointer-events-none bg-surface-white rounded-lg p-6 md:p-10 border border-outline-variant shadow-sm flex flex-col gap-6">
+        {/* Payment Options (Preview) */}
+        <section className="bg-surface-white rounded-lg p-6 md:p-10 border border-outline-variant shadow-sm flex flex-col gap-6">
           <h2 className="font-headline-md text-headline-md text-on-surface-variant flex items-center gap-3">
             <span className="material-symbols-outlined" data-icon="payments">payments</span>
             Payment Method
           </h2>
-          <div className="text-sm text-outline">Complete address to unlock payment options.</div>
+          <div className="text-sm text-outline">Cash on Delivery (COD) is available.</div>
         </section>
       </div>
       {/* Order Summary Sidebar (Right Side) */}
       <div className="lg:col-span-4 mt-10 lg:mt-0">
         <div className="sticky top-28 bg-surface-white rounded-lg p-6 border border-outline-variant shadow-[0_4px_30px_rgba(0,0,0,0.02)] flex flex-col gap-6">
           <h3 className="font-headline-md text-headline-md text-deep-emerald border-b border-outline-variant pb-4">Order Summary</h3>
-          {/* Product Item */}
-          <div className="flex gap-4 items-center">
-            <div className="w-20 h-20 bg-surface-container-low rounded shrink-0 overflow-hidden relative">
-              <img className="object-cover w-full h-full" data-alt="A macro studio shot of a delicate rose gold diamond necklace on a clean white background, high key lighting, luxurious feel, soft reflections. The jewelry sits perfectly centered, capturing the brilliance of the diamonds." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA8tPo6nN-oWxvysjJIkPqDx6r-4z2lf9sqMB3q3PqVR82LtT_TnUR1_2e78RYoIhmsvRdISw3Edyqf43JrvRgi2kMA64S2ep_0KPYa44czewISZRV8NrToyY2q0fjpTR5JTgdc46D8id5mlVj3r0N5-F1r2YGG5YMmsChbzsjMmKLT1iynD0D-4F47u94Y4WTKUL2nTj_5FT-xZh3Obmpz9zaDOB-6_6VEpWrqoYgMMBvjHQW_dPo"/>
+          {/* Product Items */}
+          {cartItems.map((item) => (
+            <div key={item.id} className="flex gap-4 items-center">
+              <div className="w-20 h-20 bg-surface-container-low rounded shrink-0 overflow-hidden relative">
+                <img className="object-cover w-full h-full" alt={item.name} src={item.image} />
+              </div>
+              <div className="flex-grow">
+                <p className="font-body-md font-semibold text-deep-emerald line-clamp-1">{item.name}</p>
+                <p className="text-sm text-on-surface-variant">Qty: {item.quantity}</p>
+                <p className="font-body-md text-on-background mt-1">₹ {item.price.toLocaleString('en-IN')}</p>
+              </div>
             </div>
-            <div className="flex-grow">
-              <p className="font-body-md font-semibold text-deep-emerald line-clamp-1">Ornate Floral Diamond Necklace</p>
-              <p className="text-sm text-on-surface-variant">Qty: 1</p>
-              <p className="font-body-md text-on-background mt-1">₹ 85,000</p>
-            </div>
-          </div>
+          ))}
           <hr className="border-outline-variant"/>
           {/* Cost Breakdown */}
           <div className="flex flex-col gap-3 font-body-md text-on-surface-variant">
             <div className="flex justify-between">
-              <span>Subtotal</span>
-              <span>₹ 85,000</span>
+              <span>Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+              <span>₹ {subtotal.toLocaleString('en-IN')}</span>
             </div>
             <div className="flex justify-between">
               <span>Shipping</span>
-              <span className="text-deep-emerald font-semibold">Free</span>
+              <span className={shippingCost === 0 ? "text-deep-emerald font-semibold" : ""}>
+                {shippingCost === 0 ? "Free" : `₹ ${shippingCost}`}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Tax (Included)</span>
-              <span>₹ 2,550</span>
+              <span>₹ {tax.toLocaleString('en-IN')}</span>
             </div>
           </div>
           <hr className="border-outline-variant"/>
           <div className="flex justify-between font-headline-md text-headline-md text-deep-emerald">
             <span>Total</span>
-            <span>₹ 85,000</span>
+            <span>₹ {total.toLocaleString('en-IN')}</span>
           </div>
           {/* Trust Badges */}
           <div className="mt-4 pt-4 border-t border-outline-variant flex flex-col gap-4">

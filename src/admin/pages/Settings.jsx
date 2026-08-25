@@ -1,5 +1,11 @@
+import { useState } from 'react'
+
 export default function Settings() {
-  const settingSections = [
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const handleSave = () => {
+    setSuccessMessage('Settings saved successfully');
+  };  const settingSections = [
     {
       title: 'Store Information',
       icon: 'store',
@@ -58,7 +64,10 @@ export default function Settings() {
         </div>
 
         <div className="flex justify-end pt-6 border-t border-outline-variant/30">
-          <button className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded transition-all duration-200 hover:bg-primary-container active:scale-95 shadow-sm">
+          {successMessage && (
+            <span className="text-sm text-primary mr-4 self-center">{successMessage}</span>
+          )}
+          <button onClick={handleSave} className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded transition-all duration-200 hover:bg-primary-container active:scale-95 shadow-sm">
             Save Changes
           </button>
         </div>

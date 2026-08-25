@@ -1,14 +1,68 @@
-import { useParams, useNavigate } from 'react-router-dom'
-import { getProductById, getRelatedProducts } from '../data/products'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { productAPI, userAPI } from '../services/api'
+import { useAuth } from '../context/AuthContext'
+import { useState, useEffect } from 'react'
 
 export default function ProductDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { addToCart } = useCart()
+  const { isAuthenticated } = useAuth()
+  const [product, setProduct] = useState(null)
+  const [relatedProducts, setRelatedProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [error, setError] = useState('')
 
-  const product = getProductById(id)
-  const relatedProducts = getRelatedProducts(id)
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await productAPI.getById(id);
+        if (response.data.success) {
+          const transformed = productAPI.transform(response.data.data);
+          setProduct(transformed);
+        }
+      } catch (err) {
+        console.error('Failed to fetch product:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  useEffect(() => {
+    if (product) {
+      const fetchRelated = async () => {
+        try {
+          const response = await productAPI.getAll({ category: product.category });
+          if (response.data.success) {
+            const transformed = response.data.data
+              .map(productAPI.transform)
+              .filter(p => p.id !== id)
+              .slice(0, 4);
+            setRelatedProducts(transformed);
+          }
+        } catch (err) {
+          console.error('Failed to fetch related products:', err);
+        }
+      };
+      fetchRelated();
+    }
+  }, [product, id]);
+
+  if (loading) {
+    return (
+      <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-16">
+        <div className="text-center py-20">
+          <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30 mb-4">inventory_2</span>
+          <p className="font-body-md text-body-md text-on-surface-variant">Loading product...</p>
+        </div>
+      </main>
+    )
+  }
 
   if (!product) {
     return (
@@ -32,6 +86,41 @@ export default function ProductDetails() {
     addToCart(relatedProduct, 1)
   }
 
+  const handleWishlist = async (e) => {
+    e.preventDefault()
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: `/product/${id}` } })
+      return
+    }
+    try {
+      await userAPI.addToWishlist(product.id)
+      setSuccessMessage('Added to wishlist')
+      setError('')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add to wishlist')
+      setSuccessMessage('')
+    }
+  }
+
+  const handleWishlistRelated = async (relatedProduct, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: `/product/${relatedProduct.id}` } })
+      return
+    }
+    try {
+      await userAPI.addToWishlist(relatedProduct.id)
+      setSuccessMessage('Added to wishlist')
+      setError('')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to add to wishlist')
+      setSuccessMessage('')
+    }
+  }
+
   const handleQuickViewRelated = (relatedProduct) => {
     navigate(`/product/${relatedProduct.id}`)
   }
@@ -42,18 +131,18 @@ export default function ProductDetails() {
       <nav aria-label="Breadcrumb" className="flex text-sm text-on-surface-variant mb-8 font-body-md">
         <ol className="inline-flex items-center space-x-1 md:space-x-3">
           <li className="inline-flex items-center">
-            <a className="hover:text-primary transition-colors" href="#">Home</a>
+            <Link className="hover:text-primary transition-colors" to="/">Home</Link>
           </li>
           <li className="">
             <div className="flex items-center">
               <span className="material-symbols-outlined text-[16px] mx-1">chevron_right</span>
-              <a className="hover:text-primary transition-colors" href="#">Jewellery</a>
+              <Link className="hover:text-primary transition-colors" to="/shop">Jewellery</Link>
             </div>
           </li>
           <li className="">
             <div className="flex items-center">
               <span className="material-symbols-outlined text-[16px] mx-1">chevron_right</span>
-              <a className="hover:text-primary transition-colors" href="#">{product.category}</a>
+              <Link className="hover:text-primary transition-colors" to="/shop">{product.category}</Link>
             </div>
           </li>
           <li aria-current="page" className="">
@@ -64,6 +153,16 @@ export default function ProductDetails() {
           </li>
         </ol>
       </nav>
+      {successMessage && (
+        <div className="mb-6 p-4 bg-primary-fixed/20 border border-primary-fixed/30 text-primary rounded-lg text-sm">
+          {successMessage}
+        </div>
+      )}
+      {error && (
+        <div className="mb-6 p-4 bg-error-container/10 border border-error-container/20 text-error rounded-lg text-sm">
+          {error}
+        </div>
+      )}
       {/* Product Hero Section (Bento/Asymmetric Layout) */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-24">
         {/* Image Gallery (Left - 7 cols) */}
@@ -91,8 +190,8 @@ export default function ProductDetails() {
                 New
               </div>
             )}
-            <button className="absolute top-4 right-4 z-10 p-2 bg-surface-white/80 backdrop-blur-sm rounded-full text-on-surface-variant hover:text-error transition-colors shadow-sm">
-              <span className="material-symbols-outlined">favorite</span>
+              <button className="absolute top-4 right-4 z-10 p-2 bg-surface-white/80 backdrop-blur-sm rounded-full text-on-surface-variant hover:text-error transition-colors shadow-sm" onClick={handleWishlist} title="Add to Wishlist">
+               <span className="material-symbols-outlined">favorite</span>
             </button>
             <img className="w-full h-full object-cover img-hover-zoom" alt={product.description} src={product.images[0]} />
             {/* Mobile Thumbnails (Horizontal) */}
@@ -141,7 +240,7 @@ export default function ProductDetails() {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-3">
               <label className="font-body-md font-semibold text-primary">Select Size</label>
-              <button className="text-sm text-surface-tint underline underline-offset-2 hover:text-primary transition-colors">Size Guide</button>
+               <button onClick={() => navigate('/account')} className="text-sm text-surface-tint underline underline-offset-2 hover:text-primary transition-colors">Size Guide</button>
             </div>
             <div className="flex flex-wrap gap-3">
               <button className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center font-body-md text-on-surface-variant hover:border-regal-gold transition-colors">10</button>
@@ -157,9 +256,9 @@ export default function ProductDetails() {
               <span className="material-symbols-outlined text-lg">shopping_bag</span>
               Add to Cart
             </button>
-            <button className="w-full bg-transparent text-deep-emerald border border-outline py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2">
-              Buy Now
-            </button>
+             <button onClick={() => navigate('/checkout')} className="w-full bg-transparent text-deep-emerald border border-outline py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2">
+               Buy Now
+             </button>
           </div>
           {/* Trust Signals */}
           <div className="flex justify-between items-center py-4 border-t border-outline-variant/30">
@@ -223,9 +322,9 @@ export default function ProductDetails() {
       <div>
         <div className="flex justify-between items-end mb-8">
           <h2 className="font-headline-md text-headline-md text-primary">You May Also Like</h2>
-          <a className="text-sm font-label-caps uppercase text-surface-tint hover:text-primary transition-colors flex items-center gap-1 border-b border-transparent hover:border-primary" href="#">
-            View All <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </a>
+       <Link to="/shop" className="text-sm font-label-caps uppercase text-surface-tint hover:text-primary transition-colors flex items-center gap-1 border-b border-transparent hover:border-primary">
+             View All <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+           </Link>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {relatedProducts.map((relatedProduct) => (
@@ -234,7 +333,7 @@ export default function ProductDetails() {
                 {relatedProduct.isNew && (
                   <div className="absolute top-3 left-3 z-10 bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-label-caps text-on-surface-variant">New</div>
                 )}
-                <button className="absolute top-3 right-3 z-10 text-outline hover:text-error transition-colors" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCartRelated(relatedProduct); }} title="Add to Wishlist">
+                 <button className="absolute top-3 right-3 z-10 text-outline hover:text-error transition-colors" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlistRelated(relatedProduct, e); }} title="Add to Wishlist">
                   <span className="material-symbols-outlined text-[20px]">favorite</span>
                 </button>
                 <img className="w-full h-full object-contain img-hover-zoom" alt={relatedProduct.name} src={relatedProduct.image} onClick={() => handleQuickViewRelated(relatedProduct)} />

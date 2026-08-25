@@ -1,7 +1,21 @@
+import { useState } from 'react'
 import { useCart } from '../context/CartContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function Cart() {
+  const navigate = useNavigate()
   const { cartItems, updateQuantity, removeFromCart, totalItems, subtotal } = useCart()
+  const [couponCode, setCouponCode] = useState('')
+  const [couponMessage, setCouponMessage] = useState('')
+
+  const handleApplyCoupon = (e) => {
+    e.preventDefault()
+    if (!couponCode.trim()) {
+      setCouponMessage('Please enter a coupon code')
+      return
+    }
+    setCouponMessage(`Coupon code "${couponCode}" applied successfully`)
+  }
 
   return (
     <main className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-24">
@@ -27,7 +41,7 @@ export default function Cart() {
                   <div>
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-headline-md text-headline-md text-deep-emerald">{item.name}</h3>
-                      <p className="font-headline-md text-headline-md text-deep-emerald">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-headline-md text-headline-md text-deep-emerald">₹ {(item.price * item.quantity).toLocaleString('en-IN')}</p>
                     </div>
                     <p className="font-body-md text-body-md text-on-surface-variant mb-1">SKU: {item.SKU}</p>
                     <p className="font-body-md text-body-md text-on-surface-variant mb-4">{item.metal}</p>
@@ -43,7 +57,7 @@ export default function Cart() {
                       </button>
                     </div>
                     <div className="flex space-x-4">
-                      <button className="font-label-caps text-label-caps text-on-surface-variant hover:text-regal-gold transition-colors flex items-center">
+                      <button onClick={() => navigate('/account')} className="font-label-caps text-label-caps text-on-surface-variant hover:text-regal-gold transition-colors flex items-center">
                         <span className="material-symbols-outlined text-sm mr-1">favorite</span> Move to Wishlist
                       </button>
                       <button onClick={() => removeFromCart(item.id)} className="font-label-caps text-label-caps text-on-surface-variant hover:text-error transition-colors flex items-center">
@@ -63,15 +77,15 @@ export default function Cart() {
             <div className="space-y-4 mb-6 font-body-md text-body-md">
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">Subtotal ({totalItems} {totalItems === 1 ? 'Item' : 'Items'})</span>
-                <span className="text-on-surface">${subtotal.toFixed(2)}</span>
+                 <span className="text-on-surface">₹ {subtotal.toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">Making Charges</span>
-                <span className="text-on-surface">$150</span>
+                 <span className="text-on-surface">₹ 150</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">Tax</span>
-                <span className="text-on-surface">$120</span>
+                 <span className="text-on-surface">₹ 120</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-on-surface-variant">Delivery</span>
@@ -80,16 +94,25 @@ export default function Cart() {
             </div>
             {/* Coupon Input */}
             <div className="mb-6 border-t border-b border-outline-variant py-6">
-              <div className="flex">
-                <input className="w-full bg-soft-cream border-t border-l border-b border-outline-variant px-4 py-3 font-body-md text-body-md focus:outline-none focus:border-deep-emerald focus:ring-0" placeholder="Enter Coupon Code" type="text"/>
-                <button className="bg-surface-white border border-outline-variant px-6 font-label-caps text-label-caps text-deep-emerald hover:bg-surface-container-low transition-colors">APPLY</button>
-              </div>
+              <form onSubmit={handleApplyCoupon} className="flex">
+                <input
+                  className="w-full bg-soft-cream border-t border-l border-b border-outline-variant px-4 py-3 font-body-md text-body-md focus:outline-none focus:border-deep-emerald focus:ring-0"
+                  placeholder="Enter Coupon Code"
+                  type="text"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                />
+                <button type="submit" className="bg-surface-white border border-outline-variant px-6 font-label-caps text-label-caps text-deep-emerald hover:bg-surface-container-low transition-colors">APPLY</button>
+              </form>
+              {couponMessage && (
+                <p className="text-sm mt-2 text-deep-emerald">{couponMessage}</p>
+              )}
             </div>
             <div className="flex justify-between items-center mb-8">
               <span className="font-headline-md text-headline-md text-deep-emerald">Total</span>
-              <span className="font-headline-md text-headline-md text-deep-emerald">${(subtotal + 270).toFixed(2)}</span>
+              <span className="font-headline-md text-headline-md text-deep-emerald">₹ {(subtotal + 270).toLocaleString('en-IN')}</span>
             </div>
-            <button className="w-full bg-deep-emerald text-white font-label-caps text-label-caps py-4 tracking-widest hover:bg-opacity-90 transition-opacity">
+             <button onClick={() => navigate('/checkout')} className="w-full bg-deep-emerald text-white font-label-caps text-label-caps py-4 tracking-widest hover:bg-opacity-90 transition-opacity">
               PROCEED TO CHECKOUT
             </button>
             <div className="mt-6 flex items-center justify-center space-x-2 text-on-surface-variant text-sm">

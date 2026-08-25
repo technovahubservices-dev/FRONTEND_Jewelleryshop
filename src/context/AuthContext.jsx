@@ -2,7 +2,7 @@ import { createContext, useState, useEffect, useContext } from 'react'
 
 const AuthContext = createContext()
 
-const API_URL = 'http://localhost:5000/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email: email.toLowerCase().trim(), password: password.trim() }),
     })
     const data = await response.json()
     if (!response.ok) throw new Error(data.message || 'Registration failed')
@@ -53,16 +53,34 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
-  const loginAdmin = async (email, password) => {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, isAdminLogin: true }),
+  const updateProfile = async (profileData) => {
+    const response = await fetch(`${API_URL}/users/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(profileData),
     })
     const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Admin login failed')
-    if (!data.isAdmin) throw new Error('Not an admin user')
-    login(data)
+    if (!response.ok) throw new Error(data.message || 'Failed to update profile')
+    const updatedUser = { ...user, ...data.data }
+    localStorage.setItem('user', JSON.stringify(updatedUser))
+    setUser(updatedUser)
+    return data
+  }
+
+  const changePassword = async (currentPassword, newPassword) => {
+    const response = await fetch(`${API_URL}/users/password`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+    const data = await response.json()
+    if (!response.ok) throw new Error(data.message || 'Failed to change password')
     return data
   }
 
@@ -71,8 +89,9 @@ export const AuthProvider = ({ children }) => {
     loading,
     register,
     login: loginUser,
-    loginAdmin,
     logout,
+    updateProfile,
+    changePassword,
     isAuthenticated: !!user,
     isAdmin: user?.isAdmin || false,
   }

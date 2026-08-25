@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { products } from '../../data/products'
 import { useCart } from '../../context/CartContext'
+import { productAPI } from '../../services/api'
 
 const tabs = [
   { id: 'all', label: 'All Products' },
@@ -12,37 +12,62 @@ const tabs = [
 
 export default function FeaturedProducts() {
   const [activeTab, setActiveTab] = useState('all')
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
   const { addToCart } = useCart()
 
-  const filteredProducts = products.filter((product) => {
-    switch (activeTab) {
-      case 'bestsellers':
-        return product.isBestSeller
-      case 'new':
-        return product.isNew
-      case 'sale':
-        return product.discount && product.discount !== null
-      default:
-        return true
-    }
-  })
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await productAPI.getAll();
+        if (response.data.success) {
+          const transformed = response.data.data.map(productAPI.transform);
+          setProducts(transformed);
+        }
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    const filtered = products.filter((product) => {
+      switch (activeTab) {
+        case 'bestsellers':
+          return product.isBestSeller
+        case 'new':
+          return product.isNew
+        case 'sale':
+          return product.originalPrice
+        default:
+          return true
+      }
+    })
+    return filtered
+  }, [products, activeTab])
 
   const displayProducts = filteredProducts.length > 0 ? filteredProducts : products.slice(0, 4)
 
   const getProductDisplayPrice = (product) => {
-    return `₹ ${product.price.toLocaleString('en-IN')}`
+    const price = product.price || 0;
+    return `₹ ${price.toLocaleString('en-IN')}`;
   }
 
   const handleAddToCart = (product) => {
     addToCart(product, 1)
   }
 
-  const handleViewProduct = (product) => {
-    navigate(`/product/${product.id}`)
+  const handleWishlist = async (product, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigate('/account/wishlist')
   }
 
-  const handleQuickView = (product) => {
+  const handleViewProduct = (product) => {
     navigate(`/product/${product.id}`)
   }
 
@@ -106,11 +131,11 @@ export default function FeaturedProducts() {
                   </span>
                 )}
                 {/* Wishlist */}
-                <button
-                  className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center text-on-surface-variant hover:text-error transition-colors shadow-sm opacity-0 group-hover:opacity-100"
-                  onClick={() => handleAddToCart(product)}
-                  title="Add to Wishlist"
-                >
+                 <button
+                   className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center text-on-surface-variant hover:text-error transition-colors shadow-sm opacity-0 group-hover:opacity-100"
+                   onClick={(e) => handleWishlist(product, e)}
+                   title="Add to Wishlist"
+                 >
                   <span className="material-symbols-outlined text-sm">favorite</span>
                 </button>
               </div>
@@ -143,7 +168,7 @@ export default function FeaturedProducts() {
                 {/* Action Button */}
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="w-full bg-deep-emerald text-surface-white py-3.5 rounded font-label-caps text-label-caps uppercase tracking-wider bg-deep-emerald text-surface-white hover:bg-regal-gold transition-colors flex items-center justify-center gap-2 shadow-sm"
+                  className="w-full bg-deep-emerald text-surface-white py-3.5 rounded font-label-caps text-label-caps uppercase tracking-wider hover:bg-regal-gold transition-colors flex items-center justify-center gap-2 shadow-sm"
                 >
                   <span className="material-symbols-outlined text-sm">shopping_bag</span>
                   Add to Cart

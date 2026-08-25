@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import AnnouncementBar from '../pages/AnnouncementBar';
 import FeaturedProducts from '../components/sections/FeaturedProducts';
 export default function Home() {
@@ -34,14 +35,14 @@ export default function Home() {
         <div className="relative z-10 text-center px-4 max-w-3xl mt-20">
           <p className="font-label-caps text-label-caps uppercase tracking-widest text-surface-white mb-4 drop-shadow-md">The New Standard of Elegance</p>
           <h1 className="font-display-lg text-display-lg md:text-[64px] text-surface-white leading-tight mb-8 drop-shadow-lg">A Symphony in Diamond &amp; Gold</h1>
-          <div className="flex justify-center space-x-4">
-            <a className="bg-surface-white text-deep-emerald font-label-caps text-label-caps uppercase tracking-widest py-4 px-10 rounded transition-all hover:bg-surface-container-lowest hover:shadow-lg border border-transparent" href="#">
-              Explore Collection
-            </a>
-            <a className="bg-transparent border border-surface-white text-surface-white font-label-caps text-label-caps uppercase tracking-widest py-4 px-10 rounded transition-all hover:bg-surface-white hover:text-deep-emerald" href="#">
-              Discover the Craft
-            </a>
-          </div>
+           <div className="flex justify-center space-x-4">
+             <Link to="/shop" className="bg-surface-white text-deep-emerald font-label-caps text-label-caps uppercase tracking-widest py-4 px-10 rounded transition-all hover:bg-surface-container-low hover:shadow-lg border border-transparent">
+               Explore Collection
+             </Link>
+             <Link to="/shop" className="bg-transparent border border-surface-white text-surface-white font-label-caps text-label-caps uppercase tracking-widest py-4 px-10 rounded transition-all hover:bg-surface-white hover:text-deep-emerald">
+               Discover the Craft
+             </Link>
+           </div>
         </div>
       </section>
 
@@ -64,7 +65,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
             <div className="absolute bottom-8 left-8 text-surface-white">
               <h3 className="font-headline-md text-headline-md mb-2">Diamond Jewellery</h3>
-              <p className="font-label-caps text-label-caps uppercase tracking-widest flex items-center">Shop Now <span className="material-symbols-outlined ml-2 text-sm">arrow_forward</span></p>
+              <Link to="/shop" className="font-label-caps text-label-caps uppercase tracking-widest flex items-center">Shop Now <span className="material-symbols-outlined ml-2 text-sm">arrow_forward</span></Link>
             </div>
           </div>
           <div className="md:col-span-4 flex flex-col gap-gutter h-[400px] md:h-[500px]">
@@ -160,14 +161,14 @@ export default function Home() {
 
     <div className="heritage-image">
       <img
-        src="IMAGE_3_URL"
+        src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=800&q=80"
         alt="Heritage Jewellery"
       />
     </div>
 
     <div className="heritage-image">
       <img
-        src="IMAGE_4_URL"
+        src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=800&q=80"
         alt="Heritage Jewellery"
       />
     </div>

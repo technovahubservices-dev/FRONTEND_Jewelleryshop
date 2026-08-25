@@ -16,7 +16,9 @@ export default function Register() {
     setError('')
     setLoading(true)
     try {
-      await register(name, email, password)
+      const normalizedEmail = email.trim().toLowerCase()
+      const trimmedPassword = password.trim()
+      await register(name, normalizedEmail, trimmedPassword)
       navigate('/account', { replace: true })
     } catch (err) {
       setError(err.message)

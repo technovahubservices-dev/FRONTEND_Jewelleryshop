@@ -1,10 +1,11 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth()
   const { totalItems } = useCart()
+  const navigate = useNavigate()
 
   return (
     <>
@@ -16,13 +17,13 @@ export default function Header() {
               CARATLANE
             </Link>
             <div className="flex-1 flex justify-end items-center space-x-6 text-primary">
-              <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out">
+              <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/search')} title="Search">
                 <span className="material-symbols-outlined text-[24px]">search</span>
               </button>
-              <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out">
+              <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/shop')} title="Shop">
                 <span className="material-symbols-outlined text-[24px]">storefront</span>
               </button>
-              <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out">
+              <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/account')} title="Wishlist">
                 <span className="material-symbols-outlined text-[24px]">favorite</span>
               </button>
               {isAuthenticated ? (
@@ -55,7 +56,7 @@ export default function Header() {
         </div>
       </header>
       <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant flex items-center justify-between p-4 shadow-sm">
-        <button><span className="material-symbols-outlined">menu</span></button>
+        <button onClick={() => navigate('/shop')}><span className="material-symbols-outlined">menu</span></button>
         <Link className="font-display-lg text-[24px] text-deep-emerald tracking-tighter" to="/">CARATLANE</Link>
         <Link to="/cart"><span className="material-symbols-outlined">shopping_bag</span></Link>
       </header>

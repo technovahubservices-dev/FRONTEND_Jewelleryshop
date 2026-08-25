@@ -1,11 +1,37 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { products } from '../data/products'
 import { useCart } from '../context/CartContext'
+import { productAPI } from '../services/api'
 
 export default function Shop() {
   const navigate = useNavigate()
   const { addToCart } = useCart()
+
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await productAPI.getAll();
+        if (response.data.success) {
+          const transformed = response.data.data.map(productAPI.transform);
+          setProducts(transformed);
+        }
+      } catch (err) {
+        console.error('Failed to fetch products:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const handleWishlist = (product, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    navigate('/account')
+  }
 
   const [filters, setFilters] = useState({
     metal: [],
@@ -14,13 +40,9 @@ export default function Shop() {
     category: [],
   })
 
-  const metals = ['Gold', 'Platinum', 'Silver']
-  const purities = ['14k', '18k', '22k']
-  const categories = ['Necklaces', 'Earrings', 'Bracelets', 'Rings']
-
-  const availableMetals = [...new Set(products.map(p => p.metal.split(',')[0].trim()))]
-  const availablePurities = [...new Set(products.map(p => p.purity))]
-  const availableCategories = [...new Set(products.map(p => p.category))]
+  const availableMetals = [...new Set(products.map(p => (p.metal || '').split(',')[0].trim()).filter(Boolean))]
+  const availablePurities = [...new Set(products.map(p => p.purity).filter(Boolean))]
+  const availableCategories = [...new Set(products.map(p => p.category).filter(Boolean))]
 
   const handleQuickView = (product) => {
     navigate(`/product/${product.id}`)
@@ -55,10 +77,17 @@ export default function Shop() {
 
   return (
     <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-[120px]">
-      {/* Breadcrumbs & Header */}
-      <div className="mb-12">
+      {loading ? (
+        <div className="text-center py-20">
+          <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30 mb-4">inventory_2</span>
+          <p className="font-body-md text-body-md text-on-surface-variant">Loading products...</p>
+        </div>
+      ) : (
+      <>
+        {/* Breadcrumbs & Header */}
+       <div className="mb-12">
         <nav className="flex text-sm text-on-surface-variant mb-4 space-x-2">
-          <a className="hover:text-primary transition-colors" href="/home">Home</a>
+          <Link className="hover:text-primary transition-colors" to="/">Home</Link>
           <span>/</span>
           <span className="text-charcoal-text font-semibold">Jewellery</span>
         </nav>
@@ -77,11 +106,11 @@ export default function Shop() {
                 <option>New Arrivals</option>
               </select>
               <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
-            </div>
           </div>
         </div>
       </div>
-      <div className="flex flex-col md:flex-row gap-12">
+
+          <div className="flex flex-col md:flex-row gap-12">
         {/* Left Sidebar Filters */}
         <aside className="w-full md:w-64 flex-shrink-0 space-y-8">
           {/* Filter Section: Metal */}
@@ -138,10 +167,10 @@ export default function Shop() {
                 onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [0, parseInt(e.target.value)] }))}
                 className="w-full h-2 bg-outline-variant rounded-full accent-deep-emerald cursor-pointer"
               />
-              <div className="flex justify-between text-xs text-on-surface-variant mt-2">
-                <span>$0</span>
-                <span>${filters.priceRange[1]}</span>
-              </div>
+               <div className="flex justify-between text-xs text-on-surface-variant mt-2">
+                  <span>₹0</span>
+                 <span>₹{filters.priceRange[1]}</span>
+               </div>
             </div>
           </div>
 
@@ -187,14 +216,14 @@ export default function Shop() {
                       alt={product.description}
                       src={product.image}
                     />
-                    {/* Wishlist */}
-                    <button
-                      className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center text-on-surface-variant hover:text-error transition-colors shadow-sm"
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCart(product, e); }}
-                      title="Add to Wishlist"
-                    >
-                      <span className="material-symbols-outlined text-sm">favorite</span>
-                    </button>
+                     {/* Wishlist */}
+                     <button
+                       className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center text-on-surface-variant hover:text-error transition-colors shadow-sm"
+                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlist(product, e); }}
+                       title="Add to Wishlist"
+                     >
+                       <span className="material-symbols-outlined text-sm">favorite</span>
+                     </button>
                   </div>
 
                   {/* Brand */}
@@ -210,17 +239,17 @@ export default function Shop() {
                       {product.name}
                     </h3>
 
-                    {/* Pricing */}
-                    <div className="mb-4">
-                      <span className="font-headline-md text-lg text-deep-emerald">
-                        ${product.price}
-                      </span>
-                      {product.originalPrice && (
-                        <span className="ml-2 text-xs text-on-surface-variant line-through">
-                          ${product.originalPrice}
-                        </span>
-                      )}
-                    </div>
+                     {/* Pricing */}
+                     <div className="mb-4">
+                       <span className="font-headline-md text-lg text-deep-emerald">
+                         ₹ {product.price.toLocaleString('en-IN')}
+                       </span>
+                       {product.originalPrice && (
+                         <span className="ml-2 text-xs text-on-surface-variant line-through">
+                           ₹ {product.originalPrice.toLocaleString('en-IN')}
+                         </span>
+                       )}
+                     </div>
 
                     {/* Buttons */}
                     <div className="flex flex-col gap-2">
@@ -257,8 +286,11 @@ export default function Shop() {
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>
           </div>
+          </div>
         </div>
-      </div>
+        </div>
+        </>
+      )}
     </main>
   );
 }

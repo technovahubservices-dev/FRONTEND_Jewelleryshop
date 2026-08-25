@@ -1,7 +1,14 @@
-export default function TopAppBar() {
+export default function TopAppBar({ onMenuClick }) {
   return (
     <header className="bg-surface-white dark:bg-surface-container-highest text-deep-emerald dark:text-primary-fixed-dim border-b border-outline-variant dark:border-outline sticky top-0 h-16 border-b dark:border-outline flex justify-between items-center px-gutter w-full z-10 shadow-sm">
       <div className="flex items-center flex-1">
+        <button
+          onClick={onMenuClick}
+          className="md:hidden mr-4 p-2 text-deep-emerald hover:bg-surface-container-low rounded transition-colors"
+          aria-label="Open menu"
+        >
+          <span className="material-symbols-outlined text-2xl">menu</span>
+        </button>
         <div className="relative w-full max-w-md hidden md:block">
           <span className="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-outline" data-icon="search">
             search

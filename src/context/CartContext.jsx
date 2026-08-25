@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react'
+import { orderAPI } from '../services/api'
 
 const CartContext = createContext()
 
@@ -46,6 +47,19 @@ export const CartProvider = ({ children }) => {
     setCartItems([])
   }
 
+  const placeOrder = async (orderData) => {
+    try {
+      const response = await orderAPI.create(orderData)
+      if (response.data.success) {
+        clearCart()
+        return response.data.data
+      }
+      throw new Error(response.data.message || 'Failed to place order')
+    } catch (error) {
+      throw error.response?.data?.message || error.message || 'Failed to place order'
+    }
+  }
+
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
@@ -55,6 +69,7 @@ export const CartProvider = ({ children }) => {
     removeFromCart,
     updateQuantity,
     clearCart,
+    placeOrder,
     totalItems,
     subtotal,
   }
