@@ -16,6 +16,8 @@
     const [categoryFilter, setCategoryFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
     const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
 
     useEffect(() => {
       fetchProducts();
@@ -87,6 +89,35 @@
         setError('');
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete product');
+        setSuccessMessage('');
+      }
+    };
+
+    const handleSelectAll = (e) => {
+      if (e.target.checked) {
+        setSelectedProducts(filteredProducts.map((p) => p._id));
+      } else {
+        setSelectedProducts([]);
+      }
+    };
+
+    const handleSelectProduct = (id) => {
+      setSelectedProducts((prev) =>
+        prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+      );
+    };
+
+    const handleBulkDelete = async () => {
+      try {
+        await Promise.all(selectedProducts.map((id) => productAPI.delete(id)));
+        setProducts(products.filter((p) => !selectedProducts.includes(p._id)));
+        setFilteredProducts(filteredProducts.filter((p) => !selectedProducts.includes(p._id)));
+        setSelectedProducts([]);
+        setBulkDeleteConfirm(false);
+        setSuccessMessage(`${selectedProducts.length} product(s) deleted successfully`);
+        setError('');
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete selected products');
         setSuccessMessage('');
       }
     };
@@ -244,7 +275,7 @@
               onClick={handleAddProduct}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded transition-all duration-200 hover:bg-deep-emerald/90 active:scale-95 shadow-sm"
             >
-        
+            
               Add New Product
             </button>
           </div>
@@ -319,7 +350,7 @@
             </div>
             <div className="flex items-center gap-1">
              
-              
+             
               <button
               type="button"
               onClick={handleDownloadExcel}
@@ -332,9 +363,15 @@
                 <span>Download</span>
 
               </button>
-              <button onClick={() => setSuccessMessage('Delete selected feature coming soon')} className="inline-flex items-center gap-2 px-4 py-2 bg-error/10 text-error border border-error/20 font-label-caps text-[10px] rounded hover:bg-error hover:text-surface-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                <span className="material_symbols_outlined text-sm">delete</span>
-                
+              <button
+              type="button"
+              onClick={() => setBulkDeleteConfirm(true)}
+              disabled={selectedProducts.length === 0}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-error/10 text-error border border-error/20 font-label-caps text-[10px] rounded hover:bg-error hover:text-surface-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-sm">delete</span>
+                <span>Delete Selected ({selectedProducts.length})</span>
+
               </button>
             </div>
           </div>
@@ -342,7 +379,7 @@
           <div className="bg-surface-white rounded shadow-sm border border-outline-variant overflow-hidden">
             {loading ? (
               <div className="p-12 text-center">
-                <span className="material_symbols_outlined animate-spin text-4xl text-on-surface-variant">
+                <span className="material-symbols-outlined animate-spin text-4xl text-on-surface-variant">
                   progress_activity
                 </span>
                 <p className="font-body-md text-sm text-on-surface-variant mt-2">
@@ -351,7 +388,7 @@
               </div>
             ) : filteredProducts.length === 0 ? (
               <div className="p-12 text-center">
-                <span className="material_symbols_outlined text-4xl text-on-surface-variant mb-2">
+                <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">
                   inventory_2
                 </span>
                 <p className="font-body-md text-sm text-on-surface-variant">
@@ -370,6 +407,8 @@
                           <input
                             className="rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald w-4 h-4 cursor-pointer"
                             type="checkbox"
+                            checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+                            onChange={handleSelectAll}
                           />
                         </th>
                         <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">
@@ -408,6 +447,8 @@
                             <input
                               className="rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald w-4 h-4 cursor-pointer"
                               type="checkbox"
+                              checked={selectedProducts.includes(product._id)}
+                              onChange={() => handleSelectProduct(product._id)}
                             />
                           </td>
                           <td className="py-4 px-4">
@@ -461,7 +502,7 @@
                                 className="p-1.5 text-on-surface-variant hover:text-deep-emerald hover:bg-surface-container-low rounded transition-colors"
                                 title="Edit"
                               >
-                                <span className="material_symbols_outlined text-s">
+                                <span className="material-symbols-outlined text-s">
                                   Edit
                                 </span>
                               </button>
@@ -470,7 +511,7 @@
                                 className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error/10 rounded transition-colors"
                                 title="Delete"
                               >
-                                <span className="material_symbols_outlined text-s">
+                                <span className="material-symbols-outlined text-s">
                                   Delete
                                 </span>
                               </button> 
@@ -526,6 +567,39 @@
                   className="px-4 py-2 bg-error text-surface-white font-label-caps text-label-caps rounded hover:bg-error/90 transition-colors"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {bulkDeleteConfirm && (
+          <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            onClick={() => setBulkDeleteConfirm(false)}
+          >
+            <div
+              className="bg-surface-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-headline-md text-headline-md text-deep-emerald mb-4">
+                Confirm Bulk Delete
+              </h3>
+              <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+                Are you sure you want to delete {selectedProducts.length} selected product(s)? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setBulkDeleteConfirm(false)}
+                  className="px-4 py-2 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-label-caps rounded hover:bg-surface-container-low transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleBulkDelete}
+                  className="px-4 py-2 bg-error text-surface-white font-label-caps text-label-caps rounded hover:bg-error/90 transition-colors"
+                >
+                  Delete {selectedProducts.length} Products
                 </button>
               </div>
             </div>

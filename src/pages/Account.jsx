@@ -52,8 +52,11 @@ export default function Account() {
       case 'delivered':
         return 'bg-primary-fixed/20 text-on-primary-fixed-variant border-primary-fixed'
       case 'shipped':
+      case 'packed':
         return 'bg-secondary-container/30 text-on-secondary-fixed-variant border-secondary-fixed'
       case 'processing':
+      case 'manufacturing':
+      case 'quality_check':
         return 'bg-surface-container/50 text-on-surface-variant border-outline-variant'
       case 'cancelled':
         return 'bg-error-container/20 text-error border-error-container/30'
@@ -65,8 +68,14 @@ export default function Account() {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'delivered': return 'Delivered'
-      case 'shipped': return 'In Transit'
+      case 'shipped': return 'Shipped'
+      case 'packed': return 'Packed'
+      case 'quality_check': return 'Quality Check'
+      case 'manufacturing': return 'Manufacturing'
       case 'processing': return 'Processing'
+      case 'payment_received': return 'Payment Received'
+      case 'confirmed': return 'Confirmed'
+      case 'new': return 'Order Placed'
       case 'cancelled': return 'Cancelled'
       default: return 'Pending'
     }

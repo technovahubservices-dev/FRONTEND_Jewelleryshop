@@ -103,8 +103,24 @@ export const orderAPI = {
   create: (orderData) => api.post('/orders', orderData),
   getAll: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
-  updateStatus: (id, status) => api.put(`/orders/${id}`, { status }),
+  updateStatus: (id, statusOrData) =>
+    api.put(`/orders/${id}`, typeof statusOrData === 'string' ? { status: statusOrData } : statusOrData),
   delete: (id) => api.delete(`/orders/${id}`),
+};
+
+export const supplierAPI = {
+  getAll: (params) => api.get('/suppliers', { params }),
+  getById: (id) => api.get(`/suppliers/${id}`),
+  create: (data) => api.post('/suppliers', data),
+  update: (id, data) => api.put(`/suppliers/${id}`, data),
+  delete: (id) => api.delete(`/suppliers/${id}`),
+};
+
+export const inventoryAPI = {
+  getMetrics: () => api.get('/inventory/metrics'),
+  getMovements: (params) => api.get('/inventory/movements', { params }),
+  createMovement: (data) => api.post('/inventory/movements', data),
+  getProductHistory: (productId) => api.get(`/inventory/product/${productId}/history`),
 };
 
 export const categoryAPI = {
@@ -129,6 +145,23 @@ export const productionAPI = {
   create: (productionData) => api.post('/productions', productionData),
   update: (id, productionData) => api.put(`/productions/${id}`, productionData),
   delete: (id) => api.delete(`/productions/${id}`),
+};
+
+export const contentAPI = {
+  getAll: (type, params) => api.get(`/content/${type}`, { params }),
+  getActive: (type, params) => api.get(`/content/${type}/active`, { params }),
+  getById: (type, id) => api.get(`/content/${type}/${id}`),
+  create: (type, formData) =>
+    api.post(`/content/${type}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  update: (type, id, formData) =>
+    api.put(`/content/${type}/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  delete: (type, id) => api.delete(`/content/${type}/${id}`),
+  reorder: (type, items) => api.put(`/content/${type}/reorder`, { items }),
+  toggleActive: (type, id) => api.put(`/content/${type}/${id}/toggle`),
 };
 
 export default api;

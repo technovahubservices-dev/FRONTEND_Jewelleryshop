@@ -14,10 +14,15 @@ export default function AdminLayout({ children }) {
           onClick={() => setSidebarOpen(false)}
         />
       )}
+      
+      {/* Sidebar Navigation */}
       <SideNavBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col md:ml-72 min-h-screen">
+      
+      {/* Main Content Area - Fixed ml-64 to match Sidebar exact width */}
+      <div className="flex-1 flex flex-col md:ml-64 min-w-0 min-h-screen">
         <TopAppBar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 p-4 md:p-2 max-w-container-max  w-full">
+        {/* max-w-none removes container centering restrictions */}
+        <main className="flex-1 p-6 md:p-8 w-full max-w-none">
           {children}
         </main>
       </div>

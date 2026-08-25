@@ -11,8 +11,11 @@ export default function SideNavBar({ isOpen, onClose }) {
     { name: 'Products', icon: 'diamond', path: '/admin/products' },
     { name: 'Categories', icon: 'category', path: '/admin/categories' },
     { name: 'Raw Materials', icon: 'inventory_2', path: '/admin/raw-materials' },
+    { name: 'Inventory', icon: 'warehouse', path: '/admin/inventory' },
+    { name: 'Suppliers', icon: 'local_shipping', path: '/admin/suppliers' },
     { name: 'Production', icon: 'factory', path: '/admin/production' },
     { name: 'Orders', icon: 'shopping_bag', path: '/admin/orders' },
+    { name: 'Content Management', icon: 'article', path: '/admin/content' },
     { name: 'Settings', icon: 'settings', path: '/admin/settings' },
   ]
 

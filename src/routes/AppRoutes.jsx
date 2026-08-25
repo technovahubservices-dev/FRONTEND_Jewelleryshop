@@ -13,13 +13,18 @@ import OrdersHistory from '../pages/OrdersHistory'
 import Wishlist from '../pages/Wishlist'
 import Addresses from '../pages/Addresses'
 import Settings from '../pages/Settings'
+import Blog from '../pages/Blog'
+import BlogPost from '../pages/BlogPost'
 import AdminLayout from '../admin/layouts/AdminLayout'
 import Dashboard from '../admin/pages/Dashboard'
 import Products from '../admin/pages/Products'
 import Categories from '../admin/pages/Categories'
 import RawMaterials from '../admin/pages/RawMaterials'
+import Inventory from '../admin/pages/Inventory'
+import Suppliers from '../admin/pages/Suppliers'
 import Production from '../admin/pages/Production'
 import Orders from '../admin/pages/Orders'
+import ContentManagement from '../admin/pages/ContentManagement'
 import AdminSettings from '../admin/pages/Settings'
 import NotFound from '../pages/NotFound'
 import { useAuth } from '../context/AuthContext'
@@ -54,6 +59,8 @@ export default function AppRoutes() {
       <Route path="/account/wishlist" element={<Wishlist />} />
       <Route path="/account/addresses" element={<Addresses />} />
       <Route path="/account/settings" element={<Settings />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
       <Route
         path="/admin"
         element={
@@ -87,6 +94,22 @@ export default function AppRoutes() {
         }
       />
       <Route
+        path="/admin/inventory"
+        element={
+          <AdminRoute>
+            <AdminLayout><Inventory /></AdminLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/suppliers"
+        element={
+          <AdminRoute>
+            <AdminLayout><Suppliers /></AdminLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
         path="/admin/production"
         element={
           <AdminRoute>
@@ -99,6 +122,14 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminLayout><Orders /></AdminLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/content"
+        element={
+          <AdminRoute>
+            <AdminLayout><ContentManagement /></AdminLayout>
           </AdminRoute>
         }
       />

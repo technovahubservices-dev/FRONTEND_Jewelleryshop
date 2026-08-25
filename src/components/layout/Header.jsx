@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
+import logo from '../../assets/icons/logo.jpeg'
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth()
@@ -10,13 +11,28 @@ export default function Header() {
   return (
     <>
       <header className="bg-surface shadow-sm docked full-width top-0 sticky z-40 border-b border-outline-variant">
-        <div className="flex flex-col w-full max-w-container-max mx-auto px-margin-desktop">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex-1"></div>
-            <Link className="text-display-lg font-display-lg tracking-tighter text-deep-emerald hover:opacity-80 transition-opacity" to="/">
-              CARATLANE
+        <div className="w-full max-w-container-max mx-auto px-margin-desktop">
+          {/* Single row flex container containing logo, nav, and icons */}
+          <div className="flex items-center justify-between h-20 gap-8">
+            {/* Left: Logo and Brand Name */}
+            <Link className="flex items-center gap-3 text-display-lg font-display-lg tracking-tighter text-deep-emerald hover:opacity-80 transition-opacity shrink-0" to="/">
+              <img src={logo} alt="CaratLane" className="w-13 h-12 object-contain" />
+              <span>JKR</span>
             </Link>
-            <div className="flex-1 flex justify-end items-center space-x-6 text-primary">
+
+            {/* Middle/Right: Navigation items directly inline with logo text */}
+            <nav className="hidden md:flex items-center space-x-6 ml-auto">
+              <NavLink to="/shop" className={({ isActive }) => `text-primary border-b-2 scale-95 duration-200 ease-in-out ${isActive ? 'border-regal-gold' : 'border-transparent'}`}>Jewellery</NavLink>
+              <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Diamond</NavLink>
+              <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Earrings</NavLink>
+              <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Rings</NavLink>
+              <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Necklaces</NavLink>
+              <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Collections</NavLink>
+              
+            </nav>
+
+            {/* Far Right: Action Icons */}
+            <div className="flex items-center space-x-6 text-primary shrink-0">
               <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/search')} title="Search">
                 <span className="material-symbols-outlined text-[24px]">search</span>
               </button>
@@ -45,19 +61,15 @@ export default function Header() {
               </Link>
             </div>
           </div>
-          <nav className="hidden md:flex justify-center space-x-8 pb-4">
-            <NavLink to="/shop" className={({ isActive }) => `text-primary border-b-2 pb-1 scale-95 duration-200 ease-in-out ${isActive ? 'border-regal-gold' : 'border-transparent'}`}>Jewellery</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out pb-1 border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Diamond</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out pb-1 border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Earrings</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out pb-1 border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Rings</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out pb-1 border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Necklaces</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out pb-1 border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Collections</NavLink>
-          </nav>
         </div>
       </header>
+
       <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant flex items-center justify-between p-4 shadow-sm">
         <button onClick={() => navigate('/shop')}><span className="material-symbols-outlined">menu</span></button>
-        <Link className="font-display-lg text-[24px] text-deep-emerald tracking-tighter" to="/">CARATLANE</Link>
+        <Link className="flex items-center gap-2 font-display-lg text-[24px] text-deep-emerald tracking-tighter" to="/">
+          <img src={logo} alt="CaratLane" className="w-6 h-6 object-contain" />
+          <span>JKR</span>
+        </Link>
         <Link to="/cart"><span className="material-symbols-outlined">shopping_bag</span></Link>
       </header>
     </>

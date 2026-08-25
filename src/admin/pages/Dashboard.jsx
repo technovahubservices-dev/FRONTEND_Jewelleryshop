@@ -2,6 +2,80 @@ import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { productAPI, orderAPI, rawMaterialAPI, productionAPI } from '../../services/api'
 
+const KPI_CARD_BASE = 'bg-surface-white p-5 rounded-lg border border-outline-variant/30 hover:border-regal-gold/50 transition-colors duration-300 flex flex-col justify-between h-28 relative overflow-hidden group'
+const KPI_TITLE = 'font-label-caps text-label-caps text-outline z-10'
+const KPI_VALUE = 'font-headline-md text-headline-md text-deep-emerald z-10 mt-auto'
+
+const MiniBarChart = ({ data, color = '#D4AF37' }) => {
+  if (!data || data.length === 0) return null
+  const max = Math.max(...data.map(d => d.value), 1)
+  const height = 60
+  const barWidth = 100 / data.length
+  return (
+    <div className="flex items-end gap-1 h-[60px] w-full">
+      {data.map((d, i) => {
+        const h = (d.value / max) * height
+        return (
+          <div
+            key={i}
+            className="flex-1 rounded-sm transition-all duration-300 hover:opacity-80"
+            style={{ height: `${h}px`, backgroundColor: color }}
+            title={`${d.label}: ${d.value}`}
+          />
+        )
+      })}
+    </div>
+  )
+}
+
+const DonutChart = ({ data, colors = ['#013220', '#D4AF37', '#735c00', '#e3e2e0'] }) => {
+  if (!data || data.length === 0) return null
+  const total = data.reduce((sum, d) => sum + d.value, 0) || 1
+  let cumulative = 0
+  const segments = data.map((d, i) => {
+    const start = cumulative
+    const value = d.value
+    cumulative += value
+    return { ...d, start, end: cumulative, color: colors[i % colors.length] }
+  })
+
+  const radius = 40
+  const circumference = 2 * Math.PI * radius
+  const segmentsWithDash = segments.map((seg) => {
+    const dash = ((seg.end - seg.start) / total) * circumference
+    const offset = (seg.start / total) * circumference
+    return { ...seg, dash, offset }
+  })
+
+  return (
+    <div className="flex items-center gap-4">
+      <svg width="120" height="120" viewBox="0 0 120 120" className="transform -rotate-90">
+        {segmentsWithDash.map((seg, i) => (
+          <circle
+            key={i}
+            cx="60"
+            cy="60"
+            r={radius}
+            fill="none"
+            stroke={seg.color}
+            strokeWidth="16"
+            strokeDasharray={`${seg.dash} ${circumference - seg.dash}`}
+            strokeDashoffset={-seg.offset}
+          />
+        ))}
+      </svg>
+      <div className="flex flex-col gap-1 text-xs">
+        {data.map((d, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
+            <span className="text-on-surface-variant truncate max-w-[80px]">{d.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [products, setProducts] = useState([])
   const [orders, setOrders] = useState([])
@@ -45,13 +119,11 @@ export default function Dashboard() {
     }
   }
 
-  const totalRevenue = useMemo(() => {
+  const totalSales = useMemo(() => {
     return orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0)
   }, [orders])
 
-  const activeOrders = useMemo(() => {
-    return orders.filter(order => !['delivered', 'cancelled'].includes(order.status)).length
-  }, [orders])
+  const totalOrders = orders.length
 
   const totalCustomers = useMemo(() => {
     const uniqueUsers = new Set()
@@ -61,6 +133,36 @@ export default function Dashboard() {
       }
     })
     return uniqueUsers.size
+  }, [orders])
+
+  const totalProducts = products.length
+
+  const inventoryValue = useMemo(() => {
+    return products.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0)
+  }, [products])
+
+  const lowStockItems = useMemo(() => {
+    return products.filter(p => (p.stock || 0) < 10).length
+  }, [products])
+
+  const goldStock = useMemo(() => {
+    return rawMaterials
+      .filter(rm => rm.name && rm.name.toLowerCase().includes('gold'))
+      .reduce((sum, rm) => sum + (rm.quantity || 0), 0)
+  }, [rawMaterials])
+
+  const silverStock = useMemo(() => {
+    return rawMaterials
+      .filter(rm => rm.name && rm.name.toLowerCase().includes('silver'))
+      .reduce((sum, rm) => sum + (rm.quantity || 0), 0)
+  }, [rawMaterials])
+
+  const pendingOrders = useMemo(() => {
+    return orders.filter(o => ['pending', 'new', 'confirmed', 'payment_received'].includes(o.status)).length
+  }, [orders])
+
+  const pendingPayments = useMemo(() => {
+    return orders.filter(o => o.isPaid === false || ['pending', 'new', 'confirmed', 'payment_received'].includes(o.status)).length
   }, [orders])
 
   const topCategory = useMemo(() => {
@@ -76,8 +178,8 @@ export default function Dashboard() {
 
   const lowStockProducts = useMemo(() => {
     return products
-      .filter(p => p.stock !== undefined && p.stock < 10)
-      .sort((a, b) => a.stock - b.stock)
+      .filter(p => (p.stock || 0) < 10)
+      .sort((a, b) => (a.stock || 0) - (b.stock || 0))
       .slice(0, 5)
   }, [products])
 
@@ -85,6 +187,14 @@ export default function Dashboard() {
     return [...orders]
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 5)
+  }, [orders])
+
+  const ordersWaitingPayment = useMemo(() => {
+    return orders.filter(o => o.isPaid === false && o.status !== 'cancelled').slice(0, 5)
+  }, [orders])
+
+  const ordersPendingShipment = useMemo(() => {
+    return orders.filter(o => ['pending', 'new', 'confirmed', 'payment_received', 'processing', 'manufacturing', 'quality_check', 'packed'].includes(o.status)).slice(0, 5)
   }, [orders])
 
   const chartData = useMemo(() => {
@@ -117,6 +227,69 @@ export default function Dashboard() {
   const maxChartValue = useMemo(() => {
     return Math.max(...chartData.map(d => d.revenue), 1)
   }, [chartData])
+
+  const ordersChartData = useMemo(() => {
+    const now = new Date()
+    const days = chartPeriod === 'week' ? 7 : 30
+    const data = []
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now)
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toISOString().split('T')[0]
+
+      const count = orders.filter(order => {
+        const orderDate = new Date(order.createdAt).toISOString().split('T')[0]
+        return orderDate === dateStr
+      }).length
+
+      data.push({
+        label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        value: count,
+      })
+    }
+
+    return data
+  }, [orders, chartPeriod])
+
+  const categorySalesData = useMemo(() => {
+    const categoryRevenue = {}
+    orders.forEach(order => {
+      (order.items || []).forEach(item => {
+        const product = products.find(p => p._id === item.product || p._id === item.product?._id)
+        const cat = product?.category || 'Other'
+        categoryRevenue[cat] = (categoryRevenue[cat] || 0) + (item.price * item.quantity || 0)
+      })
+    })
+    return Object.entries(categoryRevenue)
+      .map(([label, value]) => ({ label, value }))
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 6)
+  }, [orders, products])
+
+  const topSellingProducts = useMemo(() => {
+    const productSales = {}
+    orders.forEach(order => {
+      (order.items || []).forEach(item => {
+        const pid = item.product || item.product?._id
+        if (!pid) return
+        if (!productSales[pid]) {
+          productSales[pid] = {
+            id: pid,
+            name: item.name || 'Unknown',
+            image: item.image || 'https://placehold.co/48x48',
+            revenue: 0,
+            quantity: 0,
+          }
+        }
+        productSales[pid].revenue += (item.price * item.quantity || 0)
+        productSales[pid].quantity += (item.quantity || 0)
+      })
+    })
+    return Object.values(productSales)
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 5)
+  }, [orders])
 
   const statusBadge = (status) => {
     const configs = {
@@ -164,41 +337,43 @@ export default function Dashboard() {
 
       {/* Bento Grid Layout for Dashboard Content */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 auto-rows-min">
-        {/* 1. KPI Cards */}
-        <div className="md:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-surface-white p-6 rounded-lg border border-outline-variant/30 hover:border-regal-gold/50 transition-colors duration-300 flex flex-col justify-between h-32 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-16 h-16 bg-soft-cream rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-            <p className="font-label-caps text-label-caps text-outline z-10">Total Revenue</p>
-            <div className="flex items-baseline gap-2 z-10 mt-auto">
-              <h3 className="font-headline-md text-headline-md text-deep-emerald">₹{totalRevenue.toLocaleString('en-IN')}</h3>
+        {/* 1. Primary KPI Cards */}
+        <div className="md:col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[
+            { label: 'Total Sales', value: `₹${totalSales.toLocaleString('en-IN')}` },
+            { label: 'Total Orders', value: totalOrders },
+            { label: 'Total Customers', value: totalCustomers },
+            { label: 'Total Products', value: totalProducts },
+            { label: 'Inventory Value', value: `₹${inventoryValue.toLocaleString('en-IN')}` },
+            { label: 'Low Stock Items', value: lowStockItems },
+          ].map((kpi) => (
+            <div key={kpi.label} className={KPI_CARD_BASE}>
+              <p className={KPI_TITLE}>{kpi.label}</p>
+              <h3 className={KPI_VALUE}>{kpi.value}</h3>
             </div>
-          </div>
-          <div className="bg-surface-white p-6 rounded-lg border border-outline-variant/30 hover:border-regal-gold/50 transition-colors duration-300 flex flex-col justify-between h-32 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-16 h-16 bg-soft-cream rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-            <p className="font-label-caps text-label-caps text-outline z-10">Active Orders</p>
-            <div className="flex items-baseline gap-2 z-10 mt-auto">
-              <h3 className="font-headline-md text-headline-md text-deep-emerald">{activeOrders}</h3>
-            </div>
-          </div>
-          <div className="bg-surface-white p-6 rounded-lg border border-outline-variant/30 hover:border-regal-gold/50 transition-colors duration-300 flex flex-col justify-between h-32 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-16 h-16 bg-soft-cream rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-            <p className="font-label-caps text-label-caps text-outline z-10">Total Customers</p>
-            <div className="flex items-baseline gap-2 z-10 mt-auto">
-              <h3 className="font-headline-md text-headline-md text-deep-emerald">{totalCustomers}</h3>
-            </div>
-          </div>
-          <div className="bg-surface-white p-6 rounded-lg border border-outline-variant/30 hover:border-regal-gold/50 transition-colors duration-300 flex flex-col justify-between h-32 relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-16 h-16 bg-soft-cream rounded-full opacity-50 group-hover:scale-150 transition-transform duration-500"></div>
-            <p className="font-label-caps text-label-caps text-outline z-10">Top Category</p>
-            <div className="flex items-baseline gap-2 z-10 mt-auto">
-              <h3 className="font-headline-md text-headline-md text-deep-emerald truncate">{topCategory}</h3>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* 2. Sales Analytics Chart */}
-        <div className="md:col-span-8 bg-surface-white p-6 rounded-lg border border-outline-variant/30 min-h-[400px] flex flex-col">
-          <div className="flex justify-between items-center mb-6">
+        {/* 2. Secondary KPI Cards */}
+        <div className="md:col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {[
+            { label: 'Gold Stock', value: `${goldStock.toLocaleString('en-IN')} g` },
+            { label: 'Silver Stock', value: `${silverStock.toLocaleString('en-IN')} g` },
+            { label: 'Pending Orders', value: pendingOrders },
+            { label: 'Pending Payments', value: pendingPayments },
+            { label: 'Active Orders', value: orders.filter(o => !['delivered', 'cancelled'].includes(o.status)).length },
+            { label: 'Top Category', value: topCategory, truncate: true },
+          ].map((kpi) => (
+            <div key={kpi.label} className={KPI_CARD_BASE}>
+              <p className={KPI_TITLE}>{kpi.label}</p>
+              <h3 className={`${KPI_VALUE} ${kpi.truncate ? 'truncate' : ''}`}>{kpi.value}</h3>
+            </div>
+          ))}
+        </div>
+
+        {/* 3. Revenue Trends Chart */}
+        <div className="md:col-span-6 bg-surface-white p-6 rounded-lg border border-outline-variant/30 min-h-[380px] flex flex-col">
+          <div className="flex justify-between items-center mb-4">
             <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald">Revenue Trends</h3>
             <select
               className="bg-transparent border-none text-label-caps font-label-caps text-outline focus:ring-0 cursor-pointer"
@@ -212,24 +387,20 @@ export default function Dashboard() {
 
           {chartData.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="font-body-md text-body-md text-on-surface-variant">No order data available for the selected period.</p>
+              <p className="font-body-md text-body-md text-on-surface-variant">No revenue data available.</p>
             </div>
           ) : (
-            <div className="flex-1 w-full relative pb-8">
-              <svg className="w-full h-64" preserveAspectRatio="none" viewBox={`0 0 ${chartData.length * 30} 100`}>
+            <div className="flex-1 w-full relative pb-6">
+              <svg className="w-full h-56" preserveAspectRatio="none" viewBox={`0 0 ${chartData.length * 30} 100`}>
                 <defs>
                   <linearGradient id="chart-gradient" x1="0" x2="0" y1="0" y2="1">
                     <stop offset="0%" stopColor="#D4AF37" stopOpacity="0.3"></stop>
                     <stop offset="100%" stopColor="#D4AF37" stopOpacity="0"></stop>
                   </linearGradient>
                 </defs>
-
-                {/* Grid lines */}
                 {[0, 25, 50, 75, 100].map((y) => (
                   <line key={y} x1="0" y1={y} x2={chartData.length * 30} y2={y} stroke="#e3e2e0" strokeWidth="0.5" />
                 ))}
-
-                {/* Area fill */}
                 <path
                   d={`M0,100 ${chartData.map((d, i) => {
                     const x = i * 30 + 15
@@ -238,8 +409,6 @@ export default function Dashboard() {
                   }).join(' ')} L${(chartData.length - 1) * 30 + 15},100 Z`}
                   fill="url(#chart-gradient)"
                 />
-
-                {/* Line */}
                 <path
                   d={`M${chartData.map((d, i) => {
                     const x = i * 30 + 15
@@ -252,18 +421,12 @@ export default function Dashboard() {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-
-                {/* Data points */}
                 {chartData.map((d, i) => {
                   const x = i * 30 + 15
                   const y = 100 - (d.revenue / maxChartValue) * 80
-                  return (
-                    <circle key={i} cx={x} cy={y} r="2" fill="#013220" />
-                  )
+                  return <circle key={i} cx={x} cy={y} r="2" fill="#013220" />
                 })}
               </svg>
-
-              {/* X Axis Labels */}
               <div className="flex justify-between mt-2 px-2">
                 {chartData.filter((_, i) => chartPeriod === 'week' ? i % 2 === 0 : i % 5 === 0).map((d, i) => (
                   <span key={i} className="text-[10px] text-outline font-label-caps">{d.date}</span>
@@ -273,48 +436,175 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* 3. Low Stock Alerts */}
-        <div className="md:col-span-4 bg-surface-white p-6 rounded-lg border border-outline-variant/30 min-h-[400px] flex flex-col">
-          <div className="flex justify-between items-center mb-6 pb-4 border-b border-outline-variant/20">
-            <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald flex items-center gap-2">
-              <span className="material-symbols-outlined text-regal-gold text-xl" data-icon="warning">warning</span>
-              Low Stock Alerts
-            </h3>
+        {/* 4. Orders Trend Chart */}
+        <div className="md:col-span-6 bg-surface-white p-6 rounded-lg border border-outline-variant/30 min-h-[380px] flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald">Orders Trend</h3>
+            <span className="text-label-caps font-label-caps text-outline">{chartPeriod === 'week' ? 'This Week' : 'This Month'}</span>
           </div>
-
-          {lowStockProducts.length === 0 ? (
+          {ordersChartData.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
-              <p className="font-body-md text-sm text-on-surface-variant">All products are well-stocked.</p>
+              <p className="font-body-md text-body-md text-on-surface-variant">No order data available.</p>
             </div>
           ) : (
-            <ul className="flex flex-col gap-4 overflow-y-auto pr-2">
-              {lowStockProducts.map((product) => (
-                <li key={product._id} className="flex items-start gap-4 p-3 rounded hover:bg-soft-cream transition-colors">
-                  <div className="w-12 h-12 bg-surface-container rounded overflow-hidden shrink-0 border border-outline-variant/20">
-                    <img
-                      className="w-full h-full object-cover"
-                      alt={product.name}
-                      src={product.primaryImage || product.images?.[0] || 'https://placehold.co/48x48'}
-                      onError={(e) => { e.target.src = 'https://placehold.co/48x48' }}
-                    />
+            <div className="flex-1 flex items-center">
+              <MiniBarChart data={ordersChartData} color="#013220" />
+            </div>
+          )}
+        </div>
+
+        {/* 5. Category-wise Sales */}
+        <div className="md:col-span-4 bg-surface-white p-6 rounded-lg border border-outline-variant/30 min-h-[320px] flex flex-col">
+          <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald mb-4">Category-wise Sales</h3>
+          {categorySalesData.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="font-body-md text-sm text-on-surface-variant">No sales data available.</p>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <DonutChart data={categorySalesData} />
+            </div>
+          )}
+        </div>
+
+        {/* 6. Top Selling Jewellery */}
+        <div className="md:col-span-4 bg-surface-white p-6 rounded-lg border border-outline-variant/30 min-h-[320px] flex flex-col">
+          <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald mb-4">Top Selling Jewellery</h3>
+          {topSellingProducts.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="font-body-md text-sm text-on-surface-variant">No sales data available.</p>
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-3 overflow-y-auto pr-2">
+              {topSellingProducts.map((product, idx) => (
+                <li key={product.id} className="flex items-center gap-3 p-2 rounded hover:bg-soft-cream transition-colors">
+                  <div className="w-10 h-10 bg-surface-container rounded overflow-hidden shrink-0 border border-outline-variant/20">
+                    <img className="w-full h-full object-cover" alt={product.name} src={product.image} onError={(e) => { e.target.src = 'https://placehold.co/48x48' }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-body-md text-sm text-deep-emerald font-medium leading-tight mb-1 truncate">{product.name}</p>
-                    <span className="font-label-caps text-[10px] text-error font-bold tracking-wide">
-                      {product.stock === 0 ? 'Out of Stock' : `${product.stock} Units Left`}
-                    </span>
+                    <p className="font-body-md text-sm text-deep-emerald font-medium leading-tight mb-0.5 truncate">{product.name}</p>
+                    <span className="font-label-caps text-[10px] text-outline">Qty: {product.quantity} · ₹{product.revenue.toLocaleString('en-IN')}</span>
                   </div>
+                  <span className="text-xs font-bold text-regal-gold">#{idx + 1}</span>
                 </li>
               ))}
             </ul>
           )}
-
-          <Link to="/admin/products" className="mt-auto w-full py-3 mt-4 border border-outline-variant text-deep-emerald font-label-caps text-label-caps hover:bg-surface-container-high transition-colors rounded text-center">
-            View Inventory
-          </Link>
         </div>
 
-        {/* 4. Recent Orders Table */}
+        {/* 7. Stock Usage */}
+        <div className="md:col-span-4 bg-surface-white p-6 rounded-lg border border-outline-variant/30 min-h-[320px] flex flex-col">
+          <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald mb-4">Gold / Silver Stock Usage</h3>
+          {rawMaterials.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="font-body-md text-sm text-on-surface-variant">No raw material data available.</p>
+            </div>
+          ) : (
+            <div className="flex-1 flex flex-col gap-4">
+              {['Gold', 'Silver'].map((metal) => {
+                const metalMaterials = rawMaterials.filter(rm => rm.name && rm.name.toLowerCase().includes(metal.toLowerCase()))
+                const totalQty = metalMaterials.reduce((sum, rm) => sum + (rm.quantity || 0), 0)
+                const totalCost = metalMaterials.reduce((sum, rm) => sum + ((rm.cost || 0) * (rm.quantity || 0)), 0)
+                return (
+                  <div key={metal} className="p-4 rounded-lg border border-outline-variant/30 bg-surface-container-low/50">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="font-label-caps text-label-caps text-outline">{metal}</span>
+                      <span className="font-headline-md text-headline-md text-deep-emerald">{totalQty.toLocaleString('en-IN')} <span className="text-sm text-outline">{metalMaterials[0]?.unit || 'g'}</span></span>
+                    </div>
+                    <div className="w-full bg-outline-variant/30 rounded-full h-2">
+                      <div className="bg-regal-gold h-2 rounded-full" style={{ width: `${Math.min(totalQty / 1000 * 100, 100)}%` }}></div>
+                    </div>
+                    <p className="text-xs text-on-surface-variant mt-1">Value: ₹{totalCost.toLocaleString('en-IN')}</p>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* 8. Alerts Section */}
+        <div className="md:col-span-12 bg-surface-white rounded-lg border border-outline-variant/30 overflow-hidden">
+          <div className="p-6 border-b border-outline-variant/20">
+            <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald flex items-center gap-2">
+              <span className="material-symbols-outlined text-regal-gold text-xl" data-icon="notifications">notifications</span>
+              Dashboard Alerts
+            </h3>
+          </div>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Low Stock */}
+            <div>
+              <h4 className="font-label-caps text-label-caps text-outline mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-error text-sm">warning</span>
+                Low Stock Products ({lowStockItems})
+              </h4>
+              {lowStockProducts.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">All products are well-stocked.</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {lowStockProducts.map((product) => (
+                    <li key={product._id} className="flex items-center gap-3 p-2 rounded bg-soft-cream/50">
+                      <div className="w-8 h-8 bg-surface-container rounded overflow-hidden shrink-0">
+                        <img className="w-full h-full object-cover" alt={product.name} src={product.primaryImage || product.images?.[0] || 'https://placehold.co/48x48'} onError={(e) => { e.target.src = 'https://placehold.co/48x48' }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-deep-emerald font-medium truncate">{product.name}</p>
+                        <span className="text-[10px] text-error font-bold">{product.stock === 0 ? 'Out of Stock' : `${product.stock} left`}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Pending Payments */}
+            <div>
+              <h4 className="font-label-caps text-label-caps text-outline mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary-fixed text-sm">payments</span>
+                Orders Waiting for Payment ({ordersWaitingPayment.length})
+              </h4>
+              {ordersWaitingPayment.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No pending payments.</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {ordersWaitingPayment.slice(0, 5).map((order) => (
+                    <li key={order._id} className="flex items-center justify-between p-2 rounded bg-soft-cream/50">
+                      <div>
+                        <p className="text-xs text-deep-emerald font-medium">#{order._id.toString().slice(-6).toUpperCase()}</p>
+                        <p className="text-[10px] text-on-surface-variant">{order.user?.name || order.user?.email || 'Guest'}</p>
+                      </div>
+                      <span className="text-xs font-semibold text-deep-emerald">₹{(order.totalPrice || 0).toLocaleString('en-IN')}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* Pending Shipments */}
+            <div>
+              <h4 className="font-label-caps text-label-caps text-outline mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary-fixed-dim text-sm">local_shipping</span>
+                Orders Pending Shipment ({ordersPendingShipment.length})
+              </h4>
+              {ordersPendingShipment.length === 0 ? (
+                <p className="text-sm text-on-surface-variant">No orders pending shipment.</p>
+              ) : (
+                <ul className="flex flex-col gap-2">
+                  {ordersPendingShipment.slice(0, 5).map((order) => (
+                    <li key={order._id} className="flex items-center justify-between p-2 rounded bg-soft-cream/50">
+                      <div>
+                        <p className="text-xs text-deep-emerald font-medium">#{order._id.toString().slice(-6).toUpperCase()}</p>
+                        <p className="text-[10px] text-on-surface-variant">{order.user?.name || order.user?.email || 'Guest'}</p>
+                      </div>
+                      {statusBadge(order.status)}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 9. Recent Orders Table */}
         <div className="md:col-span-12 bg-surface-white rounded-lg border border-outline-variant/30 overflow-hidden mt-4">
           <div className="p-6 border-b border-outline-variant/20 flex justify-between items-center bg-white/50 backdrop-blur">
             <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald">Recent Orders</h3>

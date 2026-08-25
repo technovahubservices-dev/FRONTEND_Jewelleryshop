@@ -70,7 +70,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
   });
 
   const [imageUrlInput, setImageUrlInput] = useState('');
-const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [skuLoading, setSkuLoading] = useState(false);
@@ -807,7 +807,7 @@ const [loading, setLoading] = useState(false);
                   disabled={allImages.length >= MAX_FILES}
                 />
                 <label htmlFor="imageUpload" className="cursor-pointer">
-                  <span className="material_symbols_outlined text-3xl text-on-surface-variant mb-2">
+                  <span className="material-symbols-outlined text-3xl text-on-surface-variant mb-2">
                     upload
                   </span>
                   <p className="text-sm font-body-md text-on-surface mb-1">
@@ -877,7 +877,7 @@ const [loading, setLoading] = useState(false);
                             className="p-1 text-white hover:text-deep-emerald transition-colors"
                             title="Set as primary"
                           >
-                            <span className="material_symbols_outlined text-sm">star</span>
+                            <span className="material-symbols-outlined text-sm">star</span>
                           </button>
                         )}
                         <button
@@ -886,7 +886,7 @@ const [loading, setLoading] = useState(false);
                           className="p-1 text-white hover:text-error transition-colors"
                           title="Remove"
                         >
-                          <span className="material_symbols_outlined text-sm">delete</span>
+                          <span className="material-symbols-outlined text-sm">delete</span>
                         </button>
                       </div>
                     </div>

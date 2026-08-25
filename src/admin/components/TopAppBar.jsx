@@ -27,14 +27,6 @@ export default function TopAppBar({ onMenuClick }) {
           </span>
           <span className="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border border-surface-white"></span>
         </button>
-        <div className="flex items-center gap-3 pl-6 border-l border-outline-variant">
-          <div className="text-right hidden sm:block"></div>
-          <button className="text-deep-emerald dark:text-primary-fixed-dim hover:text-deep-emerald dark:hover:text-primary-fixed transition-colors active:opacity-80 duration-100">
-            <span className="material-symbols-outlined text-3xl" style={{ fontVariationSettings: "'FILL' 1" }} data-icon="account_circle">
-              account_circle
-            </span>
-          </button>
-        </div>
       </div>
     </header>
   );
