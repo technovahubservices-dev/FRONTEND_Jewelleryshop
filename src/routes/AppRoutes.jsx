@@ -27,6 +27,7 @@ import Orders from '../admin/pages/Orders'
 import ContentManagement from '../admin/pages/ContentManagement'
 import AdminSettings from '../admin/pages/Settings'
 import NotFound from '../pages/NotFound'
+import Contact from '../pages/Contact'
 import { useAuth } from '../context/AuthContext'
 
 function AdminRoute({ children }) {
@@ -141,6 +142,7 @@ export default function AppRoutes() {
           </AdminRoute>
         }
       />
+      <Route path="/contact" element={<Contact />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

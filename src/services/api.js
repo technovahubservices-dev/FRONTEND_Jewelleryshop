@@ -152,16 +152,20 @@ export const contentAPI = {
   getActive: (type, params) => api.get(`/content/${type}/active`, { params }),
   getById: (type, id) => api.get(`/content/${type}/${id}`),
   create: (type, formData) =>
-    api.post(`/content/${type}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.post(`/content/${type}`, formData),
   update: (type, id, formData) =>
-    api.put(`/content/${type}/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.put(`/content/${type}/${id}`, formData),
   delete: (type, id) => api.delete(`/content/${type}/${id}`),
   reorder: (type, items) => api.put(`/content/${type}/reorder`, { items }),
   toggleActive: (type, id) => api.put(`/content/${type}/${id}/toggle`),
+   getHomepageSettings: () => api.get('/content/homepage/settings'),
+  updateHomepageSettings: (data) => api.put('/content/homepage/settings', data),
+  uploadHomepageImage: (formData) =>
+    api.post('/content/homepage/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }),
+  updateHomepageTab: (tab, payload) =>
+    api.put('/content/homepage/settings/updateTab', { tab, payload }),
 };
 
 export default api;

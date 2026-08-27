@@ -4,35 +4,67 @@ import { contentAPI } from '../services/api';
 
 export default function AnnouncementBar() {
   const [announcement, setAnnouncement] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAnnouncement = async () => {
+    const fetchSettings = async () => {
       try {
-        const response = await contentAPI.getActive('promoBanners', { position: 'top' });
-        if (response.data.success && response.data.count > 0) {
-          setAnnouncement(response.data.data[0]);
+        const response = await contentAPI.getHomepageSettings();
+        if (response.data.success) {
+          setAnnouncement(response.data.data);
         }
       } catch (err) {
-        // Silent fallback to default
+        // Silent fallback to defaults
+      } finally {
+        setLoading(false);
       }
     };
-    fetchAnnouncement();
+    fetchSettings();
   }, []);
 
-  const title = announcement?.title || 'Explore our new Heritage Collection.';
-  const ctaText = announcement?.ctaText || '';
-  const ctaLink = announcement?.ctaLink || '/shop';
+  const getMarqueeText = () => {
+    // 1. Customized repeating texts structured with professional diamond dividers
+    const baseText = "surya very good · enjoy enjoy · surya very good · enjoy enjoy · ";
+    
+    if (loading || !announcement) {
+      return baseText;
+    }
+    
+    // Fallback overrides if admin panel configuration settings are present
+    const text = announcement.announcementText || 'surya very good · enjoy enjoy';
+    const ctaText = announcement.announcementCtaText || '';
+    return ctaText ? `${text} · ${ctaText} · ` : `${text} · `;
+  };
+
+  const marqueeText = getMarqueeText();
+  
+  // Create a long continuous string row to ensure seamless looping without blank gaps
+  const fullRepeatedRow = `${marqueeText}${marqueeText}${marqueeText}${marqueeText}`;
 
   return (
-    <div className="bg-deep-emerald text-surface-white text-center py-2.5 px-4 font-body-md text-xs md:text-sm tracking-wide">
-      <span className="hidden md:inline">Complimentary shipping on orders above ₹5,000 ·</span>
-      <span className="md:ml-2">{title}</span>
-      {ctaText && (
-        <>
-          <span> · </span>
-          <Link className="underline" to={ctaLink}>{ctaText}</Link>
-        </>
-      )}
-    </div>
+    <>
+      {/* 2. Inline Keyframe Animations to guarantee infinite right-to-left scrolling tracking loops */}
+      <style>{`
+        @keyframes customMarquee {
+          0% { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-infinite-scroll {
+          animation: customMarquee 15s linear infinite;
+        }
+      `}</style>
+
+      {/* 3. Positioning Layout: Sits explicitly above the logo text row */}
+      <div className="w-full bg-deep-emerald text-surface-white py-1.5 overflow-hidden relative flex items-center h-8 z-50 select-none border-b border-white/5">
+        <div className="flex whitespace-nowrap min-w-full animate-infinite-scroll">
+          <div className="inline-block px-2 font-label-caps text-[10px] md:text-xs tracking-widest uppercase text-[#FDFBF7] font-medium">
+            {fullRepeatedRow}
+          </div>
+          <div className="inline-block px-2 font-label-caps text-[10px] md:text-xs tracking-widest uppercase text-[#FDFBF7] font-medium">
+            {fullRepeatedRow}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

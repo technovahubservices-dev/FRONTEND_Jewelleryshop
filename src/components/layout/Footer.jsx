@@ -16,7 +16,7 @@ export default function Footer() {
       <footer className="bg-soft-cream w-full py-20 px-margin-desktop border-t border-outline-variant mt-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-container-max mx-auto">
           <div className="md:col-span-4 mb-10 md:mb-0">
-            <div className="text-headline-lg font-headline-lg text-deep-emerald mb-6">CARATLANE</div>
+            <div className="text-headline-lg font-headline-lg text-deep-emerald mb-6">JKR</div>
             <p className="text-on-surface-variant text-sm mb-6 max-w-sm">Crafting timeless elegance for the modern connoisseur. Experience quiet luxury in every detail.</p>
             <div className="flex space-x-4 text-deep-emerald opacity-80 hover:opacity-100 transition-opacity">
               <Link aria-label="Instagram" to="/shop"><span className="material-symbols-outlined">photo_camera</span></Link>
@@ -59,7 +59,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="max-w-container-max mx-auto mt-16 pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center text-sm text-on-surface-variant">
-          <p>&copy; 2024 CaratLane. All Rights Reserved.</p>
+          <p>&copy; 2024 JKR. All Rights Reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link className="hover:text-deep-emerald" to="/account">Privacy Policy</Link>
             <Link className="hover:text-deep-emerald" to="/account">Terms of Service</Link>
@@ -73,7 +73,7 @@ export default function Footer() {
     <footer className="bg-soft-cream w-full py-20 px-margin-desktop border-t border-outline-variant mt-auto">
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-container-max mx-auto">
         <div className="md:col-span-4 mb-10 md:mb-0">
-          <div className="text-headline-lg font-headline-lg text-deep-emerald mb-6">CARATLANE</div>
+          <div className="text-headline-lg font-headline-lg text-deep-emerald mb-6">JKR</div>
           <p className="text-on-surface-variant text-sm mb-6 max-w-sm">Crafting timeless elegance for the modern connoisseur. Experience quiet luxury in every detail.</p>
           <div className="flex space-x-4 text-deep-emerald opacity-80 hover:opacity-100 transition-opacity">
             <Link aria-label="Instagram" to="/shop"><span className="material-symbols-outlined">photo_camera</span></Link>
@@ -116,7 +116,7 @@ export default function Footer() {
           </div>
       </div>
       <div className="max-w-container-max mx-auto mt-16 pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center text-sm text-on-surface-variant">
-        <p>&copy; 2024 CaratLane. All Rights Reserved.</p>
+        <p>&copy; 2024 JKR. All Rights Reserved.</p>
         <div className="flex space-x-6 mt-4 md:mt-0">
           <Link className="hover:text-deep-emerald" to="/account">Privacy Policy</Link>
           <Link className="hover:text-deep-emerald" to="/account">Terms of Service</Link>

@@ -6,7 +6,7 @@ export default function AdminLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
-    <div className="flex min-h-screen bg-soft-cream">
+    <div className="flex min-h-screen bg-surface-container-low">
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -18,11 +18,10 @@ export default function AdminLayout({ children }) {
       {/* Sidebar Navigation */}
       <SideNavBar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       
-      {/* Main Content Area - Fixed ml-64 to match Sidebar exact width */}
-      <div className="flex-1 flex flex-col md:ml-64 min-w-0 min-h-screen">
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col md:ml-64 min-w-0 h-screen overflow-hidden">
         <TopAppBar onMenuClick={() => setSidebarOpen(true)} />
-        {/* max-w-none removes container centering restrictions */}
-        <main className="flex-1 p-6 md:p-8 w-full max-w-none">
+        <main className="flex-1 overflow-y-auto p-8">
           {children}
         </main>
       </div>

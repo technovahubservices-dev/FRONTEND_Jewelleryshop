@@ -10,7 +10,7 @@ const tabs = [
   { id: 'sale', label: 'SALE' },
 ]
 
-export default function FeaturedProducts() {
+export default function FeaturedProducts({ title, description }) {
   const [activeTab, setActiveTab] = useState('all')
   const [products, setProducts] = useState([])
   const [dynamicFeatured, setDynamicFeatured] = useState([])
@@ -104,16 +104,16 @@ export default function FeaturedProducts() {
   }
 
   return (
-    <section className="w-full bg-surface-white py-16 md:py-24">
+    <section className="w-full bg-surface-white py-6 md:py-1">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-emerald mb-2">
-            Featured Products
-          </h2>
-          <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-            Handpicked selections of our most cherished pieces, crafted with exceptional care and timeless elegance.
-          </p>
+        <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-emerald mb-1">
+          {title || 'Featured Products'}
+        </h2>
+        <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
+          {description || 'Handpicked selections of our most cherished pieces, crafted with exceptional care and timeless elegance.'}
+        </p>
         </div>
 
         {/* Filter Tabs (only shown when not using dynamic featured) */}
@@ -183,7 +183,7 @@ export default function FeaturedProducts() {
 
                 <div className="text-center px-4 py-2">
                   <span className="font-label-caps text-label-caps text-xs text-on-surface-variant/70 uppercase tracking-wider">
-                    CaratLane
+                    JKR
                   </span>
                 </div>
 

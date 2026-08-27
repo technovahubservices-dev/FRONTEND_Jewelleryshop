@@ -135,7 +135,7 @@ export default function Search() {
                 </div>
                 <div className="text-center px-4 py-2">
                   <span className="font-label-caps text-label-caps text-[10px] text-on-surface-variant/70 uppercase tracking-wider">
-                    CaratLane
+                    JKR
                   </span>
                 </div>
                 <div className="px-4 pb-4 flex flex-col text-center">

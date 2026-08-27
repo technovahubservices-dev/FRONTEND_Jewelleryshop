@@ -36,7 +36,7 @@ export default function Register() {
               Create Your Account
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-3">
-              Join CaratLane to enjoy exclusive collections, seamless checkout, and personalized service.
+              Join JKR to enjoy exclusive collections, seamless checkout, and personalized service.
             </p>
           </div>
 

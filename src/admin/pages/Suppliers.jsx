@@ -183,12 +183,12 @@ export default function Suppliers() {
   }
 
   return (
-    <main className="flex-1 min-w-0 overflow-y-auto bg-soft-cream custom-scrollbar p-gutter pt-8">
-      <div className="w-full space-y-8 pb-20">
+    <div className="max-w-7xl mx-auto space-y-6">
+      <div className="space-y-8 pb-20">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="font-headline-lg text-headline-lg text-deep-emerald mb-1">Suppliers</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant">Manage supplier information, contact details, and purchase history.</p>
+            <h1 className="text-3xl font-playfair text-emerald-900 font-bold mb-1">Suppliers</h1>
+            <p className="text-sm text-gray-500">Manage supplier information, contact details, and purchase history.</p>
           </div>
           <button
             onClick={handleAddClick}
@@ -211,8 +211,9 @@ export default function Suppliers() {
           </div>
         )}
 
-        <div className="bg-surface-white p-4 rounded border border-outline-variant shadow-sm flex flex-col lg:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full lg:w-96">
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+          <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+            <div className="relative w-full lg:w-96">
             <span className="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-outline text-lg">
               search
             </span>
@@ -238,10 +239,12 @@ export default function Suppliers() {
             </div>
           </div>
         </div>
+        </div>
 
-        <div className="bg-surface-white rounded shadow-sm border border-outline-variant overflow-hidden">
-          {loading ? (
-            <div className="p-12 text-center">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+          <div className="overflow-hidden">
+            {loading ? (
+              <div className="p-12 text-center">
               <span className="material-symbols-outlined animate-spin text-4xl text-on-surface-variant">
                 progress_activity
               </span>
@@ -331,6 +334,7 @@ export default function Suppliers() {
               </table>
             </div>
           )}
+          </div>
         </div>
       </div>
 
@@ -702,6 +706,6 @@ export default function Suppliers() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   )
 }

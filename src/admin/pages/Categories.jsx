@@ -114,12 +114,11 @@ export default function Categories() {
   )
 
   return (
-    <main className="flex-1 overflow-y-auto bg-soft-cream custom-scrollbar p-gutter pt-8">
-      <div className="max-w-container-max mx-auto space-y-8 pb-20">
+    <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="font-headline-lg text-headline-lg text-deep-emerald mb-1">Category Management</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant">Manage your inventory, prices, and product details.</p>
+            <h1 className="text-3xl font-playfair text-emerald-900 font-bold mb-1">Category Management</h1>
+            <p className="text-sm text-gray-500">Manage your inventory, prices, and product details.</p>
           </div>
           <button
             onClick={openCreateModal}
@@ -142,7 +141,7 @@ export default function Categories() {
           </div>
         )}
 
-        <div className="bg-surface-white p-4 rounded border border-outline-variant shadow-sm flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col lg:flex-row gap-4 items-center justify-between">
           <div className="relative w-full lg:w-96">
             <span className="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-outline text-lg">
               search
@@ -163,7 +162,7 @@ export default function Categories() {
           </button>
         </div>
 
-        <div className="bg-surface-white rounded shadow-sm border border-outline-variant overflow-hidden">
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           {loading ? (
             <div className="p-12 text-center">
               <span className="material-symbols-outlined animate-spin text-4xl text-on-surface-variant">
@@ -257,7 +256,6 @@ export default function Categories() {
               </div>
             </>
           )}
-        </div>
       </div>
 
       {isModalOpen && (
@@ -390,6 +388,6 @@ export default function Categories() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   );
 }

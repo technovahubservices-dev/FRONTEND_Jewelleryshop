@@ -152,12 +152,12 @@ export default function Inventory() {
   )
 
   return (
-    <main className="flex-1 min-w-0 overflow-y-auto bg-soft-cream custom-scrollbar p-gutter pt-8">
+    <div className="max-w-7xl mx-auto space-y-6">
       <div className="w-full space-y-8 pb-20">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="font-headline-lg text-headline-lg text-deep-emerald mb-1">Inventory Management</h2>
-            <p className="font-body-md text-body-md text-on-surface-variant">Track stock levels, movements, and inventory value.</p>
+            <h1 className="text-3xl font-playfair text-emerald-900 font-bold mb-1">Inventory Management</h1>
+            <p className="text-sm text-gray-500">Track stock levels, movements, and inventory value.</p>
           </div>
           <button
             onClick={() => setShowAddModal(true)}
@@ -181,17 +181,19 @@ export default function Inventory() {
         )}
 
         {metrics && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             {getMetricCard('Total Products', metrics.totalProducts, 'Active SKUs', 'inventory_2', 'text-deep-emerald')}
             {getMetricCard('In Stock', metrics.inStock, 'Available', 'check_circle', 'text-deep-emerald')}
             {getMetricCard('Low Stock', metrics.lowStock, 'Below 10 units', 'warning', 'text-regal-gold')}
             {getMetricCard('Out of Stock', metrics.outOfStock, 'Needs restock', 'cancel', 'text-error')}
             {getMetricCard('Reserved Stock', metrics.reservedStock, 'Allocated', 'lock', 'text-on-surface-variant')}
-            {getMetricCard('Inventory Value', formatPrice(metrics.inventoryValue), 'At cost price', 'currency_rupee', 'text-deep-emerald')}
+              {getMetricCard('Inventory Value', formatPrice(metrics.inventoryValue), 'At cost price', 'currency_rupee', 'text-deep-emerald')}
+            </div>
           </div>
-        )}
+          )}
 
-        <div className="bg-surface-white rounded shadow-sm border border-outline-variant overflow-hidden">
+        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           <div className="p-4 border-b border-outline-variant flex flex-col lg:flex-row gap-4 items-center justify-between">
             <div className="relative w-full lg:w-96">
               <span className="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-outline text-lg">
@@ -455,6 +457,6 @@ export default function Inventory() {
           </div>
         </div>
       )}
-    </main>
+    </div>
   )
 }

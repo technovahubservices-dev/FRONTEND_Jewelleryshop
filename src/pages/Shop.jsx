@@ -229,7 +229,7 @@ export default function Shop() {
                   {/* Brand */}
                   <div className="text-center px-4 py-2">
                     <span className="font-label-caps text-label-caps text-[10px] text-on-surface-variant/70 uppercase tracking-wider">
-                      CaratLane
+                      JKR
                     </span>
                   </div>
 
