@@ -16,6 +16,36 @@ const DEFAULT_METAL_RATES = {
   'White Gold': 8600,
 }
 
+const parseNumber = (value) => {
+  if (typeof value === 'number') return value
+  if (typeof value !== 'string') return 0
+  const cleaned = value.replace(/[^0-9.\-]/g, '')
+  const num = parseFloat(cleaned)
+  return Number.isFinite(num) ? num : 0
+}
+
+const normalizeProduct = (raw) => {
+  if (!raw) return null
+  const get = (keys, fallback = '') => {
+    for (const k of keys) {
+      if (raw[k] !== undefined && raw[k] !== null && raw[k] !== '') return raw[k]
+    }
+    return fallback
+  }
+  return {
+    _id: get(['_id', 'id']) || undefined,
+    name: get(['name', 'Product Name']) || 'Unnamed Product',
+    sku: get(['sku', 'SKU']) || '',
+    metal: get(['metal', 'Metal']) || '',
+    purity: get(['purity', 'Purity']) || '',
+    weight: get(['weight', 'Weight']) || '',
+    diamondWeight: get(['diamondWeight', 'diamondWeight']) || '0',
+    diamondShape: get(['diamondShape', 'diamondShape']) || 'N/A',
+    price: Number(get(['price', 'Price']) || 0),
+    category: get(['category', 'Category']) || '',
+  }
+}
+
 const MOCK_PRODUCTS = [
   { _id: 'p1', name: 'Elegant Gold Pendant', sku: 'SKU001', metal: 'Gold', purity: '22K', weight: '3.2', diamondWeight: '0.15', diamondShape: 'Round', price: 25000, category: 'Necklaces' },
   { _id: 'p2', name: 'Diamond Stud Earrings', sku: 'SKU002', metal: 'Gold', purity: '18K', weight: '1.8', diamondWeight: '0.40', diamondShape: 'Round', price: 45000, category: 'Earrings' },
@@ -127,6 +157,7 @@ export default function CreateQuotation() {
         quantity: 1,
         discount: 0,
         gst: DEFAULT_GST,
+        price: 0,
       },
     ])
   }
@@ -150,6 +181,7 @@ export default function CreateQuotation() {
         updated[index].netWeight = selected.weight || ''
         updated[index].stoneWeight = selected.diamondWeight || ''
         updated[index].stoneType = selected.diamondShape || ''
+        updated[index].price = Number(selected.price) || 0
         const metalType = selected.metal || selected.metalColor || ''
         updated[index].metalRate = DEFAULT_METAL_RATES[metalType] || 0
         updated[index].makingCharges = 0
@@ -160,7 +192,32 @@ export default function CreateQuotation() {
       }
     }
 
-    const numericFields = ['metalRate', 'makingCharges', 'wastage', 'stoneCharges', 'quantity', 'discount', 'gst']
+    if (field === 'sku') {
+      const trimmed = String(value || '').trim()
+      if (trimmed) {
+        const matched = products.find((p) => (p.SKU || p.sku || '').toLowerCase() === trimmed.toLowerCase())
+        if (matched && matched._id && matched._id !== updated[index].productId) {
+          updated[index].productId = matched._id || matched.id || ''
+          updated[index].name = matched.name || ''
+          updated[index].metal = matched.metal || matched.metalColor || ''
+          updated[index].purity = matched.purity || ''
+          updated[index].grossWeight = matched.weight || ''
+          updated[index].netWeight = matched.weight || ''
+          updated[index].stoneWeight = matched.diamondWeight || ''
+          updated[index].stoneType = matched.diamondShape || ''
+          updated[index].price = Number(matched.price) || 0
+          const metalType = matched.metal || matched.metalColor || ''
+          updated[index].metalRate = DEFAULT_METAL_RATES[metalType] || 0
+          updated[index].makingCharges = 0
+          updated[index].wastage = 0
+          updated[index].stoneCharges = 0
+          updated[index].discount = 0
+          updated[index].gst = DEFAULT_GST
+        }
+      }
+    }
+
+    const numericFields = ['metalRate', 'makingCharges', 'wastage', 'stoneCharges', 'quantity', 'discount', 'gst', 'price']
     if (numericFields.includes(field)) {
       updated[index][field] = Number(value) || 0
     }
@@ -226,13 +283,15 @@ export default function CreateQuotation() {
             'Wastage': 'wastage',
             'Stone Charges': 'stoneCharges',
             'Discount': 'discount',
+            'Discount %': 'discount',
             'GST': 'gst',
             'GST %': 'gst',
+            'GST Percentage': 'gst',
           }
 
           const normalizeKey = (key) => {
             const trimmed = String(key || '').trim()
-            return columnMap[trimmed] || trimmed.toLowerCase().replace(/\s+/g, '')
+            return columnMap[trimmed] || columnMap[trimmed.toUpperCase()] || trimmed.toLowerCase().replace(/\s+/g, '')
           }
 
           const mappedItems = rawData.map((row, index) => {
@@ -242,14 +301,14 @@ export default function CreateQuotation() {
               item[normalized] = row[key]
             })
 
-            item.quantity = Number(item.quantity) || 1
-            item.price = Number(item.price) || 0
-            item.metalRate = Number(item.metalRate) || 0
-            item.makingCharges = Number(item.makingCharges) || 0
-            item.wastage = Number(item.wastage) || 0
-            item.stoneCharges = Number(item.stoneCharges) || 0
-            item.discount = Number(item.discount) || 0
-            item.gst = Number(item.gst) || 18
+            item.quantity = parseNumber(item.quantity) || 1
+            item.price = parseNumber(item.price) || 0
+            item.metalRate = parseNumber(item.metalRate) || 0
+            item.makingCharges = parseNumber(item.makingCharges) || 0
+            item.wastage = parseNumber(item.wastage) || 0
+            item.stoneCharges = parseNumber(item.stoneCharges) || 0
+            item.discount = parseNumber(item.discount) || 0
+            item.gst = parseNumber(item.gst) || 18
             item.grossWeight = String(item.grossWeight || '')
             item.netWeight = String(item.netWeight || '')
             item.stoneWeight = String(item.stoneWeight || '')
@@ -286,13 +345,14 @@ export default function CreateQuotation() {
       netWeight: item.netWeight || '',
       stoneWeight: item.stoneWeight || '',
       stoneType: item.stoneType || '',
-      metalRate: Number(item.metalRate) || 0,
-      makingCharges: Number(item.makingCharges) || 0,
-      wastage: Number(item.wastage) || 0,
-      stoneCharges: Number(item.stoneCharges) || 0,
-      quantity: Number(item.quantity) || 1,
-      discount: Number(item.discount) || 0,
-      gst: Number(item.gst) || 18,
+      metalRate: parseNumber(item.metalRate) || 0,
+      makingCharges: parseNumber(item.makingCharges) || 0,
+      wastage: parseNumber(item.wastage) || 0,
+      stoneCharges: parseNumber(item.stoneCharges) || 0,
+      quantity: parseNumber(item.quantity) || 1,
+      discount: parseNumber(item.discount) || 0,
+      gst: parseNumber(item.gst) || 18,
+      price: parseNumber(item.price) || 0,
     }))
     setItems(importedItems)
     setExcelPreview([])
@@ -312,65 +372,59 @@ export default function CreateQuotation() {
   const calculations = items.reduce(
     (acc, item) => {
       const qty = item.quantity || 0
-      const metalRate = Number(item.metalRate) || 0
-      const netWeight = Number(item.netWeight) || 0
-      const makingCharges = Number(item.makingCharges) || 0
-      const wastage = Number(item.wastage) || 0
-      const stoneCharges = Number(item.stoneCharges) || 0
-      const discount = Number(item.discount) || 0
-      const gst = Number(item.gst) || 0
+      const price = parseNumber(item.price) || 0
+      const discountPercent = parseNumber(item.discount) || 0
+      const gstPercent = parseNumber(item.gst) || 0
 
-      const metalValue = metalRate * netWeight
-      const subtotal = metalValue + makingCharges + wastage + stoneCharges
-      const taxableAmount = Math.max(0, subtotal - discount)
-      const gstAmount = taxableAmount * (gst / 100)
-      const lineTotal = taxableAmount + gstAmount
+      const basePriceTotal = qty * price
+      const discountAmount = basePriceTotal * (discountPercent / 100)
+      const taxableValue = Math.max(0, basePriceTotal - discountAmount)
+      const gstAmount = taxableValue * (gstPercent / 100)
+      const lineTotal = taxableValue + gstAmount
 
-      acc.subtotal += subtotal
-      acc.metalValue += metalValue
-      acc.makingCharges += makingCharges
-      acc.wastage += wastage
-      acc.stoneCharges += stoneCharges
-      acc.discount += discount
-      acc.gst += gstAmount
-      acc.total += lineTotal
+      acc.totalQuantity += qty
+      acc.totalGrossAmount += basePriceTotal
+      acc.totalDiscount += discountAmount
+      acc.totalGst += gstAmount
+      acc.grandTotal += lineTotal
       return acc
     },
-    { subtotal: 0, metalValue: 0, makingCharges: 0, wastage: 0, stoneCharges: 0, discount: 0, gst: 0, total: 0 }
+    { totalQuantity: 0, totalGrossAmount: 0, totalDiscount: 0, totalGst: 0, grandTotal: 0 }
   )
 
   const handleSave = async (saveStatus) => {
     setSaving(true)
-    const quotationData = {
-      customer: {
-        name: customer.name,
-        phone: customer.phone,
-        email: customer.email,
-        address: customer.address,
-      },
-      validUntil,
-      items: items.map((item) => ({
-        productId: item.productId || '',
-        name: item.name,
-        sku: item.sku,
-        hsn: item.hsn,
-        metal: item.metal,
-        purity: item.purity,
-        grossWeight: item.grossWeight,
-        netWeight: item.netWeight,
-        stoneWeight: item.stoneWeight,
-        stoneType: item.stoneType,
-        metalRate: Number(item.metalRate) || 0,
-        makingCharges: Number(item.makingCharges) || 0,
-        wastage: Number(item.wastage) || 0,
-        stoneCharges: Number(item.stoneCharges) || 0,
-        quantity: Number(item.quantity) || 1,
-        discount: Number(item.discount) || 0,
-        gst: Number(item.gst) || 0,
-      })),
-      notes,
-      status: saveStatus,
-    }
+      const quotationData = {
+        customer: {
+          name: customer.name,
+          phone: customer.phone,
+          email: customer.email,
+          address: customer.address,
+        },
+        validUntil,
+        items: items.map((item) => ({
+          productId: item.productId || '',
+          name: item.name,
+          sku: item.sku,
+          hsn: item.hsn,
+          metal: item.metal,
+          purity: item.purity,
+          grossWeight: item.grossWeight,
+          netWeight: item.netWeight,
+          stoneWeight: item.stoneWeight,
+          stoneType: item.stoneType,
+          metalRate: parseNumber(item.metalRate) || 0,
+          makingCharges: parseNumber(item.makingCharges) || 0,
+          wastage: parseNumber(item.wastage) || 0,
+          stoneCharges: parseNumber(item.stoneCharges) || 0,
+          quantity: parseNumber(item.quantity) || 1,
+          discount: parseNumber(item.discount) || 0,
+          gst: parseNumber(item.gst) || 0,
+          price: parseNumber(item.price) || 0,
+        })),
+        notes,
+        status: saveStatus,
+      }
 
     if (editingQuotation?.quotationNumber) {
       quotationData.quotationNumber = editingQuotation.quotationNumber
@@ -471,28 +525,24 @@ export default function CreateQuotation() {
     const tableColumn = ['Product', 'SKU', 'Metal', 'Purity', 'Qty', 'Price', 'Discount', 'GST', 'Total']
     const tableRows = items.map((item) => {
       const qty = item.quantity || 0
-      const metalRate = Number(item.metalRate) || 0
-      const netWeight = Number(item.netWeight) || 0
-      const makingCharges = Number(item.makingCharges) || 0
-      const wastage = Number(item.wastage) || 0
-      const stoneCharges = Number(item.stoneCharges) || 0
-      const discount = Number(item.discount) || 0
-      const gst = Number(item.gst) || 0
+      const price = parseNumber(item.price) || 0
+      const discountPercent = parseNumber(item.discount) || 0
+      const gstPercent = parseNumber(item.gst) || 0
 
-      const metalValue = metalRate * netWeight
-      const subtotal = metalValue + makingCharges + wastage + stoneCharges
-      const taxableAmount = Math.max(0, subtotal - discount)
-      const gstAmount = taxableAmount * (gst / 100)
-      const lineTotal = taxableAmount + gstAmount
+      const basePriceTotal = qty * price
+      const discountAmount = basePriceTotal * (discountPercent / 100)
+      const taxableValue = Math.max(0, basePriceTotal - discountAmount)
+      const gstAmount = taxableValue * (gstPercent / 100)
+      const lineTotal = taxableValue + gstAmount
       return [
         item.name || '-',
         item.sku || '-',
         item.metal || '-',
         item.purity || '-',
         qty.toString(),
-        `₹ ${subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-        `₹ ${discount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-        `${gst}%`,
+        `₹ ${basePriceTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        `₹ ${discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        `${gstPercent}%`,
         `₹ ${lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
       ]
     })
@@ -510,9 +560,35 @@ export default function CreateQuotation() {
     y = doc.lastAutoTable.finalY + 10
 
     doc.setFont('helvetica', 'bold')
+    doc.text('Total Items', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(String(calculations.totalQuantity), pageWidth - margin, y, { align: 'right' })
+    y += 8
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Gross Amount', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`₹ ${calculations.totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+    y += 8
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Total Discount', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`- ₹ ${calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+    y += 8
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Total GST', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`₹ ${calculations.totalGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+    y += 10
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
     doc.text('Grand Total', margin, y)
     doc.setFont('helvetica', 'normal')
-    doc.text(`₹ ${calculations.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+    doc.setFontSize(12)
+    doc.text(`₹ ${calculations.grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
     y += 12
 
     if (notes) {
@@ -742,7 +818,7 @@ export default function CreateQuotation() {
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                       <div className="md:col-span-2">
                         <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2 text-[11px]">Product Name</label>
                         <select value={item.productId} onChange={(e) => updateItem(index, 'productId', e.target.value)} className="w-full bg-surface border border-outline-variant rounded-none px-3 py-2.5 text-sm font-body-md text-charcoal-text focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors">
@@ -759,6 +835,10 @@ export default function CreateQuotation() {
                       <div>
                         <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2 text-[11px]">Qty</label>
                         <input type="number" min="1" value={item.quantity} onChange={(e) => updateItem(index, 'quantity', e.target.value)} className="w-full bg-surface border border-outline-variant rounded-none px-3 py-2.5 text-sm font-body-md text-charcoal-text focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors" />
+                      </div>
+                      <div>
+                        <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2 text-[11px]">Price (₹)</label>
+                        <input type="number" min="0" step="0.01" value={item.price} onChange={(e) => updateItem(index, 'price', e.target.value)} className="w-full bg-surface border border-outline-variant rounded-none px-3 py-2.5 text-sm font-body-md text-charcoal-text focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors" placeholder="Auto-filled" />
                       </div>
                     </div>
 
@@ -853,36 +933,24 @@ export default function CreateQuotation() {
             <h2 className="font-headline-md text-headline-md text-deep-emerald mb-4">Summary</h2>
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Metal Value</span>
-                <span className="text-charcoal-text font-medium">₹ {calculations.metalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                <span className="text-on-surface-variant">Total Items</span>
+                <span className="text-charcoal-text font-medium">{calculations.totalQuantity}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Making Charges</span>
-                <span className="text-charcoal-text font-medium">₹ {calculations.makingCharges.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                <span className="text-on-surface-variant">Gross Amount</span>
+                <span className="text-charcoal-text font-medium">₹ {calculations.totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Wastage</span>
-                <span className="text-charcoal-text font-medium">₹ {calculations.wastage.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                <span className="text-on-surface-variant">Total Discount</span>
+                <span className="text-charcoal-text font-medium">- ₹ {calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Stone Charges</span>
-                <span className="text-charcoal-text font-medium">₹ {calculations.stoneCharges.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Subtotal</span>
-                <span className="text-charcoal-text font-medium">₹ {calculations.subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Discount</span>
-                <span className="text-charcoal-text font-medium">- ₹ {calculations.discount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">GST</span>
-                <span className="text-charcoal-text font-medium">₹ {calculations.gst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                <span className="text-on-surface-variant">Total GST</span>
+                <span className="text-charcoal-text font-medium">₹ {calculations.totalGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
               </div>
               <div className="border-t border-outline-variant pt-3 flex justify-between items-center">
                 <span className="text-sm font-semibold text-charcoal-text">Grand Total</span>
-                <span className="text-lg font-bold text-deep-emerald">₹ {calculations.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                <span className="text-lg font-bold text-deep-emerald">₹ {calculations.grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
               </div>
             </div>
           </div>
@@ -983,19 +1051,15 @@ export default function CreateQuotation() {
                   <tbody className="divide-y divide-gray-100">
                     {items.map((item, index) => {
                       const qty = item.quantity || 0
-                      const metalRate = Number(item.metalRate) || 0
-                      const netWeight = Number(item.netWeight) || 0
-                      const makingCharges = Number(item.makingCharges) || 0
-                      const wastage = Number(item.wastage) || 0
-                      const stoneCharges = Number(item.stoneCharges) || 0
-                      const discount = Number(item.discount) || 0
-                      const gst = Number(item.gst) || 0
+                      const price = parseNumber(item.price) || 0
+                      const discountPercent = parseNumber(item.discount) || 0
+                      const gstPercent = parseNumber(item.gst) || 0
 
-                      const metalValue = metalRate * netWeight
-                      const subtotal = metalValue + makingCharges + wastage + stoneCharges
-                      const taxableAmount = Math.max(0, subtotal - discount)
-                      const gstAmount = taxableAmount * (gst / 100)
-                      const lineTotal = taxableAmount + gstAmount
+                      const basePriceTotal = qty * price
+                      const discountAmount = basePriceTotal * (discountPercent / 100)
+                      const taxableValue = Math.max(0, basePriceTotal - discountAmount)
+                      const gstAmount = taxableValue * (gstPercent / 100)
+                      const lineTotal = taxableValue + gstAmount
 
                       return (
                         <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
@@ -1004,9 +1068,9 @@ export default function CreateQuotation() {
                           <td className="py-3 px-3 text-sm text-gray-600">{item.metal || '-'}</td>
                           <td className="py-3 px-3 text-sm text-gray-600">{item.purity || '-'}</td>
                           <td className="py-3 px-3 text-sm text-gray-600 text-right">{qty}</td>
-                          <td className="py-3 px-3 text-sm text-gray-600 text-right">₹ {subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                          <td className="py-3 px-3 text-sm text-gray-600 text-right">₹ {discount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                          <td className="py-3 px-3 text-sm text-gray-600 text-right">{gst}%</td>
+                          <td className="py-3 px-3 text-sm text-gray-600 text-right">₹ {basePriceTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                          <td className="py-3 px-3 text-sm text-gray-600 text-right">₹ {discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                          <td className="py-3 px-3 text-sm text-gray-600 text-right">{gstPercent}%</td>
                           <td className="py-3 px-3 text-sm text-deep-emerald font-semibold text-right">₹ {lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                         </tr>
                       )
@@ -1020,20 +1084,24 @@ export default function CreateQuotation() {
                 <div className="w-72">
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Subtotal</span>
-                      <span className="text-gray-900 font-medium">₹ {calculations.subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      <span className="text-gray-500">Total Items</span>
+                      <span className="text-gray-900 font-medium">{calculations.totalQuantity}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Discount</span>
-                      <span className="text-gray-900 font-medium">- ₹ {calculations.discount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      <span className="text-gray-500">Gross Amount</span>
+                      <span className="text-gray-900 font-medium">₹ {calculations.totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">GST</span>
-                      <span className="text-gray-900 font-medium">₹ {calculations.gst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      <span className="text-gray-500">Total Discount</span>
+                      <span className="text-gray-900 font-medium">- ₹ {calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Total GST</span>
+                      <span className="text-gray-900 font-medium">₹ {calculations.totalGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                     </div>
                     <div className="border-t-2 border-deep-emerald pt-2 flex justify-between items-center">
                       <span className="text-base font-bold text-gray-900">Grand Total</span>
-                      <span className="text-xl font-bold text-deep-emerald">₹ {calculations.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      <span className="text-xl font-bold text-deep-emerald">₹ {calculations.grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                     </div>
                   </div>
                 </div>
@@ -1052,9 +1120,9 @@ export default function CreateQuotation() {
                 <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Terms & Conditions</h3>
                 <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
                   <li>This quotation is valid for 30 days from the date of issue.</li>
-                  <li>Prices are subject to change based on market gold rates.</li>
-                  <li>GST is calculated as per current applicable rates.</li>
-                  <li>Making charges and wastage are approximate and may vary.</li>
+                  <li>Prices are per piece and inclusive of applicable discounts unless otherwise stated.</li>
+                  <li>GST is calculated as per current applicable rates on the taxable value.</li>
+                  <li>Designs, colors, and plating may vary slightly from the displayed images.</li>
                   <li>Payment must be made in full before dispatch.</li>
                 </ul>
               </div>

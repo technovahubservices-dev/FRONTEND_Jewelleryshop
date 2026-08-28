@@ -10,6 +10,7 @@ import Register from '../pages/Register'
 import Search from '../pages/Search'
 import OrderConfirmation from '../pages/OrderConfirmation'
 import OrdersHistory from '../pages/OrdersHistory'
+import Tracking from '../pages/Tracking'
 import Payment from '../pages/Payment'
 import Wishlist from '../pages/Wishlist'
 import Addresses from '../pages/Addresses'
@@ -25,6 +26,7 @@ import Inventory from '../admin/pages/Inventory'
 import Suppliers from '../admin/pages/Suppliers'
 import Production from '../admin/pages/Production'
 import Orders from '../admin/pages/Orders'
+import Customers from '../admin/pages/Customers'
 import ContentManagement from '../admin/pages/ContentManagement'
 import AdminSettings from '../admin/pages/Settings'
 import NotFound from '../pages/NotFound'
@@ -61,6 +63,7 @@ export default function AppRoutes() {
       <Route path="/order-confirmation" element={<OrderConfirmation />} />
       <Route path="/payment" element={<Payment />} />
       <Route path="/account/orders" element={<OrdersHistory />} />
+      <Route path="/account/tracking" element={<Tracking />} />
       <Route path="/account/wishlist" element={<Wishlist />} />
       <Route path="/account/addresses" element={<Addresses />} />
       <Route path="/account/settings" element={<Settings />} />
@@ -127,6 +130,14 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminLayout><Orders /></AdminLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/customers"
+        element={
+          <AdminRoute>
+            <AdminLayout><Customers /></AdminLayout>
           </AdminRoute>
         }
       />

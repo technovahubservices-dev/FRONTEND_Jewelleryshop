@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react'
+import { createContext, useState, useEffect, useContext, useCallback } from 'react'
 import { orderAPI, productAPI } from '../services/api'
 
 const isValidObjectId = (id) => {
@@ -30,7 +30,7 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem('cart', JSON.stringify(cartItems))
   }, [cartItems])
 
-  const validateCart = async () => {
+  const validateCart = useCallback(async () => {
     if (cartItems.length === 0) {
       setValidationErrors([])
       return { valid: true, errors: [] }
@@ -101,7 +101,7 @@ export const CartProvider = ({ children }) => {
     } finally {
       setValidating(false)
     }
-  }
+  }, [cartItems])
 
   const removeInvalidItems = () => {
     const invalidIds = new Set(validationErrors.map((e) => e.id))

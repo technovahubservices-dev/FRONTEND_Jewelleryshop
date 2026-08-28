@@ -11,7 +11,7 @@ const TABS = [
 ]
 
 const DEFAULT_SETTINGS = {
-  announcementText: 'Explore our new Heritage Collection.',
+  announcementText: 'welcome to jkr. 10% offer earrings! 20% offer Rings!.. 10% offer Necklace!....',
   announcementActive: true,
   announcementBgColor: '#013220',
   announcementTextColor: '#ffffff',

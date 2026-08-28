@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { orderAPI } from '../../services/api'
+import * as XLSX from 'xlsx'
 
 const ORDER_STATES = [
   { value: 'new', label: 'New' },
@@ -86,6 +87,59 @@ export default function Orders() {
       setError(err.response?.data?.message || 'Failed to fetch orders')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDownloadExcel = () => {
+    if (!filteredOrders.length) {
+      setError('No orders available to export')
+      setSuccessMessage('')
+      return
+    }
+
+    try {
+      const exportData = filteredOrders.map((order) => ({
+        'Order ID': (order._id || order.id).toString().slice(-6).toUpperCase(),
+        'Date': formatDate(order.createdAt),
+        'Customer': order.user?.name || order.user?.email || 'Guest',
+        'Email': order.user?.email || '',
+        'Items': (order.items || []).map((item) => item.name).join(', '),
+        'Total Qty': (order.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0),
+        'Total Amount': Number(order.totalPrice || 0),
+        'Payment Method': (order.paymentMethod || '').toUpperCase(),
+        'Payment Status': (order.paymentStatus || '').toUpperCase(),
+        'Order Status': (order.status || '').toUpperCase(),
+        'Shipping Status': (order.shippingStatus || '').toUpperCase(),
+        'Tracking Number': order.trackingNumber || '',
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData)
+
+      worksheet['!cols'] = [
+        { wch: 14 },
+        { wch: 20 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 40 },
+        { wch: 10 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 24 },
+      ]
+
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders')
+      XLSX.writeFile(workbook, 'orders.xlsx')
+
+      setSuccessMessage('Orders downloaded successfully')
+      setError('')
+    } catch (err) {
+      console.error('Excel export error:', err)
+      setError('Failed to download Excel file')
+      setSuccessMessage('')
     }
   }
 
@@ -326,6 +380,15 @@ export default function Orders() {
                 ))}
               </select>
             </div>
+            <button
+              type="button"
+              onClick={handleDownloadExcel}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-[10px] rounded hover:bg-surface-container-low transition-colors"
+              title="Download Excel"
+            >
+              <span className="material-symbols-outlined text-sm">download</span>
+              Export
+            </button>
           </div>
         </div>
 

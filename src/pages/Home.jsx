@@ -4,7 +4,7 @@ import FeaturedProducts from '../components/sections/FeaturedProducts'
 import { contentAPI, productAPI } from '../services/api'
 import { useCart } from '../context/CartContext'
 import TestimonialSection from '../components/sections/TestimonialSection'
-import heroPageImage from '../assets/images/hero page.jpg'
+import heroPageImage from '../assets/images/homepage.png'
 
 const DEFAULT_CATEGORIES = [
   { id: 'rings', name: 'Rings', image: 'https://cdn.orra.co.in/media/catalog/product/cache/10238651d5f95594b9023f998383bb67/e/r/erg26k54_2_tbruvc5lylrqqokd.jpg', link: '/shop?category=rings' },
@@ -230,7 +230,7 @@ export default function Home() {
           >
             <div className="relative aspect-square bg-surface-container-low flex items-center justify-center p-6 cursor-pointer" onClick={() => handleViewProduct(product)}>
               <img
-                className="w-full h-full object-contain img-hover-zoom max-h-full max-w-full"
+                className="w-full"
                 alt={product.name}
                 src={product.image}
                 onError={(e) => {
@@ -295,59 +295,54 @@ export default function Home() {
   return (
     <main className="w-full flex flex-col">
       {/* Hero Section */}
-      <section className="w-full h-[60vh] md:h-[75vh] relative overflow-hidden bg-black">
-        <div className="relative w-full h-full">
-          {heroImages.map((image, index) => {
-            const isActive = index === currentImage
-            return (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-700 ${isActive ? 'opacity-100' : 'opacity-0'}`}
-              >
-                <img
-                  src={image}
-                  alt={isActive ? (activeHero?.title || 'Hero') : ''}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/15"></div>
-              </div>
-            )
-          })}
+      <section className="w-full relative overflow-hidden bg-[#f8f0df]">
+  <div className="relative w-full">
+    {heroImages.map((image, index) => {
+      const isActive = index === currentImage
+
+      return (
+        <div
+          key={index}
+          className={`${
+            isActive
+              ? "relative opacity-100"
+              : "absolute inset-0 opacity-0 pointer-events-none"
+          } transition-opacity duration-700`}
+        >
+          <img
+            src={image}
+            alt={isActive ? (activeHero?.title || "JKR Jewellery Offers") : ""}
+            className="w-full h-auto block object-contain"
+          />
+
+          <div className="absolute inset-0 bg-black/5"></div>
         </div>
+      )
+    })}
+  </div>
 
-        {heroImages.length > 1 && (
-          <>
-            <button
-              onClick={() => setCurrentImage((prev) => (prev - 1 + heroImages.length) % heroImages.length)}
-              className="absolute left-0 top-0 h-full w-1/3 z-20 cursor-pointer bg-transparent"
-              aria-label="Previous slide"
-            />
-            <button
-              onClick={() => setCurrentImage((prev) => (prev + 1) % heroImages.length)}
-              className="absolute right-0 top-0 h-full w-1/3 z-20 cursor-pointer bg-transparent"
-              aria-label="Next slide"
-            />
-          </>
-        )}
+  {heroImages.length > 1 && (
+    <>
+      <button
+        onClick={() =>
+          setCurrentImage(
+            (prev) => (prev - 1 + heroImages.length) % heroImages.length
+          )
+        }
+        className="absolute left-0 top-0 h-full w-1/3 z-20 cursor-pointer bg-transparent"
+        aria-label="Previous slide"
+      />
 
-        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-          <div className="relative z-10 text-center px-4 max-w-3xl mt-20 pointer-events-auto">
-            <p className="font-label-caps text-label-caps uppercase tracking-widest text-surface-white mb-4 drop-shadow-md">
-              {activeHero?.subtitle || heroSubtitle || ''}
-            </p>
-            <h1 className="font-display-lg text-display-lg md:text-[64px] text-surface-white leading-tight mb-8 drop-shadow-lg">
-              {activeHero?.title || heroTitle || ''}
-            </h1>
-            {heroDescription && (
-              <p className="font-body-md text-body-md text-surface-white mb-6 drop-shadow-md max-w-2xl mx-auto">
-                {heroDescription}
-              </p>
-            )}
-            
-          </div>
-        </div>
-      </section>
-
+      <button
+        onClick={() =>
+          setCurrentImage((prev) => (prev + 1) % heroImages.length)
+        }
+        className="absolute right-0 top-0 h-full w-1/3 z-20 cursor-pointer bg-transparent"
+        aria-label="Next slide"
+      />
+    </>
+  )}
+</section>
       {/* Explore Our Categories Section */}
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10">
         <div className="text-center mb-10">

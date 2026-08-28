@@ -15,6 +15,7 @@ export default function SideNavBar({ isOpen, onClose }) {
     { name: 'Suppliers', icon: 'fa-solid fa-truck-field', path: '/admin/suppliers' },
     { name: 'Production', icon: 'fa-solid fa-industry', path: '/admin/production' },
     { name: 'Orders', icon: 'fa-solid fa-bag-shopping', path: '/admin/orders' },
+    { name: 'Customers', icon: 'fa-solid fa-users', path: '/admin/customers' },
     { name: 'Quotations', icon: 'fa-solid fa-file-invoice', path: '/admin/quotations' },
     { name: 'Content Management', icon: 'fa-regular fa-file-lines', path: '/admin/content' },
     { name: 'Settings', icon: 'fa-solid fa-gear', path: '/admin/settings' },

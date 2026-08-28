@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { inventoryAPI, productAPI } from '../../services/api'
+import * as XLSX from 'xlsx'
 
 const MOVEMENT_TYPES = [
   { value: 'opening_stock', label: 'Opening Stock', color: 'bg-blue-100 text-blue-800 border-blue-200' },
@@ -76,6 +77,63 @@ export default function Inventory() {
     if (typeFilter === 'all') return true
     return movement.movementType === typeFilter
   })
+
+  const handleDownloadExcel = () => {
+    if (!filteredMovements.length) {
+      setError('No inventory movements available to export')
+      setSuccessMessage('')
+      return
+    }
+
+    try {
+      const exportData = filteredMovements.map((m) => ({
+        Date: new Date(m.createdAt).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        Product: m.product?.name || '',
+        SKU: m.product?.sku || '',
+        Category: m.product?.category || '',
+        'Movement Type': (m.movementType || '').toUpperCase(),
+        Quantity: m.quantity || 0,
+        'Previous Stock': m.previousStock || 0,
+        'New Stock': m.newStock || 0,
+        'Reference ID': m.referenceId || '',
+        'Reference Type': m.referenceType || '',
+        Notes: m.notes || '',
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData)
+
+      worksheet['!cols'] = [
+        { wch: 20 },
+        { wch: 30 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 12 },
+        { wch: 16 },
+        { wch: 16 },
+        { wch: 20 },
+        { wch: 18 },
+        { wch: 40 },
+      ]
+
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Inventory Movements')
+      XLSX.writeFile(workbook, 'inventory.xlsx')
+
+      setSuccessMessage('Inventory downloaded successfully')
+      setError('')
+    } catch (err) {
+      console.error('Excel export error:', err)
+      setError('Failed to download Excel file')
+      setSuccessMessage('')
+    }
+  }
 
   const handleAddMovement = async (e) => {
     e.preventDefault()
@@ -218,10 +276,19 @@ export default function Inventory() {
                   {MOVEMENT_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
-                </select>
-              </div>
+              </select>
+              <button
+                type="button"
+                onClick={handleDownloadExcel}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-[10px] rounded hover:bg-surface-container-low transition-colors"
+                title="Download Excel"
+              >
+                <span className="material-symbols-outlined text-sm">download</span>
+                Export
+              </button>
             </div>
           </div>
+        </div>
 
           {loading ? (
             <div className="p-12 text-center">

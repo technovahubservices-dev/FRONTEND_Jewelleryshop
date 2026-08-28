@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { quotationAPI, orderAPI } from '../../services/api'
+import * as XLSX from 'xlsx'
 
 const QUOTATION_STATUSES = [
   { value: 'draft', label: 'Draft' },
@@ -101,6 +102,55 @@ export default function Quotations() {
   const handlePDF = (quotation) => {
     setViewQuotation(quotation)
     setTimeout(() => window.print(), 300)
+  }
+
+  const handleDownloadExcel = () => {
+    if (!filteredQuotations.length) {
+      setError('No quotations available to export')
+      setSuccessMessage('')
+      return
+    }
+
+    try {
+      const exportData = filteredQuotations.map((q) => ({
+        'Quotation Number': q.quotationNumber || '',
+        Date: formatDate(q.date),
+        'Customer Name': q.customerName || '',
+        Email: q.email || '',
+        Phone: q.phone || '',
+        Address: q.address || '',
+        'Valid Until': formatDate(q.validUntil),
+        'Total Amount': Number(q.totalAmount || 0),
+        Status: (q.status || '').toUpperCase(),
+        Notes: q.notes || '',
+      }))
+
+      const worksheet = XLSX.utils.json_to_sheet(exportData)
+
+      worksheet['!cols'] = [
+        { wch: 18 },
+        { wch: 20 },
+        { wch: 25 },
+        { wch: 30 },
+        { wch: 18 },
+        { wch: 40 },
+        { wch: 18 },
+        { wch: 18 },
+        { wch: 14 },
+        { wch: 40 },
+      ]
+
+      const workbook = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Quotations')
+      XLSX.writeFile(workbook, 'quotations.xlsx')
+
+      setSuccessMessage('Quotations downloaded successfully')
+      setError('')
+    } catch (err) {
+      console.error('Excel export error:', err)
+      setError('Failed to download Excel file')
+      setSuccessMessage('')
+    }
   }
 
   const formatCurrency = (amount) => {
@@ -227,6 +277,15 @@ export default function Quotations() {
                 <option key={s.value} value={s.value}>{s.label}</option>
               ))}
             </select>
+            <button
+              type="button"
+              onClick={handleDownloadExcel}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-[10px] rounded hover:bg-surface-container-low transition-colors"
+              title="Download Excel"
+            >
+              <span className="material-symbols-outlined text-sm">download</span>
+              Export
+            </button>
           </div>
         </div>
       </div>

@@ -83,6 +83,7 @@ export const productAPI = {
 };
 
 export const userAPI = {
+  getAll: (params) => api.get('/users', { params }),
   getProfile: () => api.get('/users/profile'),
   updateProfile: (data) => api.put('/users/profile', data),
   changePassword: (data) => api.put('/users/password', data),
