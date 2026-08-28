@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { orderAPI } from '../../services/api'
 
@@ -45,6 +46,7 @@ const ORDER_WORKFLOW = {
 
 export default function Orders() {
   const { isAdmin } = useAuth()
+  const navigate = useNavigate()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -455,12 +457,23 @@ export default function Orders() {
                   Placed on {formatDate(viewOrder.createdAt)}
                 </p>
               </div>
-              <button
-                onClick={() => setViewOrder(null)}
-                className="text-on-surface-variant hover:text-deep-emerald transition-colors"
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {viewOrder.quotationId && (
+                  <button
+                    onClick={() => navigate('/admin/quotations')}
+                    className="px-3 py-1.5 text-xs font-label-caps text-deep-emerald border border-outline-variant rounded hover:bg-surface-container-low transition-colors"
+                    title="View related quotation"
+                  >
+                    Quotation #{viewOrder.quotationId.quotationNumber?.toString().slice(-6).toUpperCase()}
+                  </button>
+                )}
+                <button
+                  onClick={() => setViewOrder(null)}
+                  className="text-on-surface-variant hover:text-deep-emerald transition-colors"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6">

@@ -10,7 +10,7 @@ const isValidObjectId = (id) => {
 
 export default function Checkout() {
   const navigate = useNavigate()
-  const { cartItems, subtotal, placeOrder, clearCart, validateCart, validationErrors } = useCart()
+  const { cartItems, subtotal, finalTotal, couponDiscount, appliedCoupon, placeOrder, clearCart, validateCart, validationErrors } = useCart()
   const { user } = useAuth()
   const [formData, setFormData] = useState({
     fullName: user?.name || '',
@@ -81,7 +81,8 @@ export default function Checkout() {
         itemsPrice: subtotal,
         taxPrice: Math.round(subtotal * 0.03),
         shippingPrice: subtotal >= 5000 ? 0 : 150,
-        totalPrice: subtotal + Math.round(subtotal * 0.03) + (subtotal >= 5000 ? 0 : 150),
+        discount: couponDiscount,
+        totalPrice: finalTotal + Math.round(subtotal * 0.03) + (subtotal >= 5000 ? 0 : 150),
       }
 
       const order = await placeOrder(orderData, idempotencyKey)
@@ -100,7 +101,7 @@ export default function Checkout() {
 
   const shippingCost = subtotal >= 5000 ? 0 : 150
   const tax = Math.round(subtotal * 0.03)
-  const total = subtotal + tax + shippingCost
+  const total = finalTotal + tax + shippingCost
 
   return (
     <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 md:py-20 grid grid-cols-1 lg:grid-cols-12 gap-gutter">
@@ -277,6 +278,12 @@ export default function Checkout() {
               <span>Subtotal ({cartItems.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
               <span>₹ {subtotal.toLocaleString('en-IN')}</span>
             </div>
+            {couponDiscount > 0 && (
+              <div className="flex justify-between">
+                <span>Discount ({appliedCoupon?.code})</span>
+                <span className="text-deep-emerald font-semibold">- ₹ {couponDiscount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Shipping</span>
               <span className={shippingCost === 0 ? "text-deep-emerald font-semibold" : ""}>

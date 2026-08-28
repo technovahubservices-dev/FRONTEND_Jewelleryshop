@@ -96,6 +96,15 @@ export const userAPI = {
   removeFromWishlist: (productId) => api.delete(`/users/wishlist/${productId}`),
 };
 
+export const couponAPI = {
+  getAll: (params) => api.get('/coupons', { params }),
+  getById: (id) => api.get(`/coupons/${id}`),
+  create: (data) => api.post('/coupons', data),
+  update: (id, data) => api.put(`/coupons/${id}`, data),
+  delete: (id) => api.delete(`/coupons/${id}`),
+  validate: (data) => api.post('/coupons/validate', data),
+};
+
 export const orderAPI = {
   create: (orderData) => api.post('/orders', orderData),
   getAll: () => api.get('/orders'),

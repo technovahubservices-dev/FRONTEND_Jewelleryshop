@@ -329,6 +329,15 @@ export default function Quotations() {
                         >
                           <span className="material-symbols-outlined text-s">print</span>
                         </button>
+                        {quotation.status === 'converted' && quotation.orderId && (
+                          <button
+                            onClick={() => navigate('/admin/orders')}
+                            className="p-1.5 text-on-surface-variant hover:text-deep-emerald hover:bg-surface-container-low rounded transition-colors"
+                            title="View Order"
+                          >
+                            <span className="material-symbols-outlined text-s">receipt_long</span>
+                          </button>
+                        )}
                         {quotation.status === 'accepted' && (
                           <button
                             onClick={() => handleConvertToOrder(quotation)}
@@ -357,9 +366,20 @@ export default function Quotations() {
                 <h2 className="font-headline-md text-headline-md text-deep-emerald">Quotation {viewQuotation.quotationNumber}</h2>
                 <p className="text-xs text-on-surface-variant mt-1">Created on {formatDate(viewQuotation.date)}</p>
               </div>
-              <button onClick={() => setViewQuotation(null)} className="text-on-surface-variant hover:text-deep-emerald transition-colors">
-                <span className="material-symbols-outlined">close</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {viewQuotation.status === 'converted' && viewQuotation.orderId && (
+                  <button
+                    onClick={() => navigate('/admin/orders')}
+                    className="px-3 py-1.5 text-xs font-label-caps text-deep-emerald border border-outline-variant rounded hover:bg-surface-container-low transition-colors"
+                    title="View related order"
+                  >
+                    Order #{viewQuotation.orderId.toString().slice(-6).toUpperCase()}
+                  </button>
+                )}
+                <button onClick={() => setViewQuotation(null)} className="text-on-surface-variant hover:text-deep-emerald transition-colors">
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

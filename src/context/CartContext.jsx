@@ -23,6 +23,8 @@ export const CartProvider = ({ children }) => {
 
   const [validationErrors, setValidationErrors] = useState([])
   const [validating, setValidating] = useState(false)
+  const [appliedCoupon, setAppliedCoupon] = useState(null)
+  const [couponDiscount, setCouponDiscount] = useState(0)
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems))
@@ -119,6 +121,16 @@ export const CartProvider = ({ children }) => {
     setValidationErrors([])
   }
 
+  const applyCoupon = (couponData) => {
+    setAppliedCoupon(couponData)
+    setCouponDiscount(couponData.discountAmount || 0)
+  }
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null)
+    setCouponDiscount(0)
+  }
+
   const addToCart = (product, quantity = 1) => {
     const productId = String(product.id || '').trim()
     if (!isValidObjectId(productId)) return
@@ -154,11 +166,18 @@ export const CartProvider = ({ children }) => {
   const clearCart = () => {
     setCartItems([])
     setValidationErrors([])
+    setAppliedCoupon(null)
+    setCouponDiscount(0)
   }
 
   const placeOrder = async (orderData, idempotencyKey) => {
     try {
-      const response = await orderAPI.create({ ...orderData, idempotencyKey })
+      const response = await orderAPI.create({
+        ...orderData,
+        idempotencyKey,
+        couponCode: appliedCoupon?.code || undefined,
+        discount: couponDiscount,
+      })
       if (response.data.success) {
         if (orderData.paymentMethod === 'cod') {
           clearCart()
@@ -173,6 +192,7 @@ export const CartProvider = ({ children }) => {
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0)
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const finalTotal = Math.max(0, subtotal - couponDiscount)
 
   const value = {
     cartItems,
@@ -188,6 +208,11 @@ export const CartProvider = ({ children }) => {
     placeOrder,
     totalItems,
     subtotal,
+    finalTotal,
+    appliedCoupon,
+    couponDiscount,
+    applyCoupon,
+    removeCoupon,
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

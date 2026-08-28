@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { useNavigate } from 'react-router-dom'
+import { couponAPI } from '../services/api'
 
 export default function Cart() {
   const navigate = useNavigate()
-  const { cartItems, updateQuantity, removeFromCart, totalItems, subtotal, validateCart, removeInvalidItems, validationErrors, validating } = useCart()
+  const { cartItems, updateQuantity, removeFromCart, totalItems, subtotal, finalTotal, couponDiscount, appliedCoupon, applyCoupon, removeCoupon, validateCart, removeInvalidItems, validationErrors, validating } = useCart()
   const [couponCode, setCouponCode] = useState('')
   const [couponMessage, setCouponMessage] = useState('')
   const [validationMessage, setValidationMessage] = useState('')
@@ -36,13 +37,35 @@ export default function Cart() {
     navigate('/checkout')
   }
 
-  const handleApplyCoupon = (e) => {
+  const handleApplyCoupon = async (e) => {
     e.preventDefault()
+    setCouponMessage('')
     if (!couponCode.trim()) {
       setCouponMessage('Please enter a coupon code')
       return
     }
-    setCouponMessage(`Coupon code "${couponCode}" applied successfully`)
+
+    try {
+      const response = await couponAPI.validate({
+        code: couponCode.trim(),
+        orderAmount: subtotal,
+      })
+
+      if (response.data.success) {
+        applyCoupon(response.data.data)
+        setCouponMessage(`Coupon "${couponCode.trim()}" applied! You saved ₹${response.data.data.discountAmount.toLocaleString('en-IN')}`)
+      } else {
+        setCouponMessage(response.data.message || 'Invalid coupon code')
+      }
+    } catch (err) {
+      setCouponMessage(err.response?.data?.message || 'Failed to apply coupon')
+    }
+  }
+
+  const handleRemoveCoupon = () => {
+    removeCoupon()
+    setCouponMessage('')
+    setCouponCode('')
   }
 
   const getItemValidation = (itemId) => {
@@ -137,20 +160,39 @@ export default function Cart() {
             </div>
             {/* Coupon Input */}
             <div className="mb-6 border-t border-b border-outline-variant py-6">
-              <form onSubmit={handleApplyCoupon} className="flex">
-                <input
-                  className="w-full bg-soft-cream border-t border-l border-b border-outline-variant px-4 py-3 font-body-md text-body-md focus:outline-none focus:border-deep-emerald focus:ring-0"
-                  placeholder="Enter Coupon Code"
-                  type="text"
-                  value={couponCode}
-                  onChange={(e) => setCouponCode(e.target.value)}
-                />
-                <button type="submit" className="bg-surface-white border border-outline-variant px-6 font-label-caps text-label-caps text-deep-emerald hover:bg-surface-container-low transition-colors">APPLY</button>
-              </form>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-deep-emerald">Coupon Applied: {appliedCoupon.code}</p>
+                    <p className="text-xs text-on-surface-variant">You saved ₹{couponDiscount.toLocaleString('en-IN')}</p>
+                  </div>
+                  <button onClick={handleRemoveCoupon} className="text-xs text-error hover:text-error/80 font-semibold">
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleApplyCoupon} className="flex">
+                  <input
+                    className="w-full bg-soft-cream border-t border-l border-b border-outline-variant px-4 py-3 font-body-md text-body-md focus:outline-none focus:border-deep-emerald focus:ring-0"
+                    placeholder="Enter Coupon Code"
+                    type="text"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value)}
+                  />
+                  <button type="submit" className="bg-surface-white border border-outline-variant px-6 font-label-caps text-label-caps text-deep-emerald hover:bg-surface-container-low transition-colors">APPLY</button>
+                </form>
+              )}
               {couponMessage && (
-                <p className="text-sm mt-2 text-deep-emerald">{couponMessage}</p>
+                <p className={`text-sm mt-2 ${appliedCoupon ? 'text-deep-emerald' : 'text-error'}`}>{couponMessage}</p>
               )}
             </div>
+
+            {couponDiscount > 0 && (
+              <div className="flex justify-between mb-4">
+                <span className="text-on-surface-variant">Discount</span>
+                <span className="text-deep-emerald font-semibold">- ₹ {couponDiscount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
 
             {validationMessage && (
               <div className="mb-6 p-4 bg-error-container/10 border border-error/20 text-error rounded-lg text-sm flex items-start gap-2">
@@ -171,7 +213,7 @@ export default function Cart() {
 
             <div className="flex justify-between items-center mb-8">
               <span className="font-headline-md text-headline-md text-deep-emerald">Total</span>
-              <span className="font-headline-md text-headline-md text-deep-emerald">₹ {(subtotal + 270).toLocaleString('en-IN')}</span>
+              <span className="font-headline-md text-headline-md text-deep-emerald">₹ {(finalTotal + 270).toLocaleString('en-IN')}</span>
             </div>
              <button onClick={handleCheckout} className="w-full bg-deep-emerald text-white font-label-caps text-label-caps py-4 tracking-widest hover:bg-opacity-90 transition-opacity">
                PROCEED TO CHECKOUT
