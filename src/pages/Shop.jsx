@@ -1,14 +1,18 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 import { productAPI } from '../services/api'
 
 export default function Shop() {
   const navigate = useNavigate()
   const { addToCart } = useCart()
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
 
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
+  const productsPerPage = 12
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -26,12 +30,6 @@ export default function Shop() {
     };
     fetchProducts();
   }, []);
-
-  const handleWishlist = (product, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    navigate('/account')
-  }
 
   const [filters, setFilters] = useState({
     metal: [],
@@ -54,6 +52,16 @@ export default function Shop() {
     addToCart(product, 1)
   }
 
+  const handleWishlist = async (product, e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (isInWishlist(product.id)) {
+      await removeFromWishlist(product.id)
+    } else {
+      await addToWishlist(product.id)
+    }
+  }
+
   const toggleFilter = (type, value) => {
     setFilters(prev => ({
       ...prev,
@@ -74,6 +82,10 @@ export default function Shop() {
   }, [filters])
 
   const displayProducts = filteredProducts.length > 0 ? filteredProducts : products
+
+  const totalPages = Math.max(1, Math.ceil(displayProducts.length / productsPerPage))
+  const startIndex = (currentPage - 1) * productsPerPage
+  const paginatedProducts = displayProducts.slice(startIndex, startIndex + productsPerPage)
 
   return (
     <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-[120px]">
@@ -206,7 +218,7 @@ export default function Shop() {
         <div className="flex-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"> 
 
-            {displayProducts.map((product) => (
+             {paginatedProducts.map((product) => (
               <Link key={product.id} to={`/product/${product.id}`} className="group block">
                 <div className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
                   {/* Product Image */}
@@ -215,15 +227,18 @@ export default function Shop() {
                       className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
                       alt={product.description}
                       src={product.image}
+                      onError={(e) => {
+                        e.target.src = 'https://placehold.co/400x400?text=No+Image';
+                      }}
                     />
-                     {/* Wishlist */}
-                     <button
-                       className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center text-on-surface-variant hover:text-error transition-colors shadow-sm"
-                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlist(product, e); }}
-                       title="Add to Wishlist"
-                     >
-                       <span className="material-symbols-outlined text-sm">favorite</span>
-                     </button>
+                      {/* Wishlist */}
+                      <button
+                        className={`absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center shadow-sm transition-colors ${isInWishlist(product.id) ? 'text-error' : 'text-on-surface-variant hover:text-error'}`}
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlist(product, e); }}
+                        title={isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                      >
+                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: isInWishlist(product.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                      </button>
                   </div>
 
                   {/* Brand */}
@@ -274,15 +289,19 @@ export default function Shop() {
 
           {/* Pagination */}
           <div className="mt-20 flex justify-center items-center space-x-2">
-            <button className="w-10 h-10 border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-deep-emerald hover:border-deep-emerald transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="w-10 h-10 border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-deep-emerald hover:border-deep-emerald transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <button className="w-10 h-10 border border-deep-emerald bg-deep-emerald text-surface-white flex items-center justify-center font-semibold text-sm">1</button>
-            <button className="w-10 h-10 border border-outline-variant flex items-center justify-center text-charcoal-text hover:text-deep-emerald hover:border-deep-emerald transition-colors text-sm">2</button>
-            <button className="w-10 h-10 border border-outline-variant flex items-center justify-center text-charcoal-text hover:text-deep-emerald hover:border-deep-emerald transition-colors text-sm">3</button>
+            {[1, 2, 3].map((page) => (
+              <button key={page} onClick={() => goToPage(page)} className={`w-10 h-10 border flex items-center justify-center text-sm transition-colors ${currentPage === page ? 'border-deep-emerald bg-deep-emerald text-surface-white' : 'border-outline-variant text-charcoal-text hover:text-deep-emerald hover:border-deep-emerald'}`}>
+                {page}
+              </button>
+            ))}
             <span className="px-2 text-on-surface-variant">...</span>
-            <button className="w-10 h-10 border border-outline-variant flex items-center justify-center text-charcoal-text hover:text-deep-emerald hover:border-deep-emerald transition-colors text-sm">12</button>
-            <button className="w-10 h-10 border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-deep-emerald hover:border-deep-emerald transition-colors">
+            <button onClick={() => goToPage(totalPages)} className={`w-10 h-10 border flex items-center justify-center text-sm transition-colors ${currentPage === totalPages ? 'border-deep-emerald bg-deep-emerald text-surface-white' : 'border-outline-variant text-charcoal-text hover:text-deep-emerald hover:border-deep-emerald'}`}>
+              {totalPages}
+            </button>
+            <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="w-10 h-10 border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-deep-emerald hover:border-deep-emerald transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>
           </div>

@@ -102,6 +102,21 @@ export default function Addresses() {
     }
   }
 
+  const handleSetDefault = async (id) => {
+    setError('')
+    setSuccessMessage('')
+    try {
+      const response = await userAPI.setDefaultAddress(id)
+      if (response.data.success) {
+        setAddresses(response.data.data || [])
+        setSuccessMessage('Default address updated')
+        setTimeout(() => setSuccessMessage(''), 3000)
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to set default address')
+    }
+  }
+
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this address?')) return
     setError('')
@@ -221,6 +236,15 @@ export default function Addresses() {
                   </p>
                 </div>
                 <div className="mt-4 flex gap-3">
+                  {!address.isDefault && (
+                    <button
+                      onClick={() => handleSetDefault(address._id)}
+                      className="flex items-center gap-1 text-sm text-on-surface-variant hover:text-deep-emerald transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">star</span>
+                      Set as Default
+                    </button>
+                  )}
                   <button
                     onClick={() => openEditModal(address)}
                     className="flex items-center gap-1 text-sm text-on-surface-variant hover:text-deep-emerald transition-colors"

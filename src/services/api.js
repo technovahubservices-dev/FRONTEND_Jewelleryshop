@@ -45,13 +45,9 @@ export const productAPI = {
   getAll: (params) => api.get('/products', { params }),
   getById: (id) => api.get(`/products/${id}`),
   create: (formData) =>
-    api.post('/products', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.post('/products', formData),
   update: (id, formData) =>
-    api.put(`/products/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.put(`/products/${id}`, formData),
   delete: (id) => api.delete(`/products/${id}`),
   transform: (p) => ({
     id: p._id,
@@ -94,6 +90,7 @@ export const userAPI = {
   addAddress: (data) => api.post('/users/addresses', data),
   updateAddress: (id, data) => api.put(`/users/addresses/${id}`, data),
   deleteAddress: (id) => api.delete(`/users/addresses/${id}`),
+  setDefaultAddress: (id) => api.put(`/users/addresses/${id}/default`),
   getWishlist: () => api.get('/users/wishlist'),
   addToWishlist: (productId) => api.post('/users/wishlist', { productId }),
   removeFromWishlist: (productId) => api.delete(`/users/wishlist/${productId}`),
@@ -106,6 +103,21 @@ export const orderAPI = {
   updateStatus: (id, statusOrData) =>
     api.put(`/orders/${id}`, typeof statusOrData === 'string' ? { status: statusOrData } : statusOrData),
   delete: (id) => api.delete(`/orders/${id}`),
+  convertFromQuotation: (quotationId, data) => api.post(`/orders/convert-from-quotation/${quotationId}`, data),
+  createPaymentOrder: (data) => api.post('/orders/payment/create-payment-order', data),
+  verifyPayment: (data) => api.post('/orders/payment/verify-payment', data),
+  retryPayment: (id, data) => api.post(`/orders/payment/${id}/retry-payment`, data),
+};
+
+export const quotationAPI = {
+  getAll: (params) => api.get('/quotations', { params }),
+  getById: (id) => api.get(`/quotations/${id}`),
+  create: (data) => api.post('/quotations', data),
+  update: (id, data) => api.put(`/quotations/${id}`, data),
+  delete: (id) => api.delete(`/quotations/${id}`),
+  uploadExcel: (formData) => api.post('/quotations/upload-excel', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
 };
 
 export const supplierAPI = {

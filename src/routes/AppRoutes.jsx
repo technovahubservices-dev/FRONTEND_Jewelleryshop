@@ -10,6 +10,7 @@ import Register from '../pages/Register'
 import Search from '../pages/Search'
 import OrderConfirmation from '../pages/OrderConfirmation'
 import OrdersHistory from '../pages/OrdersHistory'
+import Payment from '../pages/Payment'
 import Wishlist from '../pages/Wishlist'
 import Addresses from '../pages/Addresses'
 import Settings from '../pages/Settings'
@@ -28,6 +29,8 @@ import ContentManagement from '../admin/pages/ContentManagement'
 import AdminSettings from '../admin/pages/Settings'
 import NotFound from '../pages/NotFound'
 import Contact from '../pages/Contact'
+import Quotations from '../admin/pages/Quotations'
+import CreateQuotation from '../admin/pages/CreateQuotation'
 import { useAuth } from '../context/AuthContext'
 
 function AdminRoute({ children }) {
@@ -56,6 +59,7 @@ export default function AppRoutes() {
       <Route path="/register" element={<Register />} />
       <Route path="/search" element={<Search />} />
       <Route path="/order-confirmation" element={<OrderConfirmation />} />
+      <Route path="/payment" element={<Payment />} />
       <Route path="/account/orders" element={<OrdersHistory />} />
       <Route path="/account/wishlist" element={<Wishlist />} />
       <Route path="/account/addresses" element={<Addresses />} />
@@ -123,6 +127,22 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminLayout><Orders /></AdminLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/quotations"
+        element={
+          <AdminRoute>
+            <AdminLayout><Quotations /></AdminLayout>
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/quotations/create"
+        element={
+          <AdminRoute>
+            <AdminLayout><CreateQuotation /></AdminLayout>
           </AdminRoute>
         }
       />

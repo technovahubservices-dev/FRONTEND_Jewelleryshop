@@ -157,11 +157,14 @@ export default function FeaturedProducts({ title, description }) {
             displayProducts.map((product) => (
               <div key={product.id} className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group">
                 <div className="relative aspect-square bg-surface-container-low flex items-center justify-center p-6">
-                  <img
-                    className="w-full h-full object-contain img-hover-zoom"
-                    alt={product.description}
-                    src={product.image}
-                  />
+                   <img
+                     className="w-full h-full object-contain img-hover-zoom"
+                     alt={product.description}
+                     src={product.image}
+                     onError={(e) => {
+                       e.target.src = 'https://placehold.co/400x400?text=No+Image';
+                     }}
+                   />
                   {product.discount && (
                     <span className="absolute top-3 left-3 bg-deep-emerald text-surface-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
                       {product.discount}

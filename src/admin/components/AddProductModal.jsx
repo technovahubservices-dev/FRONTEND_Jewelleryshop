@@ -347,9 +347,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
         formDataPayload.append('images', file);
       });
 
-      const existingImageUrls = imageState.existingImages.filter(
-        (url) => url.startsWith('http')
-      );
+      const existingImageUrls = [...imageState.existingImages];
       formDataPayload.append('imageUrls', JSON.stringify(existingImageUrls));
 
       if (isEdit) {
@@ -864,6 +862,9 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                         src={img}
                         alt={`Product ${idx + 1}`}
                         className="w-full h-24 object-cover"
+                        onError={(e) => {
+                          e.target.src = 'https://placehold.co/400x400?text=No+Image';
+                        }}
                       />
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {isPrimary ? (

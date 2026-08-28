@@ -1,12 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '../context/CartContext'
 import { useNavigate } from 'react-router-dom'
 
 export default function Cart() {
   const navigate = useNavigate()
-  const { cartItems, updateQuantity, removeFromCart, totalItems, subtotal } = useCart()
+  const { cartItems, updateQuantity, removeFromCart, totalItems, subtotal, validateCart, removeInvalidItems, validationErrors, validating } = useCart()
   const [couponCode, setCouponCode] = useState('')
   const [couponMessage, setCouponMessage] = useState('')
+  const [validationMessage, setValidationMessage] = useState('')
+
+  useEffect(() => {
+    const runValidation = async () => {
+      if (cartItems.length === 0) return
+      const result = await validateCart()
+      if (!result.valid) {
+        const invalidCount = result.errors.length
+        setValidationMessage(`${invalidCount} item${invalidCount > 1 ? 's' : ''} in your cart ${result.errors[0].reason.toLowerCase()}. Please update or remove them.`)
+      } else {
+        setValidationMessage('')
+      }
+    }
+    runValidation()
+  }, [cartItems.length, validateCart])
+
+  const handleRemoveInvalid = () => {
+    removeInvalidItems()
+    setValidationMessage('')
+  }
+
+  const handleCheckout = () => {
+    if (validationErrors.length > 0) {
+      setValidationMessage('Please remove or update invalid items before checkout.')
+      return
+    }
+    navigate('/checkout')
+  }
 
   const handleApplyCoupon = (e) => {
     e.preventDefault()
@@ -15,6 +43,10 @@ export default function Cart() {
       return
     }
     setCouponMessage(`Coupon code "${couponCode}" applied successfully`)
+  }
+
+  const getItemValidation = (itemId) => {
+    return validationErrors.find((e) => e.id === itemId)
   }
 
   return (
@@ -32,8 +64,10 @@ export default function Cart() {
               <p className="font-body-md text-body-md text-on-surface-variant">Your cart is empty</p>
             </div>
           ) : (
-            cartItems.map((item) => (
-              <div key={item.id} className="bg-surface-white border border-outline-variant p-6 flex flex-col sm:flex-row gap-6 relative shadow-sm hover:shadow-md transition-shadow">
+            cartItems.map((item) => {
+              const validation = getItemValidation(item.id)
+              return (
+              <div key={item.id} className={`bg-surface-white border ${validation ? 'border-error' : 'border-outline-variant'} p-6 flex flex-col sm:flex-row gap-6 relative shadow-sm hover:shadow-md transition-shadow`}>
                 <div className="w-full sm:w-48 h-48 bg-soft-cream flex-shrink-0">
                   <img className="w-full h-full object-cover" alt={item.description} src={item.image} />
                 </div>
@@ -45,6 +79,14 @@ export default function Cart() {
                     </div>
                     <p className="font-body-md text-body-md text-on-surface-variant mb-1">SKU: {item.SKU}</p>
                     <p className="font-body-md text-body-md text-on-surface-variant mb-4">{item.metal}</p>
+                    {validation && (
+                      <div className="mb-4 p-3 bg-error-container/10 border border-error/20 rounded-lg">
+                        <p className="text-sm text-error flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px]">error</span>
+                          {validation.reason}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center justify-between border-t border-outline-variant pt-4 gap-4">
                     <div className="flex items-center border border-outline-variant px-3 py-1">
@@ -67,7 +109,8 @@ export default function Cart() {
                   </div>
                 </div>
               </div>
-            ))
+              )
+            })
           )}
         </div>
         {/* Order Summary */}
@@ -108,13 +151,31 @@ export default function Cart() {
                 <p className="text-sm mt-2 text-deep-emerald">{couponMessage}</p>
               )}
             </div>
+
+            {validationMessage && (
+              <div className="mb-6 p-4 bg-error-container/10 border border-error/20 text-error rounded-lg text-sm flex items-start gap-2">
+                <span className="material-symbols-outlined text-[18px] mt-0.5">error</span>
+                <div className="flex-1">
+                  <p>{validationMessage}</p>
+                  {validationErrors.length > 0 && (
+                    <button
+                      onClick={handleRemoveInvalid}
+                      className="mt-2 text-xs font-semibold underline hover:no-underline"
+                    >
+                      Remove invalid items
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-between items-center mb-8">
               <span className="font-headline-md text-headline-md text-deep-emerald">Total</span>
               <span className="font-headline-md text-headline-md text-deep-emerald">₹ {(subtotal + 270).toLocaleString('en-IN')}</span>
             </div>
-             <button onClick={() => navigate('/checkout')} className="w-full bg-deep-emerald text-white font-label-caps text-label-caps py-4 tracking-widest hover:bg-opacity-90 transition-opacity">
-              PROCEED TO CHECKOUT
-            </button>
+             <button onClick={handleCheckout} className="w-full bg-deep-emerald text-white font-label-caps text-label-caps py-4 tracking-widest hover:bg-opacity-90 transition-opacity">
+               PROCEED TO CHECKOUT
+             </button>
             <div className="mt-6 flex items-center justify-center space-x-2 text-on-surface-variant text-sm">
               <span className="material-symbols-outlined text-lg">lock</span>
               <span>Secure Checkout</span>

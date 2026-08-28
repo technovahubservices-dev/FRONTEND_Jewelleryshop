@@ -1,47 +1,27 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { userAPI, productAPI } from '../services/api'
+import { useWishlist } from '../context/WishlistContext'
+import { userAPI } from '../services/api'
 
 export default function Wishlist() {
   const { isAuthenticated } = useAuth()
-  const [wishlist, setWishlist] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { wishlistItems, loading, refreshWishlist, removeFromWishlist } = useWishlist()
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     if (!isAuthenticated) return
-    fetchWishlist()
-  }, [isAuthenticated])
-
-  const fetchWishlist = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const response = await userAPI.getWishlist()
-      if (response.data.success) {
-        setWishlist(response.data.data || [])
-      } else {
-        setError(response.data.message || 'Failed to fetch wishlist')
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch wishlist')
-    } finally {
-      setLoading(false)
-    }
-  }
+    refreshWishlist()
+  }, [isAuthenticated, refreshWishlist])
 
   const handleRemove = async (productId) => {
     setError('')
     setSuccessMessage('')
     try {
-      const response = await userAPI.removeFromWishlist(productId)
-      if (response.data.success) {
-        setWishlist(response.data.data || [])
-        setSuccessMessage('Removed from wishlist')
-        setTimeout(() => setSuccessMessage(''), 3000)
-      }
+      await removeFromWishlist(productId)
+      setSuccessMessage('Removed from wishlist')
+      setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to remove from wishlist')
     }
@@ -114,7 +94,7 @@ export default function Wishlist() {
             <span className="material-symbols-outlined text-[32px] text-on-surface-variant/30 mb-4 block">hourglass_empty</span>
             <p className="font-body-md text-body-md text-on-surface-variant">Loading wishlist...</p>
           </div>
-        ) : wishlist.length === 0 ? (
+        ) : wishlistItems.length === 0 ? (
           <div className="text-center py-12 bg-surface-white border border-outline-variant rounded">
             <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30 mb-4 block">favorite</span>
             <p className="font-body-md text-body-md text-on-surface-variant mb-4">Your wishlist is empty</p>
@@ -124,7 +104,7 @@ export default function Wishlist() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {wishlist.map((product) => (
+            {wishlistItems.map((product) => (
               <div key={product._id} className="bg-surface-white border border-outline-variant rounded shadow-sm overflow-hidden group">
                 <div className="w-full h-64 bg-surface-container-low overflow-hidden">
                   <img

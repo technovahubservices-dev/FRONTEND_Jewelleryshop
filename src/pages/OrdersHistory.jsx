@@ -65,6 +65,28 @@ export default function OrdersHistory() {
     }
   }
 
+  const getPaymentStatusColor = (paymentStatus) => {
+    switch (paymentStatus) {
+      case 'paid':
+        return 'bg-primary-fixed/20 text-on-primary-fixed-variant border-primary-fixed'
+      case 'failed':
+        return 'bg-error-container/20 text-error border-error-container/30'
+      case 'pending':
+        return 'bg-surface-container/50 text-on-surface-variant border-outline-variant'
+      default:
+        return 'bg-surface-container/50 text-on-surface-variant border-outline-variant'
+    }
+  }
+
+  const getPaymentStatusLabel = (paymentStatus) => {
+    switch (paymentStatus) {
+      case 'paid': return 'Paid'
+      case 'failed': return 'Failed'
+      case 'pending': return 'Pending'
+      default: return paymentStatus || 'Pending'
+    }
+  }
+
   const getStatusLabel = (status) => {
     switch (status) {
       case 'delivered': return 'Delivered'
@@ -134,10 +156,28 @@ export default function OrdersHistory() {
                     Placed on {formatDate(order.createdAt)}
                   </p>
                 </div>
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-label-caps ${getStatusColor(order.status)} border`}>
-                  {getStatusLabel(order.status)}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-label-caps ${getStatusColor(order.status)} border`}>
+                    {getStatusLabel(order.status)}
+                  </span>
+                  {order.paymentMethod && order.paymentMethod !== 'cod' && (
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-label-caps border ${getPaymentStatusColor(order.paymentStatus)}`}>
+                      {getPaymentStatusLabel(order.paymentStatus)}
+                    </span>
+                  )}
+                </div>
               </div>
+              {(order.paymentStatus === 'failed' && order.paymentMethod !== 'cod') && (
+                <div className="px-6 py-3 bg-error-container/10 border-b border-error-container/20 flex items-center justify-between">
+                  <p className="text-xs text-error">Payment failed. You can retry or choose a different payment method.</p>
+                  <Link
+                    to={`/payment?orderId=${order._id}&method=${order.paymentMethod}`}
+                    className="text-xs font-label-caps text-deep-emerald hover:text-regal-gold transition-colors"
+                  >
+                    Retry Payment
+                  </Link>
+                </div>
+              )}
               <div className="p-6 space-y-4">
                 {(order.items || []).map((item, idx) => (
                   <div key={idx} className="flex gap-4 items-center">

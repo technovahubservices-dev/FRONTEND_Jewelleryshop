@@ -3,9 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
+const isValidObjectId = (id) => {
+  if (!id || typeof id !== 'string') return false
+  return /^[0-9a-f]{24}$/i.test(id)
+}
+
 export default function Checkout() {
   const navigate = useNavigate()
-  const { cartItems, subtotal, placeOrder, clearCart } = useCart()
+  const { cartItems, subtotal, placeOrder, clearCart, validateCart, validationErrors } = useCart()
   const { user } = useAuth()
   const [formData, setFormData] = useState({
     fullName: user?.name || '',
@@ -17,6 +22,15 @@ export default function Checkout() {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [idempotencyKey, setIdempotencyKey] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('cod')
+
+  const generateIdempotencyKey = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID()
+    }
+    return `idemp_${Date.now()}_${Math.random().toString(36).slice(2, 15)}`
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -26,6 +40,7 @@ export default function Checkout() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setIdempotencyKey(generateIdempotencyKey())
 
     if (!formData.fullName.trim() || !formData.address.trim() || !formData.city.trim() || !formData.state.trim()) {
       setError('Please fill in all required fields')
@@ -34,6 +49,13 @@ export default function Checkout() {
 
     if (cartItems.length === 0) {
       setError('Your cart is empty')
+      return
+    }
+
+    const validation = await validateCart()
+    if (!validation.valid) {
+      const firstError = validation.errors[0]
+      setError(`Cart validation failed: ${firstError.reason}. Please update your cart before checkout.`)
       return
     }
 
@@ -55,15 +77,20 @@ export default function Checkout() {
           city: formData.city,
           state: formData.state,
         },
-        paymentMethod: 'cod',
+        paymentMethod: paymentMethod || 'cod',
         itemsPrice: subtotal,
         taxPrice: Math.round(subtotal * 0.03),
         shippingPrice: subtotal >= 5000 ? 0 : 150,
         totalPrice: subtotal + Math.round(subtotal * 0.03) + (subtotal >= 5000 ? 0 : 150),
       }
 
-      await placeOrder(orderData)
-      navigate('/order-confirmation')
+      const order = await placeOrder(orderData, idempotencyKey)
+
+      if (paymentMethod === 'cod') {
+        navigate('/order-confirmation')
+      } else {
+        navigate(`/payment?orderId=${order._id || order.id}&method=${paymentMethod}`)
+      }
     } catch (err) {
       setError(err || 'Failed to place order. Please try again.')
     } finally {
@@ -188,13 +215,42 @@ export default function Checkout() {
             </div>
           </form>
         </section>
-        {/* Payment Options (Preview) */}
+        {/* Payment Options */}
         <section className="bg-surface-white rounded-lg p-6 md:p-10 border border-outline-variant shadow-sm flex flex-col gap-6">
           <h2 className="font-headline-md text-headline-md text-on-surface-variant flex items-center gap-3">
             <span className="material-symbols-outlined" data-icon="payments">payments</span>
             Payment Method
           </h2>
-          <div className="text-sm text-outline">Cash on Delivery (COD) is available.</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label className={`flex items-center gap-4 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-deep-emerald bg-deep-emerald/5' : 'border-outline-variant hover:border-outline'}`}>
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="cod"
+                checked={paymentMethod === 'cod'}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="w-4 h-4 text-deep-emerald focus:ring-deep-emerald"
+              />
+              <div>
+                <p className="font-body-md font-semibold text-deep-emerald">Cash on Delivery</p>
+                <p className="text-xs text-on-surface-variant">Pay when you receive</p>
+              </div>
+            </label>
+            <label className={`flex items-center gap-4 p-4 border-2 rounded-lg cursor-pointer transition-colors ${paymentMethod === 'card' ? 'border-deep-emerald bg-deep-emerald/5' : 'border-outline-variant hover:border-outline'}`}>
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="card"
+                checked={paymentMethod === 'card'}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="w-4 h-4 text-deep-emerald focus:ring-deep-emerald"
+              />
+              <div>
+                <p className="font-body-md font-semibold text-deep-emerald">Card / UPI / Net Banking</p>
+                <p className="text-xs text-on-surface-variant">Pay online securely</p>
+              </div>
+            </label>
+          </div>
         </section>
       </div>
       {/* Order Summary Sidebar (Right Side) */}

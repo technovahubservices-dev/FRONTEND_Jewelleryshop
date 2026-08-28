@@ -44,7 +44,7 @@ export default function Header() {
           <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/shop')} title="Shop">
             <span className="material-symbols-outlined text-[24px]">storefront</span>
           </button>
-          <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/account')} title="Wishlist">
+          <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/account/wishlist')} title="Wishlist">
             <span className="material-symbols-outlined text-[24px]">favorite</span>
           </button>
           {isAuthenticated ? (

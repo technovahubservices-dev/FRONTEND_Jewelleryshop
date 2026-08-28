@@ -492,14 +492,17 @@ export default function Home() {
                 if (!embedUrl) {
                   return (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <a
-                        href={reel.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          window.open(reel.videoUrl, '_blank', 'noopener,noreferrer')
+                        }}
                         className="text-xs text-deep-emerald underline text-center px-2"
                       >
                         Watch Video
-                      </a>
+                      </button>
                     </div>
                   )
                 }
@@ -531,14 +534,17 @@ export default function Home() {
                         <span className="material-symbols-outlined text-4xl">play_circle</span>
                       </div>
                     )}
-                    <a
-                      href={reel.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        window.open(reel.videoUrl, '_blank', 'noopener,noreferrer')
+                      }}
                       className="mt-2 text-[10px] font-sans font-medium text-gray-700 hover:text-deep-emerald transition-colors"
                     >
                       View Pin
-                    </a>
+                    </button>
                   </div>
                 )
               }

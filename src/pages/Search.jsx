@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 import { productAPI } from '../services/api'
 
 export default function Search() {
   const navigate = useNavigate()
   const location = useLocation()
   const { addToCart } = useCart()
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
 
   const query = new URLSearchParams(location.search).get('q') || ''
   const [products, setProducts] = useState([])
@@ -55,10 +57,14 @@ export default function Search() {
     addToCart(product, 1)
   }
 
-  const handleWishlist = (product, e) => {
+  const handleWishlist = async (product, e) => {
     e.preventDefault()
     e.stopPropagation()
-    navigate('/account')
+    if (isInWishlist(product.id)) {
+      await removeFromWishlist(product.id)
+    } else {
+      await addToWishlist(product.id)
+    }
   }
 
   if (loading) {
@@ -120,18 +126,21 @@ export default function Search() {
             <Link key={product.id} to={`/product/${product.id}`} className="group block">
               <div className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
                 <div className="relative aspect-square w-full overflow-hidden bg-surface-container-low">
-                  <img
-                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
-                    alt={product.description}
-                    src={product.image}
-                  />
-                  <button
-                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center text-on-surface-variant hover:text-error transition-colors shadow-sm"
-                    onClick={(e) => handleWishlist(product, e)}
-                    title="Add to Wishlist"
-                  >
-                    <span className="material-symbols-outlined text-sm">favorite</span>
-                  </button>
+                    <img
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
+                      alt={product.description}
+                      src={product.image}
+                      onError={(e) => {
+                        e.target.src = 'https://placehold.co/400x400?text=No+Image';
+                      }}
+                    />
+                   <button
+                     className={`absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center shadow-sm transition-colors ${isInWishlist(product.id) ? 'text-error' : 'text-on-surface-variant hover:text-error'}`}
+                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlist(product, e); }}
+                     title={isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                   >
+                     <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: isInWishlist(product.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                   </button>
                 </div>
                 <div className="text-center px-4 py-2">
                   <span className="font-label-caps text-label-caps text-[10px] text-on-surface-variant/70 uppercase tracking-wider">

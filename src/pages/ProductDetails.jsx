@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { productAPI, userAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useWishlist } from '../context/WishlistContext'
 import { useState, useEffect } from 'react'
 
 export default function ProductDetails() {
@@ -9,11 +10,15 @@ export default function ProductDetails() {
   const navigate = useNavigate()
   const { addToCart } = useCart()
   const { isAuthenticated } = useAuth()
+  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const [product, setProduct] = useState(null)
   const [relatedProducts, setRelatedProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [successMessage, setSuccessMessage] = useState('')
   const [error, setError] = useState('')
+  const [selectedImage, setSelectedImage] = useState(0)
+  const [selectedSize, setSelectedSize] = useState(null)
+  const [showSizeGuide, setShowSizeGuide] = useState(false)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -93,12 +98,17 @@ export default function ProductDetails() {
       return
     }
     try {
-      await userAPI.addToWishlist(product.id)
-      setSuccessMessage('Added to wishlist')
+      if (isInWishlist(product.id)) {
+        await removeFromWishlist(product.id)
+        setSuccessMessage('Removed from wishlist')
+      } else {
+        await addToWishlist(product.id)
+        setSuccessMessage('Added to wishlist')
+      }
       setError('')
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add to wishlist')
+      setError(err.response?.data?.message || 'Failed to update wishlist')
       setSuccessMessage('')
     }
   }
@@ -107,16 +117,21 @@ export default function ProductDetails() {
     e.preventDefault()
     e.stopPropagation()
     if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/product/${relatedProduct.id}` } })
+      navigate('/login', { state: { from: `/product/${id}` } })
       return
     }
     try {
-      await userAPI.addToWishlist(relatedProduct.id)
-      setSuccessMessage('Added to wishlist')
+      if (isInWishlist(relatedProduct.id)) {
+        await removeFromWishlist(relatedProduct.id)
+        setSuccessMessage('Removed from wishlist')
+      } else {
+        await addToWishlist(relatedProduct.id)
+        setSuccessMessage('Added to wishlist')
+      }
       setError('')
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to add to wishlist')
+      setError(err.response?.data?.message || 'Failed to update wishlist')
       setSuccessMessage('')
     }
   }
@@ -170,8 +185,8 @@ export default function ProductDetails() {
           {/* Thumbnails (Vertical on desktop) */}
           <div className="hidden md:flex flex-col gap-4 w-24 flex-shrink-0">
             {product.images.map((img, index) => (
-              <button key={index} className="w-full aspect-square bg-surface-white border-2 border-regal-gold rounded-lg overflow-hidden p-1">
-                <img className="w-full h-full object-cover rounded" alt={`${product.name} view ${index + 1}`} src={img} />
+              <button key={index} onClick={() => setSelectedImage(index)} className={`w-full aspect-square bg-surface-white rounded-lg overflow-hidden p-1 ${selectedImage === index ? 'border-2 border-regal-gold' : 'border border-outline-variant'}`}>
+                <img className="w-full h-full object-cover rounded" alt={`${product.name} view ${index + 1}`} src={img} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
               </button>
             ))}
             <button className="w-full aspect-square bg-surface-white/80 backdrop-blur-sm border border-outline-variant rounded-lg overflow-hidden p-1 flex items-center justify-center text-on-surface-variant">
@@ -190,10 +205,10 @@ export default function ProductDetails() {
                 New
               </div>
             )}
-              <button className="absolute top-4 right-4 z-10 p-2 bg-surface-white/80 backdrop-blur-sm rounded-full text-on-surface-variant hover:text-error transition-colors shadow-sm" onClick={handleWishlist} title="Add to Wishlist">
-               <span className="material-symbols-outlined">favorite</span>
-            </button>
-            <img className="w-full h-full object-cover img-hover-zoom" alt={product.description} src={product.images[0]} />
+               <button className={`absolute top-4 right-4 z-10 p-2 bg-surface-white/80 backdrop-blur-sm rounded-full transition-colors shadow-sm ${isInWishlist(product.id) ? 'text-error' : 'text-on-surface-variant hover:text-error'}`} onClick={handleWishlist} title={isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}>
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: isInWishlist(product.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+              </button>
+            <img className="w-full h-full object-cover img-hover-zoom" alt={product.description} src={product.images[selectedImage]} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
             {/* Mobile Thumbnails (Horizontal) */}
             <div className="md:hidden absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4 z-10">
               {product.images.map((_, index) => (
@@ -240,15 +255,27 @@ export default function ProductDetails() {
           <div className="mb-8">
             <div className="flex justify-between items-center mb-3">
               <label className="font-body-md font-semibold text-primary">Select Size</label>
-               <button onClick={() => navigate('/account')} className="text-sm text-surface-tint underline underline-offset-2 hover:text-primary transition-colors">Size Guide</button>
+               <button onClick={() => setShowSizeGuide(!showSizeGuide)} className="text-sm text-surface-tint underline underline-offset-2 hover:text-primary transition-colors">Size Guide</button>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <button className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center font-body-md text-on-surface-variant hover:border-regal-gold transition-colors">10</button>
-              <button className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center font-body-md text-on-surface-variant hover:border-regal-gold transition-colors">11</button>
-              <button className="w-12 h-12 rounded-full border-2 border-primary text-primary flex items-center justify-center font-body-md font-semibold bg-surface-container-lowest shadow-sm">12</button>
-              <button className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center font-body-md text-on-surface-variant hover:border-regal-gold transition-colors">13</button>
-              <button className="w-12 h-12 rounded-full border border-outline-variant flex items-center justify-center font-body-md text-on-surface-variant hover:border-regal-gold transition-colors">14</button>
-            </div>
+             <div className="flex flex-wrap gap-3">
+               <button onClick={() => setSelectedSize(10)} className={`w-12 h-12 rounded-full border flex items-center justify-center font-body-md transition-colors ${selectedSize === 10 ? 'border-2 border-primary text-primary font-semibold bg-surface-container-lowest shadow-sm' : 'border-outline-variant text-on-surface-variant hover:border-regal-gold'}`}>10</button>
+               <button onClick={() => setSelectedSize(11)} className={`w-12 h-12 rounded-full border flex items-center justify-center font-body-md transition-colors ${selectedSize === 11 ? 'border-2 border-primary text-primary font-semibold bg-surface-container-lowest shadow-sm' : 'border-outline-variant text-on-surface-variant hover:border-regal-gold'}`}>11</button>
+               <button onClick={() => setSelectedSize(12)} className={`w-12 h-12 rounded-full border flex items-center justify-center font-body-md transition-colors ${selectedSize === 12 ? 'border-2 border-primary text-primary font-semibold bg-surface-container-lowest shadow-sm' : 'border-outline-variant text-on-surface-variant hover:border-regal-gold'}`}>12</button>
+               <button onClick={() => setSelectedSize(13)} className={`w-12 h-12 rounded-full border flex items-center justify-center font-body-md transition-colors ${selectedSize === 13 ? 'border-2 border-primary text-primary font-semibold bg-surface-container-lowest shadow-sm' : 'border-outline-variant text-on-surface-variant hover:border-regal-gold'}`}>13</button>
+               <button onClick={() => setSelectedSize(14)} className={`w-12 h-12 rounded-full border flex items-center justify-center font-body-md transition-colors ${selectedSize === 14 ? 'border-2 border-primary text-primary font-semibold bg-surface-container-lowest shadow-sm' : 'border-outline-variant text-on-surface-variant hover:border-regal-gold'}`}>14</button>
+             </div>
+             {showSizeGuide && (
+               <div className="mt-4 p-4 bg-surface-container-lowest border border-outline-variant rounded-lg">
+                 <p className="text-sm font-body-md text-charcoal-text mb-2">Ring Size Guide (India)</p>
+                 <div className="grid grid-cols-2 gap-2 text-xs font-body-md text-on-surface-variant">
+                   <div><span className="font-semibold text-charcoal-text">Size 10:</span> Circumference ~49 mm</div>
+                   <div><span className="font-semibold text-charcoal-text">Size 11:</span> Circumference ~51 mm</div>
+                   <div><span className="font-semibold text-charcoal-text">Size 12:</span> Circumference ~53 mm</div>
+                   <div><span className="font-semibold text-charcoal-text">Size 13:</span> Circumference ~55 mm</div>
+                   <div><span className="font-semibold text-charcoal-text">Size 14:</span> Circumference ~57 mm</div>
+                 </div>
+               </div>
+             )}
           </div>
           {/* Actions */}
           <div className="flex flex-col gap-4 mb-8">
@@ -333,9 +360,9 @@ export default function ProductDetails() {
                 {relatedProduct.isNew && (
                   <div className="absolute top-3 left-3 z-10 bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-label-caps text-on-surface-variant">New</div>
                 )}
-                 <button className="absolute top-3 right-3 z-10 text-outline hover:text-error transition-colors" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlistRelated(relatedProduct, e); }} title="Add to Wishlist">
-                  <span className="material-symbols-outlined text-[20px]">favorite</span>
-                </button>
+                 <button className={`absolute top-3 right-3 z-10 transition-colors ${isInWishlist(relatedProduct.id) ? 'text-error' : 'text-outline hover:text-error'}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlistRelated(relatedProduct, e); }} title={isInWishlist(relatedProduct.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}>
+                   <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: isInWishlist(relatedProduct.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
+                 </button>
                 <img className="w-full h-full object-contain img-hover-zoom" alt={relatedProduct.name} src={relatedProduct.image} onClick={() => handleQuickViewRelated(relatedProduct)} />
               </div>
               <div className="text-center px-2">
