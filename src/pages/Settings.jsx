@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Settings() {
@@ -102,10 +102,6 @@ export default function Settings() {
             <Link to="/account/orders" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-white hover:text-deep-emerald rounded transition-all">
               <span className="material-symbols-outlined">shopping_basket</span>
               My Orders
-            </Link>
-            <Link to="/account/wishlist" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-white hover:text-deep-emerald rounded transition-all">
-              <span className="material-symbols-outlined">favorite</span>
-              Wishlist
             </Link>
             <Link to="/account/addresses" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-white hover:text-deep-emerald rounded transition-all">
               <span className="material-symbols-outlined">location_on</span>

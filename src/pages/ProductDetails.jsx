@@ -1,16 +1,12 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
 import { productAPI, userAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
-import { useWishlist } from '../context/WishlistContext'
 import { useState, useEffect } from 'react'
 
 export default function ProductDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { addToCart } = useCart()
   const { isAuthenticated } = useAuth()
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
   const [product, setProduct] = useState(null)
   const [relatedProducts, setRelatedProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -83,59 +79,6 @@ export default function ProductDetails() {
     )
   }
 
-  const handleAddToCart = () => {
-    addToCart(product, 1)
-  }
-
-  const handleAddToCartRelated = (relatedProduct) => {
-    addToCart(relatedProduct, 1)
-  }
-
-  const handleWishlist = async (e) => {
-    e.preventDefault()
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/product/${id}` } })
-      return
-    }
-    try {
-      if (isInWishlist(product.id)) {
-        await removeFromWishlist(product.id)
-        setSuccessMessage('Removed from wishlist')
-      } else {
-        await addToWishlist(product.id)
-        setSuccessMessage('Added to wishlist')
-      }
-      setError('')
-      setTimeout(() => setSuccessMessage(''), 3000)
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update wishlist')
-      setSuccessMessage('')
-    }
-  }
-
-  const handleWishlistRelated = async (relatedProduct, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/product/${id}` } })
-      return
-    }
-    try {
-      if (isInWishlist(relatedProduct.id)) {
-        await removeFromWishlist(relatedProduct.id)
-        setSuccessMessage('Removed from wishlist')
-      } else {
-        await addToWishlist(relatedProduct.id)
-        setSuccessMessage('Added to wishlist')
-      }
-      setError('')
-      setTimeout(() => setSuccessMessage(''), 3000)
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update wishlist')
-      setSuccessMessage('')
-    }
-  }
-
   const handleQuickViewRelated = (relatedProduct) => {
     navigate(`/product/${relatedProduct.id}`)
   }
@@ -200,15 +143,12 @@ export default function ProductDetails() {
                 Best Seller
               </div>
             )}
-            {product.isNew && (
-              <div className="absolute top-4 left-4 z-10 bg-surface-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-label-caps text-regal-gold border border-outline-variant">
-                New
-              </div>
-            )}
-               <button className={`absolute top-4 right-4 z-10 p-2 bg-surface-white/80 backdrop-blur-sm rounded-full transition-colors shadow-sm ${isInWishlist(product.id) ? 'text-error' : 'text-on-surface-variant hover:text-error'}`} onClick={handleWishlist} title={isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}>
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: isInWishlist(product.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-              </button>
-            <img className="w-full h-full object-cover img-hover-zoom" alt={product.description} src={product.images[selectedImage]} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
+             {product.isNew && (
+               <div className="absolute top-4 left-4 z-10 bg-surface-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-label-caps text-regal-gold border border-outline-variant">
+                 New
+               </div>
+             )}
+             <img className="w-full h-full object-cover img-hover-zoom" alt={product.description} src={product.images[selectedImage]} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
             {/* Mobile Thumbnails (Horizontal) */}
             <div className="md:hidden absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4 z-10">
               {product.images.map((_, index) => (
@@ -277,16 +217,13 @@ export default function ProductDetails() {
                </div>
              )}
           </div>
-          {/* Actions */}
-          <div className="flex flex-col gap-4 mb-8">
-            <button onClick={handleAddToCart} className="w-full bg-deep-emerald text-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-surface-tint transition-colors shadow-sm flex items-center justify-center gap-2">
-              <span className="material-symbols-outlined text-lg">shopping_bag</span>
-              Add to Cart
-            </button>
-             <button onClick={() => navigate('/checkout')} className="w-full bg-transparent text-deep-emerald border border-outline py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2">
-               Buy Now
+           {/* Actions */}
+           <div className="flex flex-col gap-4 mb-8">
+             <button onClick={() => navigate('/account')} className="w-full bg-deep-emerald text-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-surface-tint transition-colors shadow-sm flex items-center justify-center gap-2">
+               <span className="material-symbols-outlined text-lg">person</span>
+               My Account
              </button>
-          </div>
+           </div>
           {/* Trust Signals */}
           <div className="flex justify-between items-center py-4 border-t border-outline-variant/30">
             <div className="flex flex-col items-center gap-1 text-center">
@@ -356,15 +293,12 @@ export default function ProductDetails() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {relatedProducts.map((relatedProduct) => (
             <div key={relatedProduct.id} className="group cursor-pointer">
-              <div className="bg-surface-white rounded-lg overflow-hidden aspect-square mb-4 relative flex items-center justify-center p-4 border border-transparent hover:border-outline-variant/30 transition-all shadow-sm group-hover:shadow-md">
-                {relatedProduct.isNew && (
-                  <div className="absolute top-3 left-3 z-10 bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-label-caps text-on-surface-variant">New</div>
-                )}
-                 <button className={`absolute top-3 right-3 z-10 transition-colors ${isInWishlist(relatedProduct.id) ? 'text-error' : 'text-outline hover:text-error'}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlistRelated(relatedProduct, e); }} title={isInWishlist(relatedProduct.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}>
-                   <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: isInWishlist(relatedProduct.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                 </button>
-                <img className="w-full h-full object-contain img-hover-zoom" alt={relatedProduct.name} src={relatedProduct.image} onClick={() => handleQuickViewRelated(relatedProduct)} />
-              </div>
+               <div className="bg-surface-white rounded-lg overflow-hidden aspect-square mb-4 relative flex items-center justify-center p-4 border border-transparent hover:border-outline-variant/30 transition-all shadow-sm group-hover:shadow-md">
+                 {relatedProduct.isNew && (
+                   <div className="absolute top-3 left-3 z-10 bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-label-caps text-on-surface-variant">New</div>
+                 )}
+                 <img className="w-full h-full object-contain img-hover-zoom" alt={relatedProduct.name} src={relatedProduct.image} onClick={() => handleQuickViewRelated(relatedProduct)} />
+               </div>
               <div className="text-center px-2">
                 <h3 className="font-body-md text-sm text-on-surface-variant truncate mb-1">{relatedProduct.name}</h3>
                 <p className="font-headline-md text-base text-primary">₹ {relatedProduct.price.toLocaleString('en-IN')}</p>

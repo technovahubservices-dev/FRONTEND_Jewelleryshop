@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { orderAPI } from '../../services/api'
-import * as XLSX from 'xlsx'
+import { formatDateTime, formatCurrency, formatDate } from '../../utils/formatters'
+import { exportToExcel } from '../../utils/excelExport'
 
 const ORDER_STATES = [
   { value: 'new', label: 'New' },
@@ -57,6 +58,7 @@ export default function Orders() {
   const [viewOrder, setViewOrder] = useState(null)
   const [updateForm, setUpdateForm] = useState({ status: '', paymentStatus: '', shippingStatus: '', trackingNumber: '', note: '' })
   const [updating, setUpdating] = useState(false)
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null)
 
   useEffect(() => {
     fetchOrders()
@@ -100,10 +102,10 @@ export default function Orders() {
     try {
       const exportData = filteredOrders.map((order) => ({
         'Order ID': (order._id || order.id).toString().slice(-6).toUpperCase(),
-        'Date': formatDate(order.createdAt),
-        'Customer': order.user?.name || order.user?.email || 'Guest',
-        'Email': order.user?.email || '',
-        'Items': (order.items || []).map((item) => item.name).join(', '),
+        Date: formatDate(order.createdAt),
+        Customer: order.user?.name || order.user?.email || 'Guest',
+        Email: order.user?.email || '',
+        Items: (order.items || []).map((item) => item.name).join(', '),
         'Total Qty': (order.items || []).reduce((sum, item) => sum + (item.quantity || 0), 0),
         'Total Amount': Number(order.totalPrice || 0),
         'Payment Method': (order.paymentMethod || '').toUpperCase(),
@@ -113,26 +115,25 @@ export default function Orders() {
         'Tracking Number': order.trackingNumber || '',
       }))
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData)
-
-      worksheet['!cols'] = [
-        { wch: 14 },
-        { wch: 20 },
-        { wch: 25 },
-        { wch: 30 },
-        { wch: 40 },
-        { wch: 10 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 16 },
-        { wch: 18 },
-        { wch: 24 },
-      ]
-
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Orders')
-      XLSX.writeFile(workbook, 'orders.xlsx')
+      exportToExcel({
+        data: exportData,
+        columns: [
+          { wch: 14 },
+          { wch: 20 },
+          { wch: 25 },
+          { wch: 30 },
+          { wch: 40 },
+          { wch: 10 },
+          { wch: 16 },
+          { wch: 16 },
+          { wch: 16 },
+          { wch: 16 },
+          { wch: 18 },
+          { wch: 24 },
+        ],
+        sheetName: 'Orders',
+        filename: 'orders.xlsx',
+      })
 
       setSuccessMessage('Orders downloaded successfully')
       setError('')
@@ -189,33 +190,23 @@ export default function Orders() {
     }
   }
 
-  const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm('Are you sure you want to delete this order?')) return
+  const handleDeleteClick = (orderId) => {
+    setDeleteConfirmId(orderId)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirmId) return
     try {
-      await orderAPI.delete(orderId)
-      setOrders(orders.filter(o => (o._id || o.id) !== orderId))
+      await orderAPI.delete(deleteConfirmId)
+      setOrders(orders.filter(o => (o._id || o.id) !== deleteConfirmId))
       setSuccessMessage('Order deleted successfully')
       setError('')
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete order')
+    } finally {
+      setDeleteConfirmId(null)
     }
-  }
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const formatPrice = (price) => {
-    if (!price && price !== 0) return '-'
-    return `₹ ${Number(price).toLocaleString('en-IN')}`
   }
 
   const getStatusBadge = (status) => {
@@ -470,7 +461,7 @@ export default function Orders() {
                           )}
                         </td>
                         <td className="py-4 px-4 text-center">{totalQty}</td>
-                        <td className="py-4 px-4 text-right font-semibold text-deep-emerald">{formatPrice(order.totalPrice)}</td>
+                        <td className="py-4 px-4 text-right font-semibold text-deep-emerald">{formatCurrency(order.totalPrice)}</td>
                         <td className="py-4 px-4">{getPaymentBadge(order.paymentStatus)}</td>
                         <td className="py-4 px-4">{getStatusBadge(order.status)}</td>
                         <td className="py-4 px-4">{getShippingBadge(order.shippingStatus)}</td>
@@ -484,11 +475,11 @@ export default function Orders() {
                             >
                               <span className="material-symbols-outlined text-s">visibility</span>
                             </button>
-                            <button
-                              onClick={() => handleDeleteOrder(orderId)}
-                              className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error/10 rounded transition-colors"
-                              title="Delete Order"
-                            >
+                              <button
+                                onClick={() => handleDeleteClick(orderId)}
+                                className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error/10 rounded transition-colors"
+                                title="Delete Order"
+                              >
                               <span className="material-symbols-outlined text-s">delete</span>
                             </button>
                           </div>
@@ -625,10 +616,10 @@ export default function Orders() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-deep-emerald truncate">{item.name || 'Product'}</p>
-                          <p className="text-xs text-on-surface-variant">Qty: {item.quantity} × {formatPrice(item.price)}</p>
+                          <p className="text-xs text-on-surface-variant">Qty: {item.quantity} × {formatCurrency(item.price)}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-deep-emerald">{formatPrice(item.price * item.quantity)}</p>
+                          <p className="text-sm font-semibold text-deep-emerald">{formatCurrency(item.price * item.quantity)}</p>
                         </div>
                       </div>
                     ))}
@@ -636,19 +627,19 @@ export default function Orders() {
                   <div className="mt-4 pt-3 border-t border-outline-variant/50 space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant">Subtotal</span>
-                      <span>{formatPrice(viewOrder.itemsPrice)}</span>
+                      <span>{formatCurrency(viewOrder.itemsPrice)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant">Tax</span>
-                      <span>{formatPrice(viewOrder.taxPrice)}</span>
+                      <span>{formatCurrency(viewOrder.taxPrice)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant">Shipping</span>
-                      <span>{viewOrder.shippingPrice === 0 ? 'Free' : formatPrice(viewOrder.shippingPrice)}</span>
+                      <span>{viewOrder.shippingPrice === 0 ? 'Free' : formatCurrency(viewOrder.shippingPrice)}</span>
                     </div>
                     <div className="flex justify-between font-semibold text-deep-emerald pt-2 border-t border-outline-variant/50">
                       <span>Total</span>
-                      <span>{formatPrice(viewOrder.totalPrice)}</span>
+                      <span>{formatCurrency(viewOrder.totalPrice)}</span>
                     </div>
                   </div>
                 </div>
@@ -773,6 +764,39 @@ export default function Orders() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirmId && (
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setDeleteConfirmId(null)}
+        >
+          <div
+            className="bg-surface-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-headline-md text-headline-md text-deep-emerald mb-4">
+              Confirm Delete
+            </h3>
+            <p className="font-body-md text-body-md text-on-surface-variant mb-6">
+              Are you sure you want to delete this order? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="px-4 py-2 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-label-caps rounded hover:bg-surface-container-low transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-error text-surface-white font-label-caps text-label-caps rounded hover:bg-error/90 transition-colors"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

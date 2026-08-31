@@ -2,7 +2,8 @@
   import { useAuth } from '../../context/AuthContext';
   import { productAPI } from '../../services/api';
   import AddProductModal from '../components/AddProductModal';
-  import * as XLSX from 'xlsx';
+  import { exportToExcel } from '../../utils/excelExport';
+  import { formatCurrency } from '../../utils/formatters';
 
   export default function Products() {
     const [products, setProducts] = useState([]);
@@ -140,55 +141,48 @@
     };
 
     const handleDownloadExcel = () => {
-  if (!filteredProducts.length) {
-    setError('No products available to export');
-    setSuccessMessage('');
-    return;
-  }
+      if (!filteredProducts.length) {
+        setError('No products available to export')
+        setSuccessMessage('')
+        return
+      }
 
-  try {
-    const exportData = filteredProducts.map((product) => ({
-      'Product Name': product.name || '',
-      SKU: product.sku || '',
-      Category: product.category || '',
-      Metal: product.metal || '',
-      Price: Number(product.price || 0),
-      'Discount Price': Number(product.discountPrice || 0),
-      Stock: Number(product.stock || 0),
-      Status: product.status || '',
-    }));
+      try {
+        const exportData = filteredProducts.map((product) => ({
+          'Product Name': product.name || '',
+          SKU: product.sku || '',
+          Category: product.category || '',
+          Metal: product.metal || '',
+          Price: Number(product.price || 0),
+          'Discount Price': Number(product.discountPrice || 0),
+          Stock: Number(product.stock || 0),
+          Status: product.status || '',
+        }))
 
-    const worksheet = XLSX.utils.json_to_sheet(exportData);
+        exportToExcel({
+          data: exportData,
+          columns: [
+            { wch: 30 },
+            { wch: 18 },
+            { wch: 18 },
+            { wch: 15 },
+            { wch: 15 },
+            { wch: 18 },
+            { wch: 12 },
+            { wch: 15 },
+          ],
+          sheetName: 'Products',
+          filename: 'products.xlsx',
+        })
 
-    worksheet['!cols'] = [
-      { wch: 30 },
-      { wch: 18 },
-      { wch: 18 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 18 },
-      { wch: 12 },
-      { wch: 15 },
-    ];
-
-    const workbook = XLSX.utils.book_new();
-
-    XLSX.utils.book_append_sheet(
-      workbook,
-      worksheet,
-      'Products'
-    );
-
-    XLSX.writeFile(workbook, 'products.xlsx');
-
-    setSuccessMessage('Products downloaded successfully');
-    setError('');
-  } catch (err) {
-    console.error('Excel export error:', err);
-    setError('Failed to download Excel file');
-    setSuccessMessage('');
-  }
-};
+        setSuccessMessage('Products downloaded successfully')
+        setError('')
+      } catch (err) {
+        console.error('Excel export error:', err)
+        setError('Failed to download Excel file')
+        setSuccessMessage('')
+      }
+    };
 
     const getStatusBadge = (status) => {
       const configs = {
@@ -251,7 +245,7 @@
       );
     };
 
-    const formatPrice = (price, discountPrice) => {
+    const formatCurrency = (price, discountPrice) => {
       if (discountPrice && discountPrice > 0) {
         return `₹${Number(discountPrice).toLocaleString('en-IN')}`;
       }
@@ -484,7 +478,7 @@
                           <td className="py-4 px-4">{product.category}</td>
                           <td className="py-4 px-4">{product.metal || '-'}</td>
                           <td className="py-4 px-4 text-right font-semibold">
-                            {formatPrice(product.price, product.discountPrice)}
+                            {formatCurrency(product.price, product.discountPrice)}
                           </td>
                           <td className="py-4 px-4">
                             {getStockBadge(product.stock)}

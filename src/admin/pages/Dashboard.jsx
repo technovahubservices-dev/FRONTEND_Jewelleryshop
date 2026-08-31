@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { productAPI, orderAPI, rawMaterialAPI, productionAPI } from '../../services/api'
+import { productAPI, orderAPI } from '../../services/api'
 
 const KPI_CARD_BASE = 'bg-surface-white p-5 rounded-lg border border-outline-variant/30 hover:border-regal-gold/50 transition-colors duration-300 flex flex-col justify-between h-28 relative overflow-hidden group'
 const KPI_TITLE = 'font-label-caps text-label-caps text-outline z-10'
@@ -79,8 +79,6 @@ const DonutChart = ({ data, colors = ['#013220', '#D4AF37', '#735c00', '#e3e2e0'
 export default function Dashboard() {
   const [products, setProducts] = useState([])
   const [orders, setOrders] = useState([])
-  const [rawMaterials, setRawMaterials] = useState([])
-  const [productions, setProductions] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [chartPeriod, setChartPeriod] = useState('week')
@@ -93,11 +91,9 @@ export default function Dashboard() {
     setLoading(true)
     setError('')
     try {
-      const [productsRes, ordersRes, materialsRes, productionsRes] = await Promise.all([
+      const [productsRes, ordersRes] = await Promise.all([
         productAPI.getAll(),
         orderAPI.getAll(),
-        rawMaterialAPI.getAll(),
-        productionAPI.getAll(),
       ])
 
       if (productsRes.data.success) {
@@ -105,12 +101,6 @@ export default function Dashboard() {
       }
       if (ordersRes.data.success) {
         setOrders(ordersRes.data.data || [])
-      }
-      if (materialsRes.data.success) {
-        setRawMaterials(materialsRes.data.data || [])
-      }
-      if (productionsRes.data.success) {
-        setProductions(productionsRes.data.data || [])
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch dashboard data')
@@ -144,18 +134,6 @@ export default function Dashboard() {
   const lowStockItems = useMemo(() => {
     return products.filter(p => (p.stock || 0) < 10).length
   }, [products])
-
-  const goldStock = useMemo(() => {
-    return rawMaterials
-      .filter(rm => rm.name && rm.name.toLowerCase().includes('gold'))
-      .reduce((sum, rm) => sum + (rm.quantity || 0), 0)
-  }, [rawMaterials])
-
-  const silverStock = useMemo(() => {
-    return rawMaterials
-      .filter(rm => rm.name && rm.name.toLowerCase().includes('silver'))
-      .reduce((sum, rm) => sum + (rm.quantity || 0), 0)
-  }, [rawMaterials])
 
   const pendingOrders = useMemo(() => {
     return orders.filter(o => ['pending', 'new', 'confirmed', 'payment_received'].includes(o.status)).length
@@ -357,8 +335,6 @@ export default function Dashboard() {
         {/* 2. Secondary KPI Cards */}
         <div className="md:col-span-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
           {[
-            { label: 'Gold Stock', value: `${goldStock.toLocaleString('en-IN')} g` },
-            { label: 'Silver Stock', value: `${silverStock.toLocaleString('en-IN')} g` },
             { label: 'Pending Orders', value: pendingOrders },
             { label: 'Pending Payments', value: pendingPayments },
             { label: 'Active Orders', value: orders.filter(o => !['delivered', 'cancelled'].includes(o.status)).length },
@@ -410,7 +386,7 @@ export default function Dashboard() {
                   fill="url(#chart-gradient)"
                 />
                 <path
-                  d={`M${chartData.map((d, i) => {
+                  d={`${chartData.map((d, i) => {
                     const x = i * 30 + 15
                     const y = 100 - (d.revenue / maxChartValue) * 80
                     return `${i === 0 ? 'M' : 'L'}${x},${y}`
@@ -489,36 +465,6 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
-          )}
-        </div>
-
-        {/* 7. Stock Usage */}
-        <div className="md:col-span-4 bg-surface-white p-6 rounded-lg border border-outline-variant/30 min-h-[320px] flex flex-col">
-          <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald mb-4">Gold / Silver Stock Usage</h3>
-          {rawMaterials.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="font-body-md text-sm text-on-surface-variant">No raw material data available.</p>
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col gap-4">
-              {['Gold', 'Silver'].map((metal) => {
-                const metalMaterials = rawMaterials.filter(rm => rm.name && rm.name.toLowerCase().includes(metal.toLowerCase()))
-                const totalQty = metalMaterials.reduce((sum, rm) => sum + (rm.quantity || 0), 0)
-                const totalCost = metalMaterials.reduce((sum, rm) => sum + ((rm.cost || 0) * (rm.quantity || 0)), 0)
-                return (
-                  <div key={metal} className="p-4 rounded-lg border border-outline-variant/30 bg-surface-container-low/50">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="font-label-caps text-label-caps text-outline">{metal}</span>
-                      <span className="font-headline-md text-headline-md text-deep-emerald">{totalQty.toLocaleString('en-IN')} <span className="text-sm text-outline">{metalMaterials[0]?.unit || 'g'}</span></span>
-                    </div>
-                    <div className="w-full bg-outline-variant/30 rounded-full h-2">
-                      <div className="bg-regal-gold h-2 rounded-full" style={{ width: `${Math.min(totalQty / 1000 * 100, 100)}%` }}></div>
-                    </div>
-                    <p className="text-xs text-on-surface-variant mt-1">Value: ₹{totalCost.toLocaleString('en-IN')}</p>
-                  </div>
-                )
-              })}
-            </div>
           )}
         </div>
 

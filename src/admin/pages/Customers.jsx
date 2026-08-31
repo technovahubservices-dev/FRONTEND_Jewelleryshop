@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { userAPI } from '../../services/api'
-import * as XLSX from 'xlsx'
+import { exportToExcel } from '../../utils/excelExport'
 
 export default function Customers() {
   const navigate = useNavigate()
@@ -71,22 +71,21 @@ export default function Customers() {
         }),
       }))
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData)
-
-      worksheet['!cols'] = [
-        { wch: 25 },
-        { wch: 35 },
-        { wch: 18 },
-        { wch: 40 },
-        { wch: 20 },
-        { wch: 20 },
-        { wch: 12 },
-        { wch: 20 },
-      ]
-
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Customers')
-      XLSX.writeFile(workbook, 'customers.xlsx')
+      exportToExcel({
+        data: exportData,
+        columns: [
+          { wch: 25 },
+          { wch: 35 },
+          { wch: 18 },
+          { wch: 40 },
+          { wch: 20 },
+          { wch: 20 },
+          { wch: 12 },
+          { wch: 20 },
+        ],
+        sheetName: 'Customers',
+        filename: 'customers.xlsx',
+      })
 
       setSuccessMessage('Customers downloaded successfully')
       setError('')

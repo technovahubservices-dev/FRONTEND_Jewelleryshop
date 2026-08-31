@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import FeaturedProducts from '../components/sections/FeaturedProducts'
 import { contentAPI, productAPI } from '../services/api'
-import { useCart } from '../context/CartContext'
 import TestimonialSection from '../components/sections/TestimonialSection'
 import heroPageImage from '../assets/images/homepage.png'
 
@@ -93,7 +92,6 @@ export default function Home() {
   const [homepageSettings, setHomepageSettings] = useState(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
-  const { addToCart } = useCart()
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -202,10 +200,6 @@ export default function Home() {
   }
 
   const ProductCardGrid = ({ products, emptyMessage }) => {
-    const handleAddToCart = (product) => {
-      addToCart(product, 1)
-    }
-
     const handleViewProduct = (product) => {
       navigate(`/product/${product.id}`)
     }
@@ -270,14 +264,6 @@ export default function Home() {
                   </span>
                 )}
               </div>
-
-              <button
-                onClick={() => handleAddToCart(product)}
-                className="w-full bg-deep-emerald text-surface-white py-3.5 rounded font-label-caps text-label-caps uppercase tracking-wider hover:bg-regal-gold transition-colors flex items-center justify-center gap-2 shadow-sm mb-2"
-              >
-                <span className="material-symbols-outlined text-sm">shopping_bag</span>
-                Add to Cart
-              </button>
 
               <Link
                 to={`/product/${product.id}`}
@@ -607,7 +593,7 @@ export default function Home() {
                   <div className="heritage-image"><img src="https://www.abhushanjewellers.com/wp-content/uploads/2025/09/Gold-jewellery-1200x1200_123-copy_123-copy-3.jpg" alt="Heritage Jewellery" /></div>
                   <div className="heritage-image"><img src="https://www.totaramsons.com/assets/images/goldcat.jpg" alt="Heritage Jewellery" /></div>
                   <div className="heritage-image"><img src="https://parekhjewellersltd.com/wp-content/uploads/2024/03/about-us-banner1-1.jpg" alt="Heritage Jewellery" /></div>
-                  <div className="heritage-image"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFN44FhP4AgZNtBjGes_xTPhOGO6SKaj_Lf4ARRp4wuKFCEK3f6TLA6I&s=10" alt="Heritage Jewellery" /></div>
+                  <div className="heritage-image"><img src="https://placehold.co/600x400?text=Heritage+Jewellery" alt="Heritage Jewellery" /></div>
                   <div className="heritage-image"><img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=800&q=80" alt="Heritage Jewellery" /></div>
                   <div className="heritage-image"><img src="https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=800&q=80" alt="Heritage Jewellery" /></div>
                 </div>

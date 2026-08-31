@@ -94,32 +94,32 @@ export default {
         "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
         "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }]
       }
-    },
-    plugins: [
-      function ({ addUtilities }) {
-        addUtilities({
-          '.custom-scrollbar::-webkit-scrollbar': {
-            width: '4px',
-            height: '4px',
-          },
-          '.custom-scrollbar::-webkit-scrollbar-track': {
-            background: 'transparent',
-          },
-          '.custom-scrollbar::-webkit-scrollbar-thumb': {
-            backgroundColor: '#e3e2e0',
-            borderRadius: '4px',
-          },
-          '.table-row-hover:hover': {
-            backgroundColor: '#ffffff',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
-            transform: 'translateY(-1px)',
-            transition: 'all 0.2s ease',
-          },
-          '.transition-all-custom': {
-            transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-          },
-        })
-      }
-    ]
-  }
+    }
+  },
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.custom-scrollbar::-webkit-scrollbar': {
+          width: '4px',
+          height: '4px',
+        },
+        '.custom-scrollbar::-webkit-scrollbar-track': {
+          background: 'transparent',
+        },
+        '.custom-scrollbar::-webkit-scrollbar-thumb': {
+          backgroundColor: '#e3e2e0',
+          borderRadius: '4px',
+        },
+        '.table-row-hover:hover': {
+          backgroundColor: '#ffffff',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+          transform: 'translateY(-1px)',
+          transition: 'all 0.2s ease',
+        },
+        '.transition-all-custom': {
+          transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+        },
+      })
+    }
+  ]
 }

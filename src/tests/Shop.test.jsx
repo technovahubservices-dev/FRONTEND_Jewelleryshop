@@ -3,7 +3,6 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Shop from '../pages/Shop';
 import { AuthProvider } from '../context/AuthContext';
-import { WishlistProvider } from '../context/WishlistContext';
 
 const mockNavigate = vi.fn();
 
@@ -12,32 +11,6 @@ vi.mock('react-router-dom', async () => {
   return {
     ...actual,
     useNavigate: () => mockNavigate,
-  };
-});
-
-vi.mock('../context/CartContext', async () => {
-  const actual = await vi.importActual('../context/CartContext');
-  return {
-    ...actual,
-    useCart: () => ({
-      cartItems: [],
-      addToCart: vi.fn(),
-      totalItems: 0,
-      subtotal: 0,
-    }),
-  };
-});
-
-vi.mock('../context/WishlistContext', async () => {
-  const actual = await vi.importActual('../context/WishlistContext');
-  return {
-    ...actual,
-    useWishlist: () => ({
-      isInWishlist: vi.fn(),
-      addToWishlist: vi.fn(),
-      removeFromWishlist: vi.fn(),
-      wishlistItems: [],
-    }),
   };
 });
 
@@ -65,9 +38,7 @@ describe('Shop Page', () => {
     render(
       <BrowserRouter>
         <AuthProvider>
-          <WishlistProvider>
-            <Shop />
-          </WishlistProvider>
+          <Shop />
         </AuthProvider>
       </BrowserRouter>
     );

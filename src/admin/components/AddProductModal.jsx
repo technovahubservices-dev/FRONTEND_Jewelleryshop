@@ -222,7 +222,6 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
       return;
     }
 
-    delete errors.imageUrl;
     setErrors((prev) => {
       const newErrors = { ...prev };
       delete newErrors.imageUrl;

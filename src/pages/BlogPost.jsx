@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { contentAPI } from '../services/api';
+import { formatDate } from '../utils/formatters';
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -31,15 +32,6 @@ export default function BlogPost() {
     };
     fetchPost();
   }, [slug]);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   if (loading) {
     return (

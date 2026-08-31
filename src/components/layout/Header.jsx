@@ -1,12 +1,10 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { useCart } from '../../context/CartContext'
 import AnnouncementBar from '../../pages/AnnouncementBar'
 import logo from '../../assets/icons/logo.jpeg'
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth()
-  const { totalItems } = useCart()
   const navigate = useNavigate()
 
   return (
@@ -22,8 +20,8 @@ export default function Header() {
         {/* Center Side: Logo, Text, and Navigation Links perfectly grouped together */}
         <div className="flex items-center justify-center gap-8 col-span-3 md:col-span-1">
           <Link className="flex items-center gap-3 text-display-lg font-display-lg tracking-tighter text-deep-emerald hover:opacity-80 transition-opacity shrink-0" to="/">
-            <img src={logo} alt="JKR" className="w-13 h-12 object-contain" />
-            <span>JKR</span>
+            <img src={logo} alt="JKR" className="w-15 h-14 object-contain" />
+            <span></span>
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6 shrink-0">
@@ -44,9 +42,6 @@ export default function Header() {
           <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/shop')} title="Shop">
             <span className="material-symbols-outlined text-[24px]">storefront</span>
           </button>
-          <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/account/wishlist')} title="Wishlist">
-            <span className="material-symbols-outlined text-[24px]">favorite</span>
-          </button>
           {isAuthenticated ? (
             <button
               onClick={logout}
@@ -60,10 +55,6 @@ export default function Header() {
               <span className="material-symbols-outlined text-[24px]">person</span>
             </Link>
           )}
-          <Link to="/cart" className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out relative">
-            <span className="material-symbols-outlined text-[24px]">shopping_bag</span>
-            <span className="absolute -top-1 -right-1 bg-regal-gold text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{totalItems > 0 ? totalItems : 0}</span>
-          </Link>
         </div>
       </div>
 
@@ -74,7 +65,7 @@ export default function Header() {
           <img src={logo} alt="JKR" className="w-6 h-6 object-contain" />
           <span>JKR</span>
         </Link>
-        <Link to="/cart"><span className="material-symbols-outlined">shopping_bag</span></Link>
+        <Link to="/account"><span className="material-symbols-outlined">person</span></Link>
       </header>
     </header>
   )

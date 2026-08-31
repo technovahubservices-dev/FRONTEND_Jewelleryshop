@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { contentAPI } from '../services/api';
+import { formatDate } from '../utils/formatters';
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
@@ -30,15 +31,6 @@ export default function Blog() {
     };
     fetchPosts();
   }, [currentPage]);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
 
   return (
     <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-[120px]">

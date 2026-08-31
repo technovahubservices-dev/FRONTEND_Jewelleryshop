@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { orderAPI } from '../services/api'
+import { formatDate, formatCurrency } from '../utils/formatters'
 
 export default function OrdersHistory() {
   const { user, isAuthenticated } = useAuth()
@@ -32,20 +33,6 @@ export default function OrdersHistory() {
     }
     fetchOrders()
   }, [isAuthenticated, navigate])
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
-  const formatPrice = (price) => {
-    if (!price && price !== 0) return '-'
-    return `₹ ${Number(price).toLocaleString('en-IN')}`
-  }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -204,7 +191,7 @@ export default function OrdersHistory() {
                 ))}
                 <div className="flex justify-between pt-4 border-t border-outline-variant font-headline-md text-headline-md text-deep-emerald">
                   <span>Total</span>
-                  <span>{formatPrice(order.totalPrice)}</span>
+                  <span>{formatCurrency(order.totalPrice)}</span>
                 </div>
               </div>
             </div>

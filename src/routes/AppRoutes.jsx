@@ -2,8 +2,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Home from '../pages/Home'
 import Shop from '../pages/Shop'
 import ProductDetails from '../pages/ProductDetails'
-import Cart from '../pages/Cart'
-import Checkout from '../pages/Checkout'
 import Account from '../pages/Account'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
@@ -12,7 +10,6 @@ import OrderConfirmation from '../pages/OrderConfirmation'
 import OrdersHistory from '../pages/OrdersHistory'
 import Tracking from '../pages/Tracking'
 import Payment from '../pages/Payment'
-import Wishlist from '../pages/Wishlist'
 import Addresses from '../pages/Addresses'
 import Settings from '../pages/Settings'
 import Blog from '../pages/Blog'
@@ -21,10 +18,6 @@ import AdminLayout from '../admin/layouts/AdminLayout'
 import Dashboard from '../admin/pages/Dashboard'
 import Products from '../admin/pages/Products'
 import Categories from '../admin/pages/Categories'
-import RawMaterials from '../admin/pages/RawMaterials'
-import Inventory from '../admin/pages/Inventory'
-import Suppliers from '../admin/pages/Suppliers'
-import Production from '../admin/pages/Production'
 import Orders from '../admin/pages/Orders'
 import Customers from '../admin/pages/Customers'
 import ContentManagement from '../admin/pages/ContentManagement'
@@ -48,132 +41,49 @@ function AdminRoute({ children }) {
   return children
 }
 
+const adminElement = (Element) => (
+  <AdminRoute>
+    <AdminLayout>
+      <Element />
+    </AdminLayout>
+  </AdminRoute>
+)
+
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Public routes */}
       <Route path="/" element={<Home />} />
       <Route path="/shop" element={<Shop />} />
       <Route path="/product/:id" element={<ProductDetails />} />
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/checkout" element={<Checkout />} />
-      <Route path="/account" element={<Account />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/search" element={<Search />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/contact" element={<Contact />} />
+
+      {/* Account / User routes */}
+      <Route path="/account" element={<Account />} />
       <Route path="/order-confirmation" element={<OrderConfirmation />} />
       <Route path="/payment" element={<Payment />} />
       <Route path="/account/orders" element={<OrdersHistory />} />
       <Route path="/account/tracking" element={<Tracking />} />
-      <Route path="/account/wishlist" element={<Wishlist />} />
       <Route path="/account/addresses" element={<Addresses />} />
       <Route path="/account/settings" element={<Settings />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/blog/:slug" element={<BlogPost />} />
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AdminLayout><Dashboard /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/products"
-        element={
-          <AdminRoute>
-            <AdminLayout><Products /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/categories"
-        element={
-          <AdminRoute>
-            <AdminLayout><Categories /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/raw-materials"
-        element={
-          <AdminRoute>
-            <AdminLayout><RawMaterials /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/inventory"
-        element={
-          <AdminRoute>
-            <AdminLayout><Inventory /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/suppliers"
-        element={
-          <AdminRoute>
-            <AdminLayout><Suppliers /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/production"
-        element={
-          <AdminRoute>
-            <AdminLayout><Production /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/orders"
-        element={
-          <AdminRoute>
-            <AdminLayout><Orders /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/customers"
-        element={
-          <AdminRoute>
-            <AdminLayout><Customers /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/quotations"
-        element={
-          <AdminRoute>
-            <AdminLayout><Quotations /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/quotations/create"
-        element={
-          <AdminRoute>
-            <AdminLayout><CreateQuotation /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/content"
-        element={
-          <AdminRoute>
-            <AdminLayout><ContentManagement /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route
-        path="/admin/settings"
-        element={
-          <AdminRoute>
-            <AdminLayout><AdminSettings /></AdminLayout>
-          </AdminRoute>
-        }
-      />
-      <Route path="/contact" element={<Contact />} />
+
+      {/* Admin routes */}
+      <Route path="/admin" element={adminElement(Dashboard)} />
+      <Route path="/admin/products" element={adminElement(Products)} />
+      <Route path="/admin/categories" element={adminElement(Categories)} />
+      <Route path="/admin/orders" element={adminElement(Orders)} />
+      <Route path="/admin/customers" element={adminElement(Customers)} />
+      <Route path="/admin/quotations" element={adminElement(Quotations)} />
+      <Route path="/admin/quotations/create" element={adminElement(CreateQuotation)} />
+      <Route path="/admin/content" element={adminElement(ContentManagement)} />
+      <Route path="/admin/settings" element={adminElement(AdminSettings)} />
+
+      {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

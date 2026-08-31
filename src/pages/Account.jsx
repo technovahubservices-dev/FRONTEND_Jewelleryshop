@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { orderAPI } from '../services/api'
+import { formatDate, formatCurrency } from '../utils/formatters'
 
 export default function Account() {
   const navigate = useNavigate()
@@ -32,20 +33,6 @@ export default function Account() {
     }
     fetchOrders()
   }, [isAuthenticated, navigate])
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
-
-  const formatPrice = (price) => {
-    if (!price && price !== 0) return '-'
-    return `₹ ${Number(price).toLocaleString('en-IN')}`
-  }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -99,10 +86,6 @@ export default function Account() {
             <Link to="/account/orders" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-white hover:text-deep-emerald rounded transition-all">
               <span className="material-symbols-outlined">shopping_basket</span>
               My Orders
-            </Link>
-            <Link to="/account/wishlist" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-white hover:text-deep-emerald rounded transition-all">
-              <span className="material-symbols-outlined">favorite</span>
-              Wishlist
             </Link>
             <Link to="/account/addresses" className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-white hover:text-deep-emerald rounded transition-all">
               <span className="material-symbols-outlined">location_on</span>
@@ -209,7 +192,7 @@ export default function Account() {
                         </div>
                       </td>
                       <td className="py-6 px-4 text-on-surface">{formatDate(order.createdAt)}</td>
-                      <td className="py-6 px-4 text-right font-semibold text-deep-emerald">{formatPrice(order.totalPrice)}</td>
+                      <td className="py-6 px-4 text-right font-semibold text-deep-emerald">{formatCurrency(order.totalPrice)}</td>
                       <td className="py-6 pl-4">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold ${getStatusColor(order.status)} border`}>
                           {getStatusLabel(order.status)}

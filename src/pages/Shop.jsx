@@ -1,13 +1,9 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
-import { useWishlist } from '../context/WishlistContext'
 import { productAPI } from '../services/api'
 
 export default function Shop() {
   const navigate = useNavigate()
-  const { addToCart } = useCart()
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
 
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -46,22 +42,6 @@ export default function Shop() {
     navigate(`/product/${product.id}`)
   }
 
-  const handleAddToCart = (product, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    addToCart(product, 1)
-  }
-
-  const handleWishlist = async (product, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (isInWishlist(product.id)) {
-      await removeFromWishlist(product.id)
-    } else {
-      await addToWishlist(product.id)
-    }
-  }
-
   const toggleFilter = (type, value) => {
     setFilters(prev => ({
       ...prev,
@@ -69,6 +49,12 @@ export default function Shop() {
         ? prev[type].filter(v => v !== value)
         : [...prev[type], value]
     }))
+  }
+
+  const goToPage = (page) => {
+    if (page < 1 || page > totalPages) return
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const filteredProducts = useMemo(() => {
@@ -231,19 +217,11 @@ export default function Shop() {
                         e.target.src = 'https://placehold.co/400x400?text=No+Image';
                       }}
                     />
-                      {/* Wishlist */}
-                      <button
-                        className={`absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center shadow-sm transition-colors ${isInWishlist(product.id) ? 'text-error' : 'text-on-surface-variant hover:text-error'}`}
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlist(product, e); }}
-                        title={isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                      >
-                        <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: isInWishlist(product.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                      </button>
                   </div>
 
                   {/* Brand */}
                   <div className="text-center px-4 py-2">
-                    <span className="font-label-caps text-label-caps text-[10px] text-on-surface-variant/70 uppercase tracking-wider">
+                    <span className="font-label-caps text-label-caps text-xs text-on-surface-variant/70 uppercase tracking-wider">
                       JKR
                     </span>
                   </div>
@@ -254,17 +232,17 @@ export default function Shop() {
                       {product.name}
                     </h3>
 
-                     {/* Pricing */}
-                     <div className="mb-4">
-                       <span className="font-headline-md text-lg text-deep-emerald">
-                         ₹ {product.price.toLocaleString('en-IN')}
-                       </span>
-                       {product.originalPrice && (
-                         <span className="ml-2 text-xs text-on-surface-variant line-through">
-                           ₹ {product.originalPrice.toLocaleString('en-IN')}
-                         </span>
-                       )}
-                     </div>
+                    {/* Pricing */}
+                    <div className="mb-4">
+                      <span className="font-headline-md text-lg text-deep-emerald">
+                        ₹ {product.price.toLocaleString('en-IN')}
+                      </span>
+                      {product.originalPrice && (
+                        <span className="ml-2 text-xs text-on-surface-variant line-through">
+                          ₹ {product.originalPrice.toLocaleString('en-IN')}
+                        </span>
+                      )}
+                    </div>
 
                     {/* Buttons */}
                     <div className="flex flex-col gap-2">
@@ -273,12 +251,6 @@ export default function Shop() {
                         className="flex-1 border border-deep-emerald text-deep-emerald bg-transparent px-4 py-2.5 text-xs font-label-caps text-label-caps uppercase tracking-wider hover:bg-deep-emerald hover:text-surface-white transition-colors duration-200 rounded"
                       >
                         Quick View
-                      </button>
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCart(product, e); }}
-                        className=" flex-1 bg-deep-emerald text-surface-white px-4 py-2.5 text-xs font-label-caps text-label-caps uppercase tracking-wider hover:bg-regal-gold transition-colors duration-200 rounded"
-                      >
-                        Add to Cart
                       </button>
                     </div>
                   </div>

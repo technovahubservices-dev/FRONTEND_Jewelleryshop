@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -92,18 +92,6 @@ export const userAPI = {
   updateAddress: (id, data) => api.put(`/users/addresses/${id}`, data),
   deleteAddress: (id) => api.delete(`/users/addresses/${id}`),
   setDefaultAddress: (id) => api.put(`/users/addresses/${id}/default`),
-  getWishlist: () => api.get('/users/wishlist'),
-  addToWishlist: (productId) => api.post('/users/wishlist', { productId }),
-  removeFromWishlist: (productId) => api.delete(`/users/wishlist/${productId}`),
-};
-
-export const couponAPI = {
-  getAll: (params) => api.get('/coupons', { params }),
-  getById: (id) => api.get(`/coupons/${id}`),
-  create: (data) => api.post('/coupons', data),
-  update: (id, data) => api.put(`/coupons/${id}`, data),
-  delete: (id) => api.delete(`/coupons/${id}`),
-  validate: (data) => api.post('/coupons/validate', data),
 };
 
 export const orderAPI = {
@@ -125,24 +113,7 @@ export const quotationAPI = {
   create: (data) => api.post('/quotations', data),
   update: (id, data) => api.put(`/quotations/${id}`, data),
   delete: (id) => api.delete(`/quotations/${id}`),
-  uploadExcel: (formData) => api.post('/quotations/upload-excel', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  }),
-};
-
-export const supplierAPI = {
-  getAll: (params) => api.get('/suppliers', { params }),
-  getById: (id) => api.get(`/suppliers/${id}`),
-  create: (data) => api.post('/suppliers', data),
-  update: (id, data) => api.put(`/suppliers/${id}`, data),
-  delete: (id) => api.delete(`/suppliers/${id}`),
-};
-
-export const inventoryAPI = {
-  getMetrics: () => api.get('/inventory/metrics'),
-  getMovements: (params) => api.get('/inventory/movements', { params }),
-  createMovement: (data) => api.post('/inventory/movements', data),
-  getProductHistory: (productId) => api.get(`/inventory/product/${productId}/history`),
+  uploadExcel: (formData) => api.post('/quotations/upload-excel', formData),
 };
 
 export const categoryAPI = {
@@ -151,22 +122,6 @@ export const categoryAPI = {
   create: (categoryData) => api.post('/categories', categoryData),
   update: (id, categoryData) => api.put(`/categories/${id}`, categoryData),
   delete: (id) => api.delete(`/categories/${id}`),
-};
-
-export const rawMaterialAPI = {
-  getAll: () => api.get('/raw-materials'),
-  getById: (id) => api.get(`/raw-materials/${id}`),
-  create: (materialData) => api.post('/raw-materials', materialData),
-  update: (id, materialData) => api.put(`/raw-materials/${id}`, materialData),
-  delete: (id) => api.delete(`/raw-materials/${id}`),
-};
-
-export const productionAPI = {
-  getAll: () => api.get('/productions'),
-  getById: (id) => api.get(`/productions/${id}`),
-  create: (productionData) => api.post('/productions', productionData),
-  update: (id, productionData) => api.put(`/productions/${id}`, productionData),
-  delete: (id) => api.delete(`/productions/${id}`),
 };
 
 export const contentAPI = {
@@ -183,9 +138,7 @@ export const contentAPI = {
    getHomepageSettings: () => api.get('/content/homepage/settings'),
   updateHomepageSettings: (data) => api.put('/content/homepage/settings', data),
   uploadHomepageImage: (formData) =>
-    api.post('/content/homepage/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
+    api.post('/content/homepage/upload', formData),
   updateHomepageTab: (tab, payload) =>
     api.put('/content/homepage/settings/updateTab', { tab, payload }),
 };

@@ -39,7 +39,7 @@ export default function Login() {
               Welcome Back
             </h1>
             <p className="font-body-md text-body-md text-on-surface-variant mt-3">
-              Sign in to access your account, orders, and wishlist
+              Sign in to access your account and orders
             </p>
           </div>
 

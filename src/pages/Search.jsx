@@ -1,14 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useCart } from '../context/CartContext'
-import { useWishlist } from '../context/WishlistContext'
 import { productAPI } from '../services/api'
 
 export default function Search() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { addToCart } = useCart()
-  const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist()
 
   const query = new URLSearchParams(location.search).get('q') || ''
   const [products, setProducts] = useState([])
@@ -49,22 +45,6 @@ export default function Search() {
 
   const handleQuickView = (product) => {
     navigate(`/product/${product.id}`)
-  }
-
-  const handleAddToCart = (product, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    addToCart(product, 1)
-  }
-
-  const handleWishlist = async (product, e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (isInWishlist(product.id)) {
-      await removeFromWishlist(product.id)
-    } else {
-      await addToWishlist(product.id)
-    }
   }
 
   if (loading) {
@@ -134,14 +114,7 @@ export default function Search() {
                         e.target.src = 'https://placehold.co/400x400?text=No+Image';
                       }}
                     />
-                   <button
-                     className={`absolute top-3 right-3 w-8 h-8 rounded-full bg-surface-white/80 backdrop-blur flex items-center justify-center shadow-sm transition-colors ${isInWishlist(product.id) ? 'text-error' : 'text-on-surface-variant hover:text-error'}`}
-                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWishlist(product, e); }}
-                     title={isInWishlist(product.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
-                   >
-                     <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: isInWishlist(product.id) ? "'FILL' 1" : "'FILL' 0" }}>favorite</span>
-                   </button>
-                </div>
+                 </div>
                 <div className="text-center px-4 py-2">
                   <span className="font-label-caps text-label-caps text-[10px] text-on-surface-variant/70 uppercase tracking-wider">
                     JKR
@@ -161,20 +134,14 @@ export default function Search() {
                       </span>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickView(product); }}
-                      className="flex-1 border border-deep-emerald text-deep-emerald bg-transparent px-4 py-2.5 text-xs font-label-caps text-label-caps uppercase tracking-wider hover:bg-deep-emerald hover:text-surface-white transition-colors duration-200 rounded"
-                    >
-                      Quick View
-                    </button>
-                    <button
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCart(product, e); }}
-                      className="flex-1 bg-deep-emerald text-surface-white px-4 py-2.5 text-xs font-label-caps text-label-caps uppercase tracking-wider hover:bg-regal-gold transition-colors duration-200 rounded"
-                    >
-                      Add to Cart
-                    </button>
-                  </div>
+                   <div className="flex flex-col gap-2">
+                     <button
+                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickView(product); }}
+                       className="flex-1 border border-deep-emerald text-deep-emerald bg-transparent px-4 py-2.5 text-xs font-label-caps text-label-caps uppercase tracking-wider hover:bg-deep-emerald hover:text-surface-white transition-colors duration-200 rounded"
+                     >
+                       Quick View
+                     </button>
+                   </div>
                 </div>
               </div>
             </Link>

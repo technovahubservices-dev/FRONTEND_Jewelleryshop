@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { quotationAPI, orderAPI } from '../../services/api'
-import * as XLSX from 'xlsx'
+import { formatCurrency, formatDate } from '../../utils/formatters'
+import { exportToExcel } from '../../utils/excelExport'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const QUOTATION_STATUSES = [
   { value: 'draft', label: 'Draft' },
@@ -15,6 +18,15 @@ const QUOTATION_STATUSES = [
 export default function Quotations() {
   const navigate = useNavigate()
   const location = useLocation()
+
+  const parseNumber = (value) => {
+    if (typeof value === 'number') return value
+    if (typeof value !== 'string') return 0
+    const cleaned = value.replace(/[^0-9.\-]/g, '')
+    const num = parseFloat(cleaned)
+    return Number.isFinite(num) ? num : 0
+  }
+
   const [quotations, setQuotations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -23,6 +35,7 @@ export default function Quotations() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [viewQuotation, setViewQuotation] = useState(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
+  const [convertConfirmId, setConvertConfirmId] = useState(null)
 
   useEffect(() => {
     fetchQuotations()
@@ -84,13 +97,15 @@ export default function Quotations() {
   const handleDeleteConfirm = async () => {
     if (!deleteConfirmId) return
     try {
+      await quotationAPI.delete(deleteConfirmId)
       setQuotations(quotations.filter((q) => q._id !== deleteConfirmId))
       setSuccessMessage('Quotation deleted successfully')
       setError('')
       setTimeout(() => setSuccessMessage(''), 3000)
-      setDeleteConfirmId(null)
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to delete quotation')
+    } finally {
+      setDeleteConfirmId(null)
     }
   }
 
@@ -99,9 +114,205 @@ export default function Quotations() {
     setTimeout(() => window.print(), 300)
   }
 
+  const generatePDF = (quotation) => {
+    if (!quotation) return
+    const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const margin = 15
+    let y = 20
+
+    doc.setFontSize(18)
+    doc.setFont('helvetica', 'bold')
+    doc.text('JKR Jewellery', margin, y)
+    y += 6
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Crafting timeless elegance since 2017', margin, y)
+    y += 10
+
+    doc.setDrawColor(21, 59, 45)
+    doc.setLineWidth(0.5)
+    doc.line(margin, y, pageWidth - margin, y)
+    y += 8
+
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.text('QUOTATION', pageWidth - margin, y, { align: 'right' })
+    y += 6
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Quotation Number: ${quotation.quotationNumber || '-'}`, pageWidth - margin, y, { align: 'right' })
+    y += 12
+
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.text('Quotation Details', margin, y)
+    y += 6
+    doc.setFont('helvetica', 'normal')
+    doc.text(`Date: ${formatDate(quotation.date)}`, margin, y)
+    doc.text(`Valid Until: ${formatDate(quotation.validUntil)}`, pageWidth / 2, y)
+    y += 10
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Customer Details', margin, y)
+    y += 6
+    doc.setFont('helvetica', 'normal')
+    const customer = quotation.customer || {}
+    doc.text(`Name: ${customer.name || '-'}`, margin, y)
+    doc.text(`Phone: ${customer.phone || '-'}`, pageWidth / 2, y)
+    y += 6
+    doc.text(`Email: ${customer.email || '-'}`, margin, y)
+    y += 10
+
+    if (customer.address) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Address', margin, y)
+      y += 6
+      doc.setFont('helvetica', 'normal')
+      const addressLines = doc.splitTextToSize(customer.address, pageWidth - 2 * margin)
+      doc.text(addressLines, margin, y)
+      y += addressLines.length * 6 + 8
+    }
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Products', margin, y)
+    y += 4
+
+    const items = quotation.items || []
+    const tableColumn = ['Product', 'SKU', 'Metal', 'Purity', 'Qty', 'Price', 'Discount', 'GST', 'Total']
+    const tableRows = items.map((item) => {
+      const qty = item.quantity || 0
+      const price = parseFloat(item.price || 0)
+      const discountPercent = parseFloat(item.discount || 0)
+      const gstPercent = parseFloat(item.gst || 0)
+
+      const basePriceTotal = qty * price
+      const discountAmount = basePriceTotal * (discountPercent / 100)
+      const taxableValue = Math.max(0, basePriceTotal - discountAmount)
+      const gstAmount = taxableValue * (gstPercent / 100)
+      const lineTotal = taxableValue + gstAmount
+      return [
+        item.name || '-',
+        item.sku || '-',
+        item.metal || '-',
+        item.purity || '-',
+        qty.toString(),
+        `₹ ${basePriceTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        `₹ ${discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        `${gstPercent}%`,
+        `₹ ${lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+      ]
+    })
+
+    autoTable(doc, {
+      startY: y,
+      head: [tableColumn],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: { fillColor: [21, 59, 45], textColor: 255, fontSize: 9 },
+      bodyStyles: { fontSize: 9 },
+      margin: { left: margin, right: margin },
+    })
+
+    y = doc.lastAutoTable.finalY + 10
+
+    const totalQuantity = items.reduce((sum, item) => sum + (parseInt(item.quantity || 0)), 0)
+    const totalGrossAmount = items.reduce((sum, item) => {
+      const qty = parseFloat(item.quantity || 0)
+      const price = parseFloat(item.price || 0)
+      return sum + qty * price
+    }, 0)
+    const totalDiscount = items.reduce((sum, item) => {
+      const qty = parseFloat(item.quantity || 0)
+      const price = parseFloat(item.price || 0)
+      const discountPercent = parseFloat(item.discount || 0)
+      return sum + qty * price * (discountPercent / 100)
+    }, 0)
+    const totalGst = items.reduce((sum, item) => {
+      const qty = parseFloat(item.quantity || 0)
+      const price = parseFloat(item.price || 0)
+      const discountPercent = parseFloat(item.discount || 0)
+      const gstPercent = parseFloat(item.gst || 0)
+      const basePriceTotal = qty * price
+      const discountAmount = basePriceTotal * (discountPercent / 100)
+      const taxableValue = Math.max(0, basePriceTotal - discountAmount)
+      return sum + taxableValue * (gstPercent / 100)
+    }, 0)
+    const grandTotal = totalGrossAmount - totalDiscount + totalGst
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Total Items', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(String(totalQuantity), pageWidth - margin, y, { align: 'right' })
+    y += 8
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Gross Amount', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`₹ ${totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+    y += 8
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Total Discount', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`- ₹ ${totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+    y += 8
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Total GST', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.text(`₹ ${totalGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+    y += 10
+
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(12)
+    doc.text('Grand Total', margin, y)
+    doc.setFont('helvetica', 'normal')
+    doc.setFontSize(12)
+    doc.text(`₹ ${grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+    y += 12
+
+    if (quotation.notes) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Notes', margin, y)
+      y += 6
+      doc.setFont('helvetica', 'normal')
+      const noteLines = doc.splitTextToSize(quotation.notes, pageWidth - 2 * margin)
+      doc.text(noteLines, margin, y)
+      y += noteLines.length * 6 + 8
+    }
+
+    doc.setFont('helvetica', 'bold')
+    doc.text('Terms & Conditions', margin, y)
+    y += 6
+    doc.setFont('helvetica', 'normal')
+    const terms = [
+      '1. This quotation is valid for 30 days from the date of issue.',
+      '2. Prices are subject to change based on market gold rates.',
+      '3. GST is calculated as per current applicable rates.',
+      '4. Making charges and wastage are approximate and may vary.',
+      '5. Payment must be made in full before dispatch.',
+    ]
+    terms.forEach((term) => {
+      const termLines = doc.splitTextToSize(term, pageWidth - 2 * margin)
+      doc.text(termLines, margin, y)
+      y += termLines.length * 6
+    })
+
+    y += 20
+    doc.setDrawColor(150)
+    doc.line(margin, y, margin + 70, y)
+    doc.line(pageWidth - margin - 70, y, pageWidth - margin, y)
+    y += 6
+    doc.setFontSize(9)
+    doc.text('Authorized Signature', margin + 35, y, { align: 'center' })
+    doc.text('Customer Signature', pageWidth - margin - 35, y, { align: 'center' })
+
+    doc.save(`Quotation-${quotation.quotationNumber || 'draft'}.pdf`)
+  }
+
   const handlePDF = (quotation) => {
-    setViewQuotation(quotation)
-    setTimeout(() => window.print(), 300)
+    generatePDF(quotation)
   }
 
   const handleDownloadExcel = () => {
@@ -125,24 +336,23 @@ export default function Quotations() {
         Notes: q.notes || '',
       }))
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData)
-
-      worksheet['!cols'] = [
-        { wch: 18 },
-        { wch: 20 },
-        { wch: 25 },
-        { wch: 30 },
-        { wch: 18 },
-        { wch: 40 },
-        { wch: 18 },
-        { wch: 18 },
-        { wch: 14 },
-        { wch: 40 },
-      ]
-
-      const workbook = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(workbook, worksheet, 'Quotations')
-      XLSX.writeFile(workbook, 'quotations.xlsx')
+      exportToExcel({
+        data: exportData,
+        columns: [
+          { wch: 18 },
+          { wch: 20 },
+          { wch: 25 },
+          { wch: 30 },
+          { wch: 18 },
+          { wch: 40 },
+          { wch: 18 },
+          { wch: 18 },
+          { wch: 14 },
+          { wch: 40 },
+        ],
+        sheetName: 'Quotations',
+        filename: 'quotations.xlsx',
+      })
 
       setSuccessMessage('Quotations downloaded successfully')
       setError('')
@@ -151,20 +361,6 @@ export default function Quotations() {
       setError('Failed to download Excel file')
       setSuccessMessage('')
     }
-  }
-
-  const formatCurrency = (amount) => {
-    if (!amount && amount !== 0) return '-'
-    return `₹ ${Number(amount).toLocaleString('en-IN')}`
-  }
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '-'
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
   }
 
   const getStatusBadge = (status) => {
@@ -204,23 +400,31 @@ export default function Quotations() {
     navigate('/admin/quotations/create', { state: { quotation } })
   }
 
-  const handleConvertToOrder = async (quotation) => {
-    if (!window.confirm(`Convert quotation ${quotation.quotationNumber} into an order?`)) return
+  const handleConvertClick = (quotation) => {
+    setConvertConfirmId(quotation._id || quotation.id)
+  }
+
+  const handleConvertConfirm = async () => {
+    if (!convertConfirmId) return
+    const quotation = quotations.find(q => (q._id || q.id) === convertConfirmId)
+    if (!quotation) return
 
     try {
-      const response = await orderAPI.convertFromQuotation(quotation._id, {
+      const response = await orderAPI.convertFromQuotation(convertConfirmId, {
         paymentMethod: 'cod',
       })
 
       if (response.data.success) {
         const order = response.data.data
-        setQuotations(quotations.map((q) => (q._id === quotation._id ? { ...q, status: 'converted', orderId: order._id } : q)))
+        setQuotations(quotations.map((q) => (q._id === convertConfirmId ? { ...q, status: 'converted', orderId: order._id } : q)))
         setSuccessMessage(`Quotation ${quotation.quotationNumber} converted to order ${order._id.slice(-6).toUpperCase()} successfully!`)
         setError('')
         setTimeout(() => setSuccessMessage(''), 4000)
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to convert quotation to order')
+    } finally {
+      setConvertConfirmId(null)
     }
   }
 
@@ -399,7 +603,7 @@ export default function Quotations() {
                         )}
                         {quotation.status === 'accepted' && (
                           <button
-                            onClick={() => handleConvertToOrder(quotation)}
+                            onClick={() => handleConvertClick(quotation)}
                             className="p-1.5 text-on-surface-variant hover:text-deep-emerald hover:bg-surface-container-low rounded transition-colors"
                             title="Convert to Order"
                           >
@@ -470,7 +674,7 @@ export default function Quotations() {
             </div>
             <div className="p-6 border-t border-outline-variant flex justify-end gap-3">
               {viewQuotation.status === 'accepted' && (
-                <button onClick={() => handleConvertToOrder(viewQuotation)} className="px-6 py-3 bg-deep-emerald text-surface-white text-sm font-semibold hover:bg-regal-gold transition-colors shadow-sm">
+                <button onClick={() => handleConvertClick(viewQuotation)} className="px-6 py-3 bg-deep-emerald text-surface-white text-sm font-semibold hover:bg-regal-gold transition-colors shadow-sm">
                   Convert to Order
                 </button>
               )}
@@ -481,6 +685,23 @@ export default function Quotations() {
           </div>
         </div>
       )}
+
+      {convertConfirmId && (() => {
+        const quotation = quotations.find(q => (q._id || q.id) === convertConfirmId)
+        if (!quotation) return null
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-surface-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="font-headline-md text-headline-md text-deep-emerald mb-2">Convert to Order</h3>
+              <p className="font-body-md text-body-md text-on-surface-variant mb-6">Convert quotation {quotation.quotationNumber} into an order? This action cannot be undone.</p>
+              <div className="flex justify-end gap-3">
+                <button onClick={() => setConvertConfirmId(null)} className="px-6 py-3 border border-outline-variant text-charcoal-text text-sm font-semibold hover:bg-surface-variant transition-colors">Cancel</button>
+                <button onClick={handleConvertConfirm} className="px-6 py-3 bg-deep-emerald text-surface-white text-sm font-semibold hover:bg-regal-gold transition-colors shadow-sm">Convert</button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Delete Confirmation */}
       {deleteConfirmId && (
