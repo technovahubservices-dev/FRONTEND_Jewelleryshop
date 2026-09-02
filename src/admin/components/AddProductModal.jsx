@@ -895,33 +895,32 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
               </div>
             )}
           </div>
-        </form>
 
-        <div className="flex justify-end gap-3 p-6 border-t border-outline-variant">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={loading}
-            className="px-6 py-2.5 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-label-caps rounded hover:bg-surface-container-low transition-colors disabled:opacity-50"
-          >
-            Cancel
-          </button>
-           <button
-             type="button"
-             onClick={handleSubmit}
-             disabled={loading}
-            className="px-6 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded hover:bg-deep-emerald/90 transition-colors flex items-center gap-2 disabled:opacity-50"
-          >
-            {loading ? (
-              <>
-                <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-                Saving...
-              </>
-            ) : (
-              'Save Product'
-            )}
-          </button>
-        </div>
+          <div className="flex justify-end gap-3 p-6 border-t border-outline-variant mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-6 py-2.5 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-label-caps rounded hover:bg-surface-container-low transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded hover:bg-deep-emerald/90 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
+              {loading ? (
+                <>
+                  <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                  Saving...
+                </>
+              ) : (
+                'Save Product'
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

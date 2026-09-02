@@ -616,13 +616,12 @@ export default function Quotations() {
                           <span className="material-symbols-outlined text-s">print</span>
                         </button>
                         {quotation.status === 'converted' && quotation.orderId && (
-                          <button
-                            onClick={() => navigate('/admin/orders')}
-                            className="p-1.5 text-on-surface-variant hover:text-deep-emerald hover:bg-surface-container-low rounded transition-colors"
-                            title="View Order"
+                          <span
+                            className="p-1.5 text-on-surface-variant"
+                            title="Order Created"
                           >
-                            <span className="material-symbols-outlined text-s">receipt_long</span>
-                          </button>
+                            <span className="material-symbols-outlined text-s">check_circle</span>
+                          </span>
                         )}
                         {quotation.status === 'accepted' && (
                           <button

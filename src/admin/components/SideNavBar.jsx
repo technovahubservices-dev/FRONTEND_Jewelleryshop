@@ -7,18 +7,14 @@ export default function SideNavBar({ isOpen, onClose }) {
   const { logout } = useAuth()
 
   const navItems = [
-    { name: 'Dashboard', icon: 'fa-solid fa-grip', path: '/admin' },
     { name: 'Products', icon: 'fa-regular fa-gem', path: '/admin/products' },
     { name: 'Categories', icon: 'fa-solid fa-layer-group', path: '/admin/categories' },
-    { name: 'Orders', icon: 'fa-solid fa-bag-shopping', path: '/admin/orders' },
-    { name: 'Customers', icon: 'fa-solid fa-users', path: '/admin/customers' },
     { name: 'Quotations', icon: 'fa-solid fa-file-invoice', path: '/admin/quotations' },
     { name: 'Content Management', icon: 'fa-regular fa-file-lines', path: '/admin/content' },
     { name: 'Settings', icon: 'fa-solid fa-gear', path: '/admin/settings' },
   ]
 
   const footerItems = [
-    { name: 'Support', icon: 'fa-regular fa-circle-question', path: '/admin/settings' },
     { name: 'Sign Out', icon: 'fa-solid fa-arrow-right-from-bracket', action: 'logout' },
   ]
 

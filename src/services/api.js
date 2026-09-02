@@ -83,7 +83,6 @@ export const productAPI = {
 };
 
 export const userAPI = {
-  getAll: (params) => api.get('/users', { params }),
   getProfile: () => api.get('/users/profile'),
   updateProfile: (data) => api.put('/users/profile', data),
   changePassword: (data) => api.put('/users/password', data),
@@ -98,9 +97,6 @@ export const orderAPI = {
   create: (orderData) => api.post('/orders', orderData),
   getAll: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
-  updateStatus: (id, statusOrData) =>
-    api.put(`/orders/${id}`, typeof statusOrData === 'string' ? { status: statusOrData } : statusOrData),
-  delete: (id) => api.delete(`/orders/${id}`),
   convertFromQuotation: (quotationId, data) => api.post(`/orders/convert-from-quotation/${quotationId}`, data),
   createPaymentOrder: (data) => api.post('/orders/payment/create-payment-order', data),
   verifyPayment: (data) => api.post('/orders/payment/verify-payment', data),
