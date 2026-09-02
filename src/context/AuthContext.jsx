@@ -4,6 +4,29 @@ const AuthContext = createContext()
 
 const API_URL = import.meta.env.VITE_API_URL || '/api'
 
+const safeParseJson = async (response) => {
+  if (!response.ok) {
+    let data
+    try {
+      data = await response.json()
+    } catch {
+      data = {}
+    }
+    return { ok: false, data: { message: data.message || 'Request failed' } }
+  }
+
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return { ok: true, data: {} }
+  }
+
+  try {
+    const data = await response.json()
+    return { ok: true, data }
+  } catch {
+    return { ok: false, data: { message: 'Invalid server response' } }
+  }
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -47,8 +70,8 @@ export const AuthProvider = ({ children }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email: email.toLowerCase().trim(), password: password.trim() }),
     })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Registration failed')
+    const { ok, data } = await safeParseJson(response)
+    if (!ok) throw new Error(data.message || 'Registration failed')
     login(data)
     return data
   }
@@ -59,8 +82,8 @@ export const AuthProvider = ({ children }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Login failed')
+    const { ok, data } = await safeParseJson(response)
+    if (!ok) throw new Error(data.message || 'Login failed')
     login(data)
     return data
   }
@@ -74,8 +97,8 @@ export const AuthProvider = ({ children }) => {
       },
       body: JSON.stringify(profileData),
     })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Failed to update profile')
+    const { ok, data } = await safeParseJson(response)
+    if (!ok) throw new Error(data.message || 'Failed to update profile')
     const updatedUser = { ...user, ...data.data }
     localStorage.setItem('user', JSON.stringify(updatedUser))
     setUser(updatedUser)
@@ -91,8 +114,8 @@ export const AuthProvider = ({ children }) => {
       },
       body: JSON.stringify({ currentPassword, newPassword }),
     })
-    const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Failed to change password')
+    const { ok, data } = await safeParseJson(response)
+    if (!ok) throw new Error(data.message || 'Failed to change password')
     return data
   }
 
