@@ -29,17 +29,6 @@ export default function ExcelImportPanel({ onImport, excelPreview, excelError, i
       productId: '',
       name: item.name || '',
       sku: item.sku || '',
-      hsn: item.hsn || '',
-      metal: item.metal || '',
-      purity: item.purity || '',
-      grossWeight: item.grossWeight || '',
-      netWeight: item.netWeight || '',
-      stoneWeight: item.stoneWeight || '',
-      stoneType: item.stoneType || '',
-      metalRate: parseNumber(item.metalRate) || 0,
-      makingCharges: parseNumber(item.makingCharges) || 0,
-      wastage: parseNumber(item.wastage) || 0,
-      stoneCharges: parseNumber(item.stoneCharges) || 0,
       quantity: parseNumber(item.quantity) || 1,
       discount: parseNumber(item.discount) || 0,
       gst: parseNumber(item.gst) || DEFAULT_GST,
@@ -63,7 +52,7 @@ export default function ExcelImportPanel({ onImport, excelPreview, excelError, i
         Import from Excel
       </h2>
       <p className="text-sm text-on-surface-variant mb-4">
-        Upload an <strong>.xlsx</strong> or <strong>.csv</strong> file with columns like Product Name, Quantity, Price, HSN, Metal, Purity, etc.
+        Upload an <strong>.xlsx</strong> or <strong>.csv</strong> file with columns like Product Name, SKU, Quantity, Price, Discount, GST.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 items-start">
         <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-deep-emerald text-surface-white text-xs font-label-caps uppercase tracking-wider rounded cursor-pointer hover:bg-primary-container transition-colors">
@@ -90,15 +79,15 @@ export default function ExcelImportPanel({ onImport, excelPreview, excelError, i
             </button>
           </div>
           <div className="overflow-x-auto border border-outline-variant/30 rounded-lg">
-            <table className="w-full text-left border-collapse min-w-[800px]">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-surface-container-low border-b border-outline-variant">
                   <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">Row</th>
                   <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">Product Name</th>
+                  <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">SKU</th>
                   <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">Qty</th>
                   <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">Price</th>
-                  <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">Metal</th>
-                  <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">Purity</th>
+                  <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">Discount</th>
                   <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider">GST</th>
                   <th className="py-2 px-3 text-[11px] font-label-caps text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
                 </tr>
@@ -113,6 +102,14 @@ export default function ExcelImportPanel({ onImport, excelPreview, excelError, i
                         value={item.name}
                         onChange={(e) => handleUpdate(index, 'name', e.target.value)}
                         className="w-full bg-transparent border-b border-outline-variant px-0 py-1 text-sm focus:outline-none focus:border-deep-emerald"
+                      />
+                    </td>
+                    <td className="py-2 px-3">
+                      <input
+                        type="text"
+                        value={item.sku}
+                        onChange={(e) => handleUpdate(index, 'sku', e.target.value)}
+                        className="w-28 bg-transparent border-b border-outline-variant px-0 py-1 text-sm focus:outline-none focus:border-deep-emerald"
                       />
                     </td>
                     <td className="py-2 px-3">
@@ -136,18 +133,12 @@ export default function ExcelImportPanel({ onImport, excelPreview, excelError, i
                     </td>
                     <td className="py-2 px-3">
                       <input
-                        type="text"
-                        value={item.metal}
-                        onChange={(e) => handleUpdate(index, 'metal', e.target.value)}
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={item.discount}
+                        onChange={(e) => handleUpdate(index, 'discount', e.target.value)}
                         className="w-24 bg-transparent border-b border-outline-variant px-0 py-1 text-sm focus:outline-none focus:border-deep-emerald"
-                      />
-                    </td>
-                    <td className="py-2 px-3">
-                      <input
-                        type="text"
-                        value={item.purity}
-                        onChange={(e) => handleUpdate(index, 'purity', e.target.value)}
-                        className="w-20 bg-transparent border-b border-outline-variant px-0 py-1 text-sm focus:outline-none focus:border-deep-emerald"
                       />
                     </td>
                     <td className="py-2 px-3">

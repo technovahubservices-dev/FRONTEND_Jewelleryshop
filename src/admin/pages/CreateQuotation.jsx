@@ -1,25 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { productAPI, quotationAPI } from '../../services/api'
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
-import html2canvas from 'html2canvas'
-import logo from '../../assets/icons/logo.jpeg'
 import QuotationItemTable from './components/QuotationItemTable'
 import QuotationSummary from './components/QuotationSummary'
 import QuotationPreviewModal from './components/QuotationPreviewModal'
 import ExcelImportPanel from './components/ExcelImportPanel'
 
 const DEFAULT_GST = 18
-
-const DEFAULT_METAL_RATES = {
-  Gold: 8500,
-  Silver: 850,
-  Platinum: 4200,
-  'Rose Gold': 8700,
-  'White Gold': 8600,
-}
 
 const parseNumber = (value) => {
   if (typeof value === 'number') return value
@@ -34,8 +22,6 @@ const safeNum = (value, fallback = 0) => {
   return Number.isFinite(n) ? n : fallback
 }
 
-// Normalise an item coming from the backend, from Excel, or from local edits
-// so that the preview/summary panels never crash on missing fields.
 const normaliseItemForUI = (raw, index = 0) => {
   if (!raw || typeof raw !== 'object') return null
   return {
@@ -43,20 +29,9 @@ const normaliseItemForUI = (raw, index = 0) => {
     productId: raw.productId || (raw.product && (raw.product._id || raw.product.id)) || '',
     name: String(raw.name || `Item ${index + 1}`),
     sku: String(raw.sku || ''),
-    hsn: String(raw.hsn || ''),
-    metal: String(raw.metal || ''),
-    purity: String(raw.purity || ''),
-    grossWeight: String(raw.grossWeight || ''),
-    netWeight: String(raw.netWeight || ''),
-    stoneWeight: String(raw.stoneWeight || ''),
-    stoneType: String(raw.stoneType || ''),
-    metalRate: safeNum(raw.metalRate, 0),
-    makingCharges: safeNum(raw.makingCharges, 0),
-    wastage: safeNum(raw.wastage, 0),
-    stoneCharges: safeNum(raw.stoneCharges, 0),
     quantity: Math.max(1, safeNum(raw.quantity, 1)),
     discount: safeNum(raw.discount, 0),
-    gst: safeNum(raw.gst, 18),
+    gst: safeNum(raw.gst, DEFAULT_GST),
     price: safeNum(raw.price, 0),
   }
 }
@@ -73,22 +48,17 @@ const normalizeProduct = (raw) => {
     _id: get(['_id', 'id']) || undefined,
     name: get(['name', 'Product Name']) || 'Unnamed Product',
     sku: get(['sku', 'SKU']) || '',
-    metal: get(['metal', 'Metal']) || '',
-    purity: get(['purity', 'Purity']) || '',
-    weight: get(['weight', 'Weight']) || '',
-    diamondWeight: get(['diamondWeight', 'diamondWeight']) || '0',
-    diamondShape: get(['diamondShape', 'diamondShape']) || 'N/A',
     price: Number(get(['price', 'Price']) || 0),
     category: get(['category', 'Category']) || '',
   }
 }
 
 const MOCK_PRODUCTS = [
-  { _id: 'p1', name: 'Elegant Gold Pendant', sku: 'SKU001', metal: 'Gold', purity: '22K', weight: '3.2', diamondWeight: '0.15', diamondShape: 'Round', price: 25000, category: 'Necklaces' },
-  { _id: 'p2', name: 'Diamond Stud Earrings', sku: 'SKU002', metal: 'Gold', purity: '18K', weight: '1.8', diamondWeight: '0.40', diamondShape: 'Round', price: 45000, category: 'Earrings' },
-  { _id: 'p3', name: 'Temple Jewellery Set', sku: 'SKU003', metal: 'Gold', purity: '22K', weight: '12.5', diamondWeight: '0', diamondShape: 'N/A', price: 89000, category: 'Bangles' },
-  { _id: 'p4', name: 'Kundan Necklace', sku: 'SKU004', metal: 'Gold', purity: '22K', weight: '18.0', diamondWeight: '2.5', diamondShape: 'Pear', price: 125000, category: 'Necklaces' },
-  { _id: 'p5', name: 'Silver Jhumkas', sku: 'SKU005', metal: 'Silver', purity: 'Sterling Silver', weight: '4.5', diamondWeight: '0', diamondShape: 'N/A', price: 8500, category: 'Earrings' },
+  { _id: 'p1', name: 'Elegant Gold Pendant', sku: 'SKU001', price: 25000, category: 'Necklaces' },
+  { _id: 'p2', name: 'Diamond Stud Earrings', sku: 'SKU002', price: 45000, category: 'Earrings' },
+  { _id: 'p3', name: 'Temple Jewellery Set', sku: 'SKU003', price: 89000, category: 'Bangles' },
+  { _id: 'p4', name: 'Kundan Necklace', sku: 'SKU004', price: 125000, category: 'Necklaces' },
+  { _id: 'p5', name: 'Silver Jhumkas', sku: 'SKU005', price: 8500, category: 'Earrings' },
 ]
 
 export default function CreateQuotation() {
@@ -99,7 +69,6 @@ export default function CreateQuotation() {
   const [saving, setSaving] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [editingQuotation, setEditingQuotation] = useState(null)
-  const [hydratedFromState, setHydratedFromState] = useState(false)
 
   const [customer, setCustomer] = useState({ name: '', phone: '', email: '', address: '' })
   const [quotationNumber, setQuotationNumber] = useState(
@@ -115,11 +84,6 @@ export default function CreateQuotation() {
   const [excelError, setExcelError] = useState('')
   const [isUploading, setIsUploading] = useState(false)
 
-  // When the route is reused for a different quotation, React reuses the
-  // same component instance, so the useState initializers do not re-run.
-  // This effect re-hydrates all local state from the incoming
-  // `location.state.quotation` whenever the id changes, so editing a second
-  // quotation never inherits the first one's items, customer, or notes.
   useEffect(() => {
     const incoming = location.state?.quotation || null
     if (!incoming) {
@@ -131,7 +95,6 @@ export default function CreateQuotation() {
       setQuotationNumber(`QT-2026-${String(Math.floor(Math.random() * 900) + 100)}`)
       setDate(new Date().toISOString().split('T')[0])
       setValidUntil('')
-      setHydratedFromState(false)
       return
     }
     const incomingId = incoming._id || incoming.id
@@ -146,7 +109,6 @@ export default function CreateQuotation() {
     setQuotationNumber(incoming.quotationNumber || `QT-2026-${String(Math.floor(Math.random() * 900) + 100)}`)
     setDate(incoming.date ? String(incoming.date).split('T')[0] : new Date().toISOString().split('T')[0])
     setValidUntil(incoming.validUntil ? String(incoming.validUntil).split('T')[0] : '')
-    setHydratedFromState(true)
   }, [location.state?.quotation?._id, location.state?.quotation?.id])
 
   useEffect(() => {
@@ -182,16 +144,6 @@ export default function CreateQuotation() {
         productId: '',
         name: '',
         sku: '',
-        metal: '',
-        purity: '',
-        grossWeight: '',
-        netWeight: '',
-        stoneWeight: '',
-        stoneType: '',
-        metalRate: 0,
-        makingCharges: 0,
-        wastage: 0,
-        stoneCharges: 0,
         quantity: 1,
         discount: 0,
         gst: DEFAULT_GST,
@@ -213,18 +165,7 @@ export default function CreateQuotation() {
       if (selected) {
         updated[index].name = selected.name || ''
         updated[index].sku = selected.SKU || selected.sku || ''
-        updated[index].metal = selected.metal || selected.metalColor || ''
-        updated[index].purity = selected.purity || ''
-        updated[index].grossWeight = selected.weight || ''
-        updated[index].netWeight = selected.weight || ''
-        updated[index].stoneWeight = selected.diamondWeight || ''
-        updated[index].stoneType = selected.diamondShape || ''
         updated[index].price = Number(selected.price) || 0
-        const metalType = selected.metal || selected.metalColor || ''
-        updated[index].metalRate = DEFAULT_METAL_RATES[metalType] || 0
-        updated[index].makingCharges = 0
-        updated[index].wastage = 0
-        updated[index].stoneCharges = 0
         updated[index].discount = 0
         updated[index].gst = DEFAULT_GST
       }
@@ -237,25 +178,14 @@ export default function CreateQuotation() {
         if (matched && matched._id && matched._id !== updated[index].productId) {
           updated[index].productId = matched._id || matched.id || ''
           updated[index].name = matched.name || ''
-          updated[index].metal = matched.metal || matched.metalColor || ''
-          updated[index].purity = matched.purity || ''
-          updated[index].grossWeight = matched.weight || ''
-          updated[index].netWeight = matched.weight || ''
-          updated[index].stoneWeight = matched.diamondWeight || ''
-          updated[index].stoneType = matched.diamondShape || ''
           updated[index].price = Number(matched.price) || 0
-          const metalType = matched.metal || matched.metalColor || ''
-          updated[index].metalRate = DEFAULT_METAL_RATES[metalType] || 0
-          updated[index].makingCharges = 0
-          updated[index].wastage = 0
-          updated[index].stoneCharges = 0
           updated[index].discount = 0
           updated[index].gst = DEFAULT_GST
         }
       }
     }
 
-    const numericFields = ['metalRate', 'makingCharges', 'wastage', 'stoneCharges', 'quantity', 'discount', 'gst', 'price']
+    const numericFields = ['quantity', 'discount', 'gst', 'price']
     if (numericFields.includes(field)) {
       updated[index][field] = Number(value) || 0
     }
@@ -305,21 +235,8 @@ export default function CreateQuotation() {
             'Price': 'price',
             'Rate': 'price',
             'Unit Price': 'price',
-            'HSN': 'hsn',
-            'HSN Code': 'hsn',
             'SKU': 'sku',
-            'Metal': 'metal',
-            'Purity': 'purity',
-            'Gross Weight': 'grossWeight',
-            'Net Weight': 'netWeight',
-            'Stone Weight': 'stoneWeight',
-            'Stone Type': 'stoneType',
-            'Metal Rate': 'metalRate',
-            'Making Charges': 'makingCharges',
-            'Wastage': 'wastage',
-            'Stone Charges': 'stoneCharges',
             'Discount': 'discount',
-            'Discount %': 'discount',
             'GST': 'gst',
             'GST %': 'gst',
             'GST Percentage': 'gst',
@@ -339,20 +256,9 @@ export default function CreateQuotation() {
 
             item.quantity = parseNumber(item.quantity) || 1
             item.price = parseNumber(item.price) || 0
-            item.metalRate = parseNumber(item.metalRate) || 0
-            item.makingCharges = parseNumber(item.makingCharges) || 0
-            item.wastage = parseNumber(item.wastage) || 0
-            item.stoneCharges = parseNumber(item.stoneCharges) || 0
             item.discount = parseNumber(item.discount) || 0
-            item.gst = parseNumber(item.gst) || 18
-            item.grossWeight = String(item.grossWeight || '')
-            item.netWeight = String(item.netWeight || '')
-            item.stoneWeight = String(item.stoneWeight || '')
+            item.gst = parseNumber(item.gst) || DEFAULT_GST
             item.sku = String(item.sku || '')
-            item.hsn = String(item.hsn || '')
-            item.metal = String(item.metal || '')
-            item.purity = String(item.purity || '')
-            item.stoneType = String(item.stoneType || '')
             item.name = String(item.name || `Item ${index + 1}`)
 
             return item
@@ -388,15 +294,16 @@ export default function CreateQuotation() {
     setExcelPreview(updated)
   }
 
+  // Discount is treated as a flat ₹ amount per line (not a percentage).
+  // If every line has 0 discount, we hide the discount summary row and column.
   const calculations = items.reduce(
     (acc, item) => {
       const qty = item.quantity || 0
       const price = parseNumber(item.price) || 0
-      const discountPercent = parseNumber(item.discount) || 0
+      const discountAmount = parseNumber(item.discount) || 0
       const gstPercent = parseNumber(item.gst) || 0
 
       const basePriceTotal = qty * price
-      const discountAmount = basePriceTotal * (discountPercent / 100)
       const taxableValue = Math.max(0, basePriceTotal - discountAmount)
       const gstAmount = taxableValue * (gstPercent / 100)
       const lineTotal = taxableValue + gstAmount
@@ -411,9 +318,8 @@ export default function CreateQuotation() {
     { totalQuantity: 0, totalGrossAmount: 0, totalDiscount: 0, totalGst: 0, grandTotal: 0 }
   )
 
-  // Build a fully-resolved quotation object from local state so the preview
-  // modal always renders the current items, customer, and totals without
-  // depending on a navigation-state cache from the parent list.
+  const hasAnyDiscount = items.some((it) => parseNumber(it.discount) > 0)
+
   const previewQuotation = useMemo(() => ({
     _id: editingQuotation?._id,
     quotationNumber,
@@ -482,38 +388,6 @@ export default function CreateQuotation() {
     setShowPreview(true)
   }
 
-  const handlePrint = () => {
-    window.print()
-  }
-
-  const generatePDF = async () => {
-    const element = document.getElementById('quotation-preview')
-    if (!element) return
-
-    try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      })
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.95)
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const pageWidth = pdf.internal.pageSize.getWidth()
-      const pageHeight = pdf.internal.pageSize.getHeight()
-      const margin = 10
-      const imgWidth = pageWidth - margin * 2
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
-
-      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight)
-      pdf.save(`Quotation-${quotationNumber}.pdf`)
-    } catch (err) {
-      console.error('Failed to generate PDF:', err)
-      alert('Failed to generate PDF. Please try again.')
-    }
-  }
-
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -574,6 +448,7 @@ export default function CreateQuotation() {
         {/* Right Summary */}
         <QuotationSummary
           calculations={calculations}
+          showDiscount={hasAnyDiscount}
           quotationNumber={quotationNumber}
           date={date}
           validUntil={validUntil}
@@ -587,43 +462,11 @@ export default function CreateQuotation() {
         />
       </div>
 
-      {/* Quotation Preview Modal — receives a fully-resolved quotation
-          derived from local state, not from props that could be stale. */}
       <QuotationPreviewModal
         open={showPreview}
         onClose={() => setShowPreview(false)}
         quotation={previewQuotation}
       />
-
-      {/* Print Styles */}
-      <style>{`
-        @media print {
-          @page {
-            size: A4;
-            margin: 10mm;
-          }
-          body * {
-            visibility: hidden !important;
-          }
-          #quotation-preview, #quotation-preview * {
-            visibility: visible !important;
-          }
-          #quotation-preview {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-            background: #ffffff !important;
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-          }
-          .print-hide {
-            display: none !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }

@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { productAPI, contentAPI } from '../../services/api'
 
 const tabs = [
@@ -15,7 +15,6 @@ export default function FeaturedProducts({ title, description }) {
   const [dynamicFeatured, setDynamicFeatured] = useState([])
   const [loading, setLoading] = useState(true)
   const [useDynamic, setUseDynamic] = useState(false)
-  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -25,13 +24,23 @@ export default function FeaturedProducts({ title, description }) {
           contentAPI.getActive('featuredProducts'),
         ])
 
-        if (productsRes.status === 'fulfilled' && productsRes.value.data.success) {
-          const transformed = productsRes.value.data.data.map(productAPI.transform)
+        if (
+          productsRes.status === 'fulfilled' &&
+          productsRes.value.data.success
+        ) {
+          const transformed = productsRes.value.data.data.map(
+            productAPI.transform
+          )
+
           setProducts(transformed)
         }
 
-        if (featuredRes.status === 'fulfilled' && featuredRes.value.data.success) {
+        if (
+          featuredRes.status === 'fulfilled' &&
+          featuredRes.value.data.success
+        ) {
           const featuredData = featuredRes.value.data.data || []
+
           if (featuredData.length > 0) {
             setDynamicFeatured(featuredData)
             setUseDynamic(true)
@@ -43,25 +52,68 @@ export default function FeaturedProducts({ title, description }) {
         setLoading(false)
       }
     }
+
     fetchProducts()
   }, [])
 
   const displayProducts = useDynamic
     ? dynamicFeatured.map((fp) => {
         const product = fp.product
-        const transform = product ? productAPI.transform(product) : {}
-        const price = product ? Number(product.discountPrice > 0 ? product.discountPrice : product.price) : 0
+        const transform = product
+          ? productAPI.transform(product)
+          : {}
+
+        const price = product
+          ? Number(
+              product.discountPrice > 0
+                ? product.discountPrice
+                : product.price
+            )
+          : 0
+
         return {
-          id: typeof product === 'string' ? product : (product?._id || product?.id || fp._id),
-          name: fp.title || transform.name || product?.name || 'Product',
-          image: fp.image || transform.image || 'https://placehold.co/400x400',
-          description: fp.description || transform.description || '',
-          price: price,
-          originalPrice: product && product.discountPrice > 0 ? Number(product.price) : null,
-          discount: product && product.discountPrice > 0 ? `${Math.round(((Number(product.price) - Number(product.discountPrice)) / Number(product.price)) * 100)}% OFF` : null,
+          id:
+            typeof product === 'string'
+              ? product
+              : product?._id || product?.id || fp._id,
+
+          name:
+            fp.title ||
+            transform.name ||
+            product?.name ||
+            'Product',
+
+          image:
+            fp.image ||
+            transform.image ||
+            'https://placehold.co/400x400',
+
+          description:
+            fp.description ||
+            transform.description ||
+            '',
+
+          price,
+
+          originalPrice:
+            product && product.discountPrice > 0
+              ? Number(product.price)
+              : null,
+
+          discount:
+            product && product.discountPrice > 0
+              ? `${Math.round(
+                  ((Number(product.price) -
+                    Number(product.discountPrice)) /
+                    Number(product.price)) *
+                    100
+                )}% OFF`
+              : null,
+
           isNew: transform.isNew || false,
           isBestSeller: transform.isBestSeller || false,
           isFeatured: true,
+
           ctaText: fp.ctaText || 'Shop Now',
           ctaLink: fp.ctaLink || '/shop',
         }
@@ -71,44 +123,53 @@ export default function FeaturedProducts({ title, description }) {
           switch (activeTab) {
             case 'bestsellers':
               return product.isBestSeller
+
             case 'new':
               return product.isNew
+
             case 'sale':
               return product.originalPrice
+
             default:
               return true
           }
         })
-        return filtered.length > 0 ? filtered : products.slice(0, 4)
+
+        return filtered.length > 0
+          ? filtered
+          : products.slice(0, 12)
       })()
 
   const getProductDisplayPrice = (product) => {
-    const price = product.price || 0
-    return `₹ ${price.toLocaleString('en-IN')}`
-  }
+    const price = Number(product.price || 0)
 
-  const handleViewProduct = (product) => {
-    navigate(`/product/${product.id}`)
+    return `₹ ${price.toLocaleString('en-IN')}`
   }
 
   return (
     <section className="w-full bg-surface-white py-6 md:py-1">
       <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+
+        {/* Section Header */}
         <div className="text-center mb-12">
           <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-emerald mb-1">
             {title || 'Featured Products'}
           </h2>
+
           <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-            {description || 'Handpicked selections of our most cherished pieces, crafted with exceptional care and timeless elegance.'}
+            {description ||
+              'Handpicked selections of our most cherished pieces, crafted with exceptional care and timeless elegance.'}
           </p>
         </div>
 
+        {/* Product Tabs */}
         {!useDynamic && (
           <div className="flex justify-center mb-10">
             <div className="inline-flex items-center bg-surface-container-low rounded-full p-1.5 border border-outline-variant/30">
               {tabs.map((tab) => (
                 <button
                   key={tab.id}
+                  type="button"
                   onClick={() => setActiveTab(tab.id)}
                   className={`relative px-6 py-2.5 text-sm font-label-caps text-label-caps transition-all duration-200 rounded-full ${
                     activeTab === tab.id
@@ -119,79 +180,126 @@ export default function FeaturedProducts({ title, description }) {
                   {activeTab === tab.id && (
                     <span className="absolute inset-0 rounded-full bg-deep-emerald/10" />
                   )}
-                  <span className="relative z-10">{tab.label}</span>
+
+                  <span className="relative z-10">
+                    {tab.label}
+                  </span>
                 </button>
               ))}
             </div>
           </div>
         )}
 
+        {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+          {/* Loading Skeleton */}
           {loading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm overflow-hidden animate-pulse">
+            Array.from({ length: 12 }).map((_, i) => (
+              <div
+                key={i}
+                className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm overflow-hidden animate-pulse"
+              >
                 <div className="aspect-square bg-surface-container-low flex items-center justify-center p-6" />
+
                 <div className="px-4 pb-4 flex flex-col text-center">
                   <div className="h-4 bg-surface-container-low rounded mb-2" />
+
                   <div className="h-6 bg-surface-container-low rounded mb-4" />
+
                   <div className="h-10 bg-surface-container-low rounded" />
                 </div>
               </div>
             ))
-          ) : (
-            displayProducts.map((product) => (
-              <div key={product.id} className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group">
+          ) : displayProducts.length > 0 ? (
+
+            /* Maximum 12 Products */
+            displayProducts.slice(0, 12).map((product) => (
+              <div
+                key={product.id}
+                className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group"
+              >
+
+                {/* Product Image */}
                 <div className="relative aspect-square bg-surface-container-low flex items-center justify-center p-2">
                   <img
                     className="w-full h-full object-contain img-hover-zoom"
-                    alt={product.description}
-                    src={product.image}
+                    alt={product.name || 'Product'}
+                    src={
+                      product.image ||
+                      'https://placehold.co/400x400'
+                    }
                     onError={(e) => {
-                      e.target.src = 'https://placehold.co/400x400?text=No+Image'
+                      e.currentTarget.src =
+                        'https://placehold.co/400x400?text=No+Image'
                     }}
                   />
                 </div>
 
-                
-
+                {/* Product Details */}
                 <div className="px-4 pb-4 flex flex-col text-center">
+
+                  {/* Product Name */}
                   <h3 className="font-body-md text-sm text-charcoal-text mb-2 truncate group-hover:text-deep-emerald transition-colors">
                     {product.name}
                   </h3>
 
+                  {/* Product Price */}
                   <div className="mb-4">
                     <span className="font-headline-md text-lg text-deep-emerald">
                       {getProductDisplayPrice(product)}
                     </span>
+
                     {product.originalPrice && (
                       <span className="ml-2 text-xs text-on-surface-variant line-through">
-                        ₹ {product.originalPrice.toLocaleString('en-IN')}
+                        ₹{' '}
+                        {Number(
+                          product.originalPrice
+                        ).toLocaleString('en-IN')}
                       </span>
                     )}
                   </div>
 
+                  {/* View Product Button */}
                   <Link
                     to={`/product/${product.id}`}
                     className="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-deep-emerald text-deep-emerald px-6 py-1.5 text-xs font-label-caps text-label-caps uppercase tracking-wider rounded-full hover:bg-deep-emerald hover:text-surface-white transition-all duration-200 shadow-sm hover:shadow-md"
                   >
                     View Product
-                    <span className="material-symbols-outlined text-sm">arrow_forward</span>
+
+                    <span className="material-symbols-outlined text-sm">
+                      arrow_forward
+                    </span>
                   </Link>
                 </div>
               </div>
             ))
+
+          ) : (
+
+            /* No Products */
+            <div className="col-span-full text-center py-12">
+              <p className="text-on-surface-variant">
+                No products available.
+              </p>
+            </div>
           )}
         </div>
 
+        {/* View All Products */}
         <div className="mt-16 flex justify-center">
           <Link
             to="/shop"
             className="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-deep-emerald text-deep-emerald px-10 py-4 font-label-caps text-label-caps uppercase tracking-wider rounded-full hover:bg-deep-emerald hover:text-surface-white transition-all duration-200 shadow-sm hover:shadow-md"
           >
             View All Products
-            <span className="material-symbols-outlined text-sm">arrow_forward</span>
+
+            <span className="material-symbols-outlined text-sm">
+              arrow_forward
+            </span>
           </Link>
         </div>
+
       </div>
     </section>
   )

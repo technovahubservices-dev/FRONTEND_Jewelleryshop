@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { formatCurrency, formatDate } from '../../../utils/formatters';
+import { formatDate } from '../../../utils/formatters';
 import logo from '../../../assets/icons/logo.jpeg';
 import { downloadQuotationPdf, buildQuotationPdf } from './quotationPdf';
 
@@ -46,20 +46,21 @@ const parseNumber = (value) => {
   return Number.isFinite(num) ? num : 0;
 };
 
+// Discount is now a flat ₹ amount per line (not a percentage).
+// basePrice = qty * price
+// taxable   = basePrice - discount
+// gst       = taxable * gstPct/100
+// total     = taxable + gst
 const computeLineTotals = (item) => {
   const qty = parseNumber(item.quantity) || 0;
   const price = parseNumber(item.price) || 0;
-  const discountPct = parseNumber(item.discount) || 0;
+  const discountAmount = parseNumber(item.discount) || 0;
   const gstPct = parseNumber(item.gst) || 0;
-  const making = parseNumber(item.makingCharges) || 0;
-  const wastage = parseNumber(item.wastage) || 0;
-  const stone = parseNumber(item.stoneCharges) || 0;
-  const basePrice = qty * price + making + wastage + stone;
-  const discountAmount = basePrice * (discountPct / 100);
+  const basePrice = qty * price;
   const taxable = Math.max(0, basePrice - discountAmount);
   const gstAmount = taxable * (gstPct / 100);
   const lineTotal = taxable + gstAmount;
-  return { qty, basePrice, discountAmount, taxable, gstAmount, lineTotal, discountPct, gstPct };
+  return { qty, price, basePrice, discountAmount, taxable, gstAmount, lineTotal, gstPct };
 };
 
 const computeTotals = (items = []) => {
@@ -107,11 +108,15 @@ export default function QuotationPreviewModal({ open, onClose, quotation }) {
     if (!quotation) return null;
     const items = Array.isArray(quotation.items) ? quotation.items : [];
     const totals = computeTotals(items);
+    const trimmedNotes = String(quotation.notes || '').trim();
+    const showDiscount = items.some((it) => parseNumber(it.discount) > 0);
     return {
       quotationNumber: quotation.quotationNumber || '-',
       date: quotation.date,
       validUntil: quotation.validUntil,
-      notes: quotation.notes || '',
+      notes: trimmedNotes,
+      showNotes: trimmedNotes.length > 0,
+      showDiscount,
       customer: {
         name: quotation.customer?.name || '-',
         phone: quotation.customer?.phone || '',
@@ -151,6 +156,24 @@ export default function QuotationPreviewModal({ open, onClose, quotation }) {
   };
 
   const halfGst = prepared.totals.gst / 2;
+
+  // Build the items table dynamically so we can omit the Discount column
+  // entirely when no item has a discount.
+  const baseCols = [
+    { key: 'idx', label: '#', width: '4%', align: 'center' },
+    { key: 'item', label: 'Product Name / SKU', width: '36%', align: 'left' },
+    { key: 'qty', label: 'Qty', width: '8%', align: 'center' },
+    { key: 'price', label: 'Price (₹)', width: prepared.showDiscount ? '14%' : '18%', align: 'right' },
+  ];
+  if (prepared.showDiscount) {
+    baseCols.push({ key: 'discount', label: 'Discount (₹)', width: '14%', align: 'right' });
+  }
+  baseCols.push(
+    { key: 'gst', label: 'GST (%)', width: '10%', align: 'center' },
+    { key: 'total', label: 'Total (₹)', width: prepared.showDiscount ? '14%' : '24%', align: 'right' },
+  );
+
+  const colSpan = baseCols.length;
 
   return (
     <>
@@ -268,39 +291,30 @@ export default function QuotationPreviewModal({ open, onClose, quotation }) {
               <div className="overflow-hidden border border-gray-200 rounded">
                 <table className="w-full border-collapse text-xs" style={{ tableLayout: 'fixed', width: '100%' }}>
                   <colgroup>
-                    <col style={{ width: '4%' }} />
-                    <col style={{ width: '26%' }} />
-                    <col style={{ width: '14%' }} />
-                    <col style={{ width: '8%' }} />
-                    <col style={{ width: '6%' }} />
-                    <col style={{ width: '12%' }} />
-                    <col style={{ width: '10%' }} />
-                    <col style={{ width: '6%' }} />
-                    <col style={{ width: '14%' }} />
+                    {baseCols.map((c) => (
+                      <col key={c.key} style={{ width: c.width }} />
+                    ))}
                   </colgroup>
                   <thead>
                     <tr style={{ background: '#153B2D', color: '#ffffff' }}>
-                      <th className="py-2 px-2 text-center text-[10px] font-bold uppercase tracking-wider">#</th>
-                      <th className="py-2 px-2 text-left text-[10px] font-bold uppercase tracking-wider">Item / SKU</th>
-                      <th className="py-2 px-2 text-left text-[10px] font-bold uppercase tracking-wider">Metal / Purity</th>
-                      <th className="py-2 px-2 text-right text-[10px] font-bold uppercase tracking-wider">Wt (g)</th>
-                      <th className="py-2 px-2 text-center text-[10px] font-bold uppercase tracking-wider">Qty</th>
-                      <th className="py-2 px-2 text-right text-[10px] font-bold uppercase tracking-wider">Rate</th>
-                      <th className="py-2 px-2 text-right text-[10px] font-bold uppercase tracking-wider">Making</th>
-                      <th className="py-2 px-2 text-center text-[10px] font-bold uppercase tracking-wider">GST</th>
-                      <th className="py-2 px-2 text-right text-[10px] font-bold uppercase tracking-wider">Total</th>
+                      {baseCols.map((c) => (
+                        <th
+                          key={c.key}
+                          className={`py-2 px-2 text-[10px] font-bold uppercase tracking-wider ${c.align === 'right' ? 'text-right' : c.align === 'center' ? 'text-center' : 'text-left'}`}
+                        >
+                          {c.label}
+                        </th>
+                      ))}
                     </tr>
                   </thead>
                   <tbody>
                     {prepared.items.length === 0 && (
                       <tr>
-                        <td colSpan={9} className="py-6 text-center text-gray-500">No items in this quotation.</td>
+                        <td colSpan={colSpan} className="py-6 text-center text-gray-500">No items in this quotation.</td>
                       </tr>
                     )}
                     {prepared.items.map((item, idx) => {
                       const t = computeLineTotals(item);
-                      const metalPurity = [item.metal, item.purity].filter(Boolean).join(' / ') || '-';
-                      const making = parseNumber(item.makingCharges) + parseNumber(item.wastage) + parseNumber(item.stoneCharges);
                       const isEven = idx % 2 === 0;
                       return (
                         <tr
@@ -313,15 +327,15 @@ export default function QuotationPreviewModal({ open, onClose, quotation }) {
                             <div className="font-medium leading-tight">{item.name || '-'}</div>
                             {item.sku && <div className="text-[10px] text-gray-500 mt-0.5">SKU: {item.sku}</div>}
                           </td>
-                          <td className="py-2.5 px-2 text-gray-700 align-top">{metalPurity}</td>
-                          <td className="py-2.5 px-2 text-right text-gray-700 align-top">{item.netWeight || item.grossWeight || '-'}</td>
                           <td className="py-2.5 px-2 text-center text-gray-700 align-top">{t.qty}</td>
                           <td className="py-2.5 px-2 text-right text-gray-700 align-top whitespace-nowrap">
-                            <Money value={t.basePrice - t.discountAmount} />
+                            <Money value={t.price} />
                           </td>
-                          <td className="py-2.5 px-2 text-right text-gray-700 align-top whitespace-nowrap">
-                            <Money value={making} />
-                          </td>
+                          {prepared.showDiscount && (
+                            <td className="py-2.5 px-2 text-right text-gray-700 align-top whitespace-nowrap">
+                              <Money value={t.discountAmount} />
+                            </td>
+                          )}
                           <td className="py-2.5 px-2 text-center text-gray-700 align-top">{t.gstPct}%</td>
                           <td className="py-2.5 px-2 text-right align-top whitespace-nowrap" style={{ color: '#153B2D', fontWeight: 600 }}>
                             <Money value={t.lineTotal} />
@@ -338,7 +352,9 @@ export default function QuotationPreviewModal({ open, onClose, quotation }) {
               <div className="w-[60mm] text-xs">
                 <div className="flex justify-between py-1 text-gray-600"><span>Total Items</span><span className="text-gray-900 font-medium">{prepared.totals.quantity}</span></div>
                 <div className="flex justify-between py-1 text-gray-600"><span>Subtotal (Gross)</span><span className="text-gray-900 font-medium"><Money value={prepared.totals.gross} /></span></div>
-                <div className="flex justify-between py-1 text-gray-600"><span>Discount</span><span className="text-gray-900 font-medium">- <Money value={prepared.totals.discount} /></span></div>
+                {prepared.showDiscount && (
+                  <div className="flex justify-between py-1 text-gray-600"><span>Discount</span><span className="text-gray-900 font-medium">- <Money value={prepared.totals.discount} /></span></div>
+                )}
                 <div className="flex justify-between py-1 text-gray-600"><span>Taxable Value</span><span className="text-gray-900 font-medium"><Money value={prepared.totals.taxable} /></span></div>
                 <div className="flex justify-between py-1 text-gray-600"><span>CGST (50%)</span><span className="text-gray-900 font-medium"><Money value={halfGst} /></span></div>
                 <div className="flex justify-between py-1 text-gray-600"><span>SGST (50%)</span><span className="text-gray-900 font-medium"><Money value={halfGst} /></span></div>
@@ -350,9 +366,9 @@ export default function QuotationPreviewModal({ open, onClose, quotation }) {
               </div>
             </section>
 
-            {prepared.notes && (
+            {prepared.showNotes && (
               <section className="mt-6 qpm-keep-together">
-                <h3 className="text-[11px] font-bold tracking-widest uppercase mb-1" style={{ color: '#153B2D' }}>Notes</h3>
+                <h3 className="text-[11px] font-bold tracking-widest uppercase mb-1" style={{ color: '#153B2D' }}>Note</h3>
                 <p className="text-xs text-gray-700 whitespace-pre-line">{prepared.notes}</p>
               </section>
             )}
@@ -363,7 +379,7 @@ export default function QuotationPreviewModal({ open, onClose, quotation }) {
                 <li>This quotation is valid for 30 days from the date of issue.</li>
                 <li>Prices are subject to change based on prevailing market metal rates.</li>
                 <li>GST is calculated as per current applicable rates on the taxable value.</li>
-                <li>Making charges and wastage are approximate and may vary marginally.</li>
+                <li>Discounts (if any) are applied as a flat amount per item before GST is computed.</li>
                 <li>Designs, colors, and plating may vary slightly from the displayed images.</li>
                 <li>Payment must be made in full before dispatch.</li>
               </ol>

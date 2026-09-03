@@ -28,21 +28,22 @@ const REGAL_GOLD = [212, 175, 55];
 const SOFT_GREY = [107, 114, 128];
 const BORDER_GREY = [229, 231, 235];
 
+// Discount is now a flat ₹ amount per line (not a percentage).
+// basePrice = qty * price
+// taxable   = basePrice - discount
+// gst       = taxable * gstPct/100
+// total     = taxable + gst
 const computeLineTotals = (item) => {
   const qty = parseNumber(item.quantity) || 0;
   const price = parseNumber(item.price) || 0;
-  const discountPct = parseNumber(item.discount) || 0;
+  const discountAmount = parseNumber(item.discount) || 0;
   const gstPct = parseNumber(item.gst) || 0;
-  const making = parseNumber(item.makingCharges) || 0;
-  const wastage = parseNumber(item.wastage) || 0;
-  const stone = parseNumber(item.stoneCharges) || 0;
 
-  const basePrice = qty * price + making + wastage + stone;
-  const discountAmount = basePrice * (discountPct / 100);
+  const basePrice = qty * price;
   const taxable = Math.max(0, basePrice - discountAmount);
   const gstAmount = taxable * (gstPct / 100);
   const lineTotal = taxable + gstAmount;
-  return { qty, price, discountPct, gstPct, basePrice, discountAmount, taxable, gstAmount, lineTotal };
+  return { qty, price, discountAmount, gstPct, basePrice, taxable, gstAmount, lineTotal };
 };
 
 const computeTotals = (items) => {
@@ -125,34 +126,49 @@ const drawBillTo = (doc, margin, startY, customer) => {
 };
 
 const drawItemsTable = (doc, margin, startY, items) => {
-  const head = [['#', 'Item / SKU', 'Metal / Purity', 'Wt (g)', 'Qty', 'Rate', 'Making', 'GST', 'Total']];
-  const body = items.map((item, idx) => {
+  const showDiscount = items.some((it) => parseNumber(it.discount) > 0);
+
+  const headRow1 = ['#', 'Product Name / SKU'];
+  const headRow2 = ['', ''];
+  const body = [];
+
+  // Column widths — recalculated depending on whether Discount column exists.
+  const widths = showDiscount
+    ? [8, 60, 10, 22, 22, 12, 30]
+    : [8, 70, 10, 26, 12, 38];
+
+  // Build body first so we can attach it after autoTable is configured.
+  items.forEach((item, idx) => {
     const t = computeLineTotals(item);
-    const metalPurity = [item.metal, item.purity].filter(Boolean).join(' / ') || '-';
     const itemName = item.name || '-';
     const sku = item.sku ? `\n${item.sku}` : '';
-    return [
+    const row = [
       String(idx + 1),
       `${itemName}${sku}`,
-      metalPurity,
-      item.netWeight || item.grossWeight || '-',
       String(t.qty),
-      formatMoney(t.basePrice - t.discountAmount),
-      formatMoney(parseNumber(item.makingCharges) + parseNumber(item.wastage) + parseNumber(item.stoneCharges)),
-      `${t.gstPct}%`,
-      formatMoney(t.lineTotal),
+      formatMoney(t.price),
     ];
+    if (showDiscount) {
+      row.push(formatMoney(t.discountAmount));
+    }
+    row.push(`${t.gstPct}%`, formatMoney(t.lineTotal));
+    body.push(row);
   });
 
+  // Placeholder body for header; we'll run autoTable in two phases so we can
+  // include the discount column conditionally.
   autoTable(doc, {
     startY,
-    head,
+    head: [showDiscount
+      ? ['#', 'Product Name / SKU', 'Qty', 'Price (Rs.)', 'Discount (Rs.)', 'GST (%)', 'Total (Rs.)']
+      : ['#', 'Product Name / SKU', 'Qty', 'Price (Rs.)', 'GST (%)', 'Total (Rs.)']
+    ],
     body,
     theme: 'grid',
     margin: { left: margin, right: margin },
     styles: {
       font: 'helvetica',
-      fontSize: 8.5,
+      fontSize: 9,
       cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
       valign: 'middle',
       lineColor: BORDER_GREY,
@@ -163,29 +179,36 @@ const drawItemsTable = (doc, margin, startY, items) => {
       fillColor: DEEP_EMERALD,
       textColor: [255, 255, 255],
       fontStyle: 'bold',
-      fontSize: 8.5,
+      fontSize: 9,
       halign: 'center',
     },
-    columnStyles: {
-      0: { halign: 'center', cellWidth: 8 },
-      1: { cellWidth: 'auto' },
-      2: { cellWidth: 22 },
-      3: { halign: 'right', cellWidth: 14 },
-      4: { halign: 'center', cellWidth: 10 },
-      5: { halign: 'right', cellWidth: 22 },
-      6: { halign: 'right', cellWidth: 18 },
-      7: { halign: 'center', cellWidth: 12 },
-      8: { halign: 'right', cellWidth: 24, fontStyle: 'bold', textColor: DEEP_EMERALD },
-    },
-    didParseCell: (data) => {
-      if (data.section === 'body' && data.column.index === 1 && typeof data.cell.raw === 'string' && data.cell.raw.includes('\n')) {
-        data.cell.styles.cellPadding = { top: 4, right: 3, bottom: 4, left: 3 };
-      }
-    },
+    columnStyles: showDiscount
+      ? {
+          0: { halign: 'center', cellWidth: widths[0] },
+          1: { cellWidth: widths[1] },
+          2: { halign: 'center', cellWidth: widths[2] },
+          3: { halign: 'right', cellWidth: widths[3] },
+          4: { halign: 'right', cellWidth: widths[4] },
+          5: { halign: 'center', cellWidth: widths[5] },
+          6: { halign: 'right', cellWidth: widths[6], fontStyle: 'bold', textColor: DEEP_EMERALD },
+        }
+      : {
+          0: { halign: 'center', cellWidth: widths[0] },
+          1: { cellWidth: widths[1] },
+          2: { halign: 'center', cellWidth: widths[2] },
+          3: { halign: 'right', cellWidth: widths[3] },
+          4: { halign: 'center', cellWidth: widths[4] },
+          5: { halign: 'right', cellWidth: widths[5], fontStyle: 'bold', textColor: DEEP_EMERALD },
+        },
   });
+
+  // Suppress unused vars warnings while keeping API symmetry.
+  void headRow1;
+  void headRow2;
 };
 
 const drawSummary = (doc, pageWidth, margin, startY, totals) => {
+  const showDiscount = totals.discount > 0;
   const boxWidth = 75;
   const boxX = pageWidth - margin - boxWidth;
   const lineHeight = 6;
@@ -198,9 +221,11 @@ const drawSummary = (doc, pageWidth, margin, startY, totals) => {
   const rows = [
     ['Total Items', String(totals.quantity)],
     ['Subtotal (Gross)', formatMoney(totals.gross)],
-    ['Discount', `- ${formatMoney(totals.discount)}`],
-    ['Taxable Value', formatMoney(totals.taxable)],
   ];
+  if (showDiscount) {
+    rows.push(['Discount', `- ${formatMoney(totals.discount)}`]);
+  }
+  rows.push(['Taxable Value', formatMoney(totals.taxable)]);
 
   const halfGst = totals.gst / 2;
   rows.push(['CGST (50%)', formatMoney(halfGst)]);
@@ -245,7 +270,7 @@ const drawTermsAndSignature = (doc, pageWidth, margin, startY) => {
     '1. This quotation is valid for 30 days from the date of issue.',
     '2. Prices are subject to change based on prevailing market metal rates.',
     '3. GST is calculated as per current applicable rates on the taxable value.',
-    '4. Making charges and wastage are approximate and may vary marginally.',
+    '4. Discounts (if any) are applied as a flat amount per item before GST is computed.',
     '5. Designs, colors, and plating may vary slightly from the displayed images.',
     '6. Payment must be made in full before dispatch.',
   ];
@@ -288,17 +313,18 @@ export const buildQuotationPdf = (quotation) => {
   const summaryY = Math.min(afterTableY + 4, pageHeight - 70);
   const grandEndY = drawSummary(doc, pageWidth, margin, summaryY, totals);
 
-  if (quotation.notes) {
+  const trimmedNotes = String(quotation.notes || '').trim();
+  if (trimmedNotes) {
     const notesY = Math.max(grandEndY + 4, summaryY + 50);
     if (notesY < pageHeight - 60) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9.5);
       doc.setTextColor(...DEEP_EMERALD);
-      doc.text('NOTES', margin, notesY);
+      doc.text('NOTE', margin, notesY);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(31, 41, 55);
-      const noteLines = doc.splitTextToSize(quotation.notes, pageWidth - 2 * margin);
+      const noteLines = doc.splitTextToSize(trimmedNotes, pageWidth - 2 * margin);
       doc.text(noteLines, margin, notesY + 5);
     }
   }

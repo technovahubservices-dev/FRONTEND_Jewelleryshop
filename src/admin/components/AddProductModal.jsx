@@ -2,6 +2,23 @@ import { useState, useEffect, useCallback } from 'react';
 import { productAPI, categoryAPI } from '../../services/api';
 
 const METALS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold'];
+const SUBCATEGORIES = [
+  'Engagement Rings',
+  'Wedding Bands',
+  'Cocktail Rings',
+  'Promise Rings',
+  'Diamond Necklaces',
+  'Gold Chains',
+  'Pendant Sets',
+  'Diamond Earrings',
+  'Gold Earrings',
+  'Hoop Earrings',
+  'Stud Earrings',
+  'Bracelets',
+  'Bangles',
+  'Cuffs',
+  'Chain Bracelets',
+];
 const STATUS_OPTIONS = [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Disabled' }, { value: 'draft', label: 'Draft' }];
 const MAX_FILES = 10;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -16,15 +33,7 @@ const initialFormState = {
   stock: '',
   category: '',
   subcategory: '',
-  jewelleryCollection: '',
   metal: '',
-  purity: '',
-  weight: '',
-  diamondWeight: '',
-  diamondShape: 'N/A',
-  diamondClarity: 'N/A',
-  diamondColor: 'N/A',
-  tags: '',
   status: 'active',
   isFeatured: false,
   isBestSeller: false,
@@ -45,15 +54,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           stock: product.stock || '',
           category: product.category || '',
           subcategory: product.subcategory || '',
-          jewelleryCollection: product.jewelleryCollection || '',
           metal: product.metal || '',
-          purity: product.purity || '',
-          weight: product.weight || '',
-          diamondWeight: product.diamondWeight || '',
-          diamondShape: product.diamondShape || 'N/A',
-          diamondClarity: product.diamondClarity || 'N/A',
-          diamondColor: product.diamondColor || 'N/A',
-          tags: product.tags ? product.tags.join(', ') : '',
           status: product.status || 'active',
           isFeatured: product.isFeatured || false,
           isBestSeller: product.isBestSeller || false,
@@ -74,6 +75,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [skuLoading, setSkuLoading] = useState(false);
+  const [existingSkus, setExistingSkus] = useState([]);
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
@@ -89,6 +91,40 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     };
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    // Cache existing SKUs once per modal session so we can validate the SKU
+    // field against duplicates on demand without a round-trip per keystroke.
+    const fetchExistingSkus = async () => {
+      try {
+        const response = await productAPI.getAll({ limit: 1000 });
+        const items = response.data.data || [];
+        const currentId = product?._id || product?.id;
+        const skus = items
+          .map((p) => p.sku)
+          .filter((s) => typeof s === 'string' && s.trim().length > 0);
+        // Build a map of SKU -> owning product id so we can allow the
+        // current product to keep its existing SKU during edits.
+        const skuMap = {};
+        items.forEach((p) => {
+          if (p.sku && typeof p.sku === 'string') {
+            const id = p._id || p.id;
+            skuMap[p.sku.toLowerCase()] = id;
+          }
+        });
+        setExistingSkus({
+          list: skus,
+          map: skuMap,
+          currentProductId: currentId ? String(currentId) : null,
+        });
+      } catch (err) {
+        setExistingSkus({ list: [], map: {}, currentProductId: null });
+      }
+    };
+    if (isOpen) {
+      fetchExistingSkus();
+    }
+  }, [isOpen, product]);
 
   const generateSkuPrefix = useCallback((name, category, metal) => {
     const metalMap = {
@@ -122,31 +158,47 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     setSkuLoading(true);
     const prefix = generateSkuPrefix(name, category, metal);
     try {
-      const existing = await productAPI.getAll({ search: prefix });
-      let num = 1;
-      const items = existing.data.data || [];
-      const regex = new RegExp(`^${prefix}-(\\d{3})$`);
-      const skus = items
+      let allItems = [];
+      // Prefer the cached product list; fall back to a fresh API call if
+      // the cache has not loaded yet.
+      if (Array.isArray(existingSkus?.list)) {
+        // We need full items (not just SKUs), so do a focused fetch anyway.
+      }
+      try {
+        const broad = await productAPI.getAll({ limit: 1000 });
+        allItems = broad.data.data || [];
+      } catch (e) {
+        const existing = await productAPI.getAll({ search: prefix });
+        allItems = existing.data.data || [];
+      }
+
+      const regex = new RegExp(`^${prefix}-(\\d{3,})$`);
+      const usedNumbers = allItems
         .map((p) => p.sku)
         .filter((s) => s && regex.test(s))
-        .map((s) => parseInt(s.match(regex)[1], 10));
-      if (skus.length > 0) {
-        num = Math.max(...skus) + 1;
-      }
-      const nextSku = `${prefix}-${num.toString().padStart(3, '0')}`;
+        .map((s) => parseInt(s.match(regex)[1], 10))
+        .filter((n) => Number.isFinite(n));
+
+      const nextNum = usedNumbers.length > 0 ? Math.max(...usedNumbers) + 1 : 1;
+      const nextSku = `${prefix}-${nextNum.toString().padStart(3, '0')}`;
       setFormData((prev) => ({
         ...prev,
         sku: nextSku,
       }));
+      setErrors((prev) => ({ ...prev, sku: '' }));
     } catch (err) {
+      // Final fallback — use a timestamp-suffixed SKU so we never block the
+      // admin with an empty field on transient API failures.
+      const fallback = `${prefix}-${Date.now().toString().slice(-4)}`;
       setFormData((prev) => ({
         ...prev,
-        sku: `${prefix}-001`,
+        sku: fallback,
       }));
+      setErrors((prev) => ({ ...prev, sku: '' }));
     } finally {
       setSkuLoading(false);
     }
-  }, [isEdit, generateSkuPrefix]);
+  }, [isEdit, generateSkuPrefix, existingSkus]);
 
   useEffect(() => {
     if (!isEdit && formData.name && formData.category && formData.metal) {
@@ -294,6 +346,22 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     if (!formData.category) {
       newErrors.category = 'Category is required';
     }
+    if (!formData.subcategory) {
+      newErrors.subcategory = 'Subcategory is required';
+    }
+
+    // SKU validation: required and must not collide with another product.
+    // The currently-edited product is allowed to keep its existing SKU.
+    const trimmedSku = String(formData.sku || '').trim();
+    if (!trimmedSku) {
+      newErrors.sku = 'SKU is required';
+    } else if (existingSkus && existingSkus.map && existingSkus.map[trimmedSku.toLowerCase()]) {
+      const ownerId = existingSkus.map[trimmedSku.toLowerCase()];
+      const isOwnSku = existingSkus.currentProductId && String(ownerId) === existingSkus.currentProductId;
+      if (!isOwnSku) {
+        newErrors.sku = 'SKU already exists. Please enter a unique SKU.';
+      }
+    }
 
     if (formData.price && formData.discountPrice) {
       const priceVal = parseFloat(formData.price);
@@ -421,22 +489,41 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
 
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                SKU * (Editable)
+                SKU * <span className="text-outline-variant normal-case">(auto-generated, editable)</span>
               </label>
               <input
                 type="text"
                 name="sku"
                 value={formData.sku}
-                onChange={handleInputChange}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setFormData((prev) => ({ ...prev, sku: next }));
+                  if (errors.sku) {
+                    setErrors((prev) => ({ ...prev, sku: '' }));
+                  }
+                }}
                 className={`w-full px-4 py-2.5 border ${
                   errors.sku ? 'border-error' : 'border-outline-variant'
                 } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md font-mono`}
-                placeholder="Enter or edit SKU"
+                placeholder={isEdit ? '' : 'Auto-generated — you may edit before saving'}
               />
               {errors.sku && <p className="text-error text-xs mt-1">{errors.sku}</p>}
               {!isEdit && formData.category && formData.metal ? (
                 <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
-                  {skuLoading ? 'Generating...' : `Auto-generated: ${formData.sku}`}
+                  {skuLoading ? (
+                    <>
+                      <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+                      Generating unique SKU...
+                    </>
+                  ) : formData.sku ? (
+                    <>
+                      <span className="material-symbols-outlined text-[14px] text-deep-emerald">check_circle</span>
+                      Auto-generated SKU: <span className="font-mono font-semibold text-charcoal-text">{formData.sku}</span>
+                      <span className="text-outline-variant"> — you can edit it</span>
+                    </>
+                  ) : (
+                    'SKU will be generated when name, category, and metal are filled'
+                  )}
                 </p>
               ) : (
                 <p className="text-xs text-on-surface-variant mt-1">
@@ -571,30 +658,24 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Subcategory
+                Subcategory *
               </label>
-              <input
-                type="text"
+              <select
                 name="subcategory"
                 value={formData.subcategory}
                 onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="e.g., Engagement Rings"
-              />
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Collection
-              </label>
-              <input
-                type="text"
-                name="jewelleryCollection"
-                value={formData.jewelleryCollection}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="e.g., Heritage, Eternal"
-              />
+                className={`w-full px-4 py-2.5 border ${
+                  errors.subcategory ? 'border-error' : 'border-outline-variant'
+                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none`}
+              >
+                <option value="">Select Subcategory</option>
+                {SUBCATEGORIES.map((sub) => (
+                  <option key={sub} value={sub}>
+                    {sub}
+                  </option>
+                ))}
+              </select>
+              {errors.subcategory && <p className="text-error text-xs mt-1">{errors.subcategory}</p>}
             </div>
           </div>
 
@@ -610,146 +691,6 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
               className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md resize-y"
               placeholder="Enter product description"
             ></textarea>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Purity
-              </label>
-              <select
-                name="purity"
-                value={formData.purity}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="">Select Purity</option>
-                <option value="10K">10K</option>
-                <option value="14K">14K</option>
-                <option value="18K">18K</option>
-                <option value="22K">22K</option>
-                <option value="24K">24K</option>
-                <option value="950PT">950PT</option>
-                <option value="Sterling Silver">Sterling Silver</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Weight
-              </label>
-              <input
-                type="text"
-                name="weight"
-                value={formData.weight}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="e.g., 3.2g"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stone Weight
-              </label>
-              <input
-                type="text"
-                name="diamondWeight"
-                value={formData.diamondWeight}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="e.g., 0.35 ct"
-              />
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stone Shape
-              </label>
-              <select
-                name="diamondShape"
-                value={formData.diamondShape}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="N/A">N/A</option>
-                <option value="Round">Round</option>
-                <option value="Princess">Princess</option>
-                <option value="Emerald">Emerald</option>
-                <option value="Cushion">Cushion</option>
-                <option value="Oval">Oval</option>
-                <option value="Pear">Pear</option>
-                <option value="Marquise">Marquise</option>
-                <option value="Asscher">Asscher</option>
-                <option value="Radiant">Radiant</option>
-                <option value="Heart">Heart</option>
-                <option value="Baguette">Baguette</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stone Clarity
-              </label>
-              <select
-                name="diamondClarity"
-                value={formData.diamondClarity}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="N/A">N/A</option>
-                <option value="FL">FL</option>
-                <option value="IF">IF</option>
-                <option value="VVS1">VVS1</option>
-                <option value="VVS2">VVS2</option>
-                <option value="VS1">VS1</option>
-                <option value="VS2">VS2</option>
-                <option value="SI1">SI1</option>
-                <option value="SI2">SI2</option>
-                <option value="I1">I1</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stone Color
-              </label>
-              <select
-                name="diamondColor"
-                value={formData.diamondColor}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="N/A">N/A</option>
-                <option value="DEF">DEF</option>
-                <option value="GHI">GHI</option>
-                <option value="D">D</option>
-                <option value="E">E</option>
-                <option value="F">F</option>
-                <option value="G">G</option>
-                <option value="H">H</option>
-                <option value="I">I</option>
-                <option value="J">J</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Tags
-              </label>
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="Comma separated tags (e.g., ring, gold, pendant)"
-              />
-            </div>
           </div>
 
           <div className="flex flex-col gap-3">

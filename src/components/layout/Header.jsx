@@ -4,11 +4,11 @@ import AnnouncementBar from '../../pages/AnnouncementBar'
 import logo from '../../assets/icons/logo.jpeg'
 
 const CATEGORY_LINKS = [
-  { label: 'Necklace', slug: 'Necklace' },
-  { label: 'Bangles', slug: 'Bangles' },
-  { label: 'Earrings', slug: 'Earrings' },
-  { label: 'Premium Bride', slug: 'Premium Bride' },
-  { label: 'Accessories', slug: 'Accessories' },
+  { label: 'Necklace', slug: 'Necklaces', type: 'category' },
+  { label: 'Bangles', slug: 'Bangles', type: 'category' },
+  { label: 'Earrings', slug: 'Earrings', type: 'category' },
+  { label: 'Premium Bride', slug: 'premium-bride', type: 'collection' },
+  { label: 'Accessories', slug: 'accessories', type: 'collection' },
 ]
 
 export default function Header() {
@@ -51,7 +51,7 @@ export default function Header() {
             {CATEGORY_LINKS.map((cat) => (
               <NavLink
                 key={cat.slug}
-                to={`/shop?category=${encodeURIComponent(cat.slug)}`}
+                to={cat.type === 'collection' ? `/collections/${cat.slug}` : `/shop?category=${encodeURIComponent(cat.slug)}`}
                 className={categoryLinkClass(cat.slug)}
               >
                 {cat.label}

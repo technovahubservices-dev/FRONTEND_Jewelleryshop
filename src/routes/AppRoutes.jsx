@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Home from '../pages/Home'
 import Shop from '../pages/Shop'
+import Collection from '../pages/Collection'
 import ProductDetails from '../pages/ProductDetails'
 import Account from '../pages/Account'
 import Login from '../pages/Login'
@@ -52,6 +53,7 @@ export default function AppRoutes() {
       {/* Public routes */}
       <Route path="/" element={<Home />} />
       <Route path="/shop" element={<Shop />} />
+      <Route path="/collections/:slug" element={<Collection />} />
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

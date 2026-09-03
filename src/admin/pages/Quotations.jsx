@@ -197,29 +197,34 @@ export default function Quotations() {
     y += 4
 
     const items = quotation.items || []
-    const tableColumn = ['Product', 'SKU', 'Metal', 'Purity', 'Qty', 'Price', 'Discount', 'GST', 'Total']
+    const hasAnyDiscount = items.some((it) => parseFloat(it.discount || 0) > 0)
+    const tableColumn = hasAnyDiscount
+      ? ['Product Name', 'SKU', 'Qty', 'Price (Rs.)', 'Discount (Rs.)', 'GST (%)', 'Total (Rs.)']
+      : ['Product Name', 'SKU', 'Qty', 'Price (Rs.)', 'GST (%)', 'Total (Rs.)']
     const tableRows = items.map((item) => {
-      const qty = item.quantity || 0
+      const qty = parseFloat(item.quantity || 0)
       const price = parseFloat(item.price || 0)
-      const discountPercent = parseFloat(item.discount || 0)
+      const discountAmount = parseFloat(item.discount || 0)
       const gstPercent = parseFloat(item.gst || 0)
 
       const basePriceTotal = qty * price
-      const discountAmount = basePriceTotal * (discountPercent / 100)
       const taxableValue = Math.max(0, basePriceTotal - discountAmount)
       const gstAmount = taxableValue * (gstPercent / 100)
       const lineTotal = taxableValue + gstAmount
-      return [
+      const row = [
         item.name || '-',
         item.sku || '-',
-        item.metal || '-',
-        item.purity || '-',
-        qty.toString(),
-        `₹ ${basePriceTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-        `₹ ${discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        String(qty),
+        `₹ ${price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+      ]
+      if (hasAnyDiscount) {
+        row.push(`₹ ${discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`)
+      }
+      row.push(
         `${gstPercent}%`,
         `₹ ${lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-      ]
+      )
+      return row
     })
 
     autoTable(doc, {
@@ -234,25 +239,21 @@ export default function Quotations() {
 
     y = doc.lastAutoTable.finalY + 10
 
-    const totalQuantity = items.reduce((sum, item) => sum + (parseInt(item.quantity || 0)), 0)
+    const totalQuantity = items.reduce((sum, item) => sum + (parseFloat(item.quantity || 0)), 0)
     const totalGrossAmount = items.reduce((sum, item) => {
       const qty = parseFloat(item.quantity || 0)
       const price = parseFloat(item.price || 0)
       return sum + qty * price
     }, 0)
     const totalDiscount = items.reduce((sum, item) => {
-      const qty = parseFloat(item.quantity || 0)
-      const price = parseFloat(item.price || 0)
-      const discountPercent = parseFloat(item.discount || 0)
-      return sum + qty * price * (discountPercent / 100)
+      return sum + parseFloat(item.discount || 0)
     }, 0)
     const totalGst = items.reduce((sum, item) => {
       const qty = parseFloat(item.quantity || 0)
       const price = parseFloat(item.price || 0)
-      const discountPercent = parseFloat(item.discount || 0)
+      const discountAmount = parseFloat(item.discount || 0)
       const gstPercent = parseFloat(item.gst || 0)
       const basePriceTotal = qty * price
-      const discountAmount = basePriceTotal * (discountPercent / 100)
       const taxableValue = Math.max(0, basePriceTotal - discountAmount)
       return sum + taxableValue * (gstPercent / 100)
     }, 0)
@@ -270,11 +271,13 @@ export default function Quotations() {
     doc.text(`₹ ${totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
     y += 8
 
-    doc.setFont('helvetica', 'bold')
-    doc.text('Total Discount', margin, y)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`- ₹ ${totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
-    y += 8
+    if (totalDiscount > 0) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Total Discount', margin, y)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`- ₹ ${totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+      y += 8
+    }
 
     doc.setFont('helvetica', 'bold')
     doc.text('Total GST', margin, y)

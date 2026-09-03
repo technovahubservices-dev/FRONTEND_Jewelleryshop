@@ -1,4 +1,4 @@
-export default function QuotationSummary({ calculations, quotationNumber, date, validUntil, notes, saving, itemCount, onSave, onPreview, onUpdateValidUntil, onUpdateNotes }) {
+export default function QuotationSummary({ calculations, showDiscount, quotationNumber, date, validUntil, notes, saving, itemCount, onSave, onPreview, onUpdateValidUntil, onUpdateNotes }) {
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
@@ -17,8 +17,8 @@ export default function QuotationSummary({ calculations, quotationNumber, date, 
             <input type="date" value={validUntil} onChange={(e) => onUpdateValidUntil(e.target.value)} className="w-full bg-surface border border-outline-variant rounded-none px-3 py-2.5 text-sm font-body-md text-charcoal-text focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors" />
           </div>
           <div>
-            <p className="text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Notes</p>
-            <textarea rows="4" value={notes} onChange={(e) => onUpdateNotes(e.target.value)} className="w-full bg-surface border border-outline-variant rounded-none px-3 py-2.5 text-sm font-body-md text-charcoal-text placeholder:text-outline-variant focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors resize-y" placeholder="Additional notes..."></textarea>
+            <p className="text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Note <span className="text-outline-variant normal-case">(optional)</span></p>
+            <textarea rows="4" value={notes} onChange={(e) => onUpdateNotes(e.target.value)} className="w-full bg-surface border border-outline-variant rounded-none px-3 py-2.5 text-sm font-body-md text-charcoal-text placeholder:text-outline-variant focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors resize-y" placeholder="Additional notes (optional)..."></textarea>
           </div>
         </div>
       </div>
@@ -34,10 +34,12 @@ export default function QuotationSummary({ calculations, quotationNumber, date, 
             <span className="text-on-surface-variant">Gross Amount</span>
             <span className="text-charcoal-text font-medium">₹ {calculations.totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-on-surface-variant">Total Discount</span>
-            <span className="text-charcoal-text font-medium">- ₹ {calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-          </div>
+          {showDiscount && (
+            <div className="flex justify-between text-sm">
+              <span className="text-on-surface-variant">Total Discount</span>
+              <span className="text-charcoal-text font-medium">- ₹ {calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-on-surface-variant">Total GST</span>
             <span className="text-charcoal-text font-medium">₹ {calculations.totalGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
