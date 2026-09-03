@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:5000'
 
 export default defineConfig({
-  
+  base: "/",
   plugins: [react()],
   server: {
     port: 5173,
