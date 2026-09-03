@@ -4,7 +4,6 @@
   import AddProductModal from '../components/AddProductModal';
   import { exportToExcel } from '../../utils/excelExport';
   import { formatCurrency } from '../../utils/formatters';
-  import { resolveImageUrl } from '../../utils/apiUrl';
 
   export default function Products() {
     const [products, setProducts] = useState([]);
@@ -450,9 +449,9 @@
                                   className="w-full h-full object-cover"
                                   alt={product.name}
                                   src={
-                                    resolveImageUrl(product.primaryImage ||
+                                    product.primaryImage ||
                                     product.images?.[0] ||
-                                    product.image) ||
+                                    product.image ||
                                     'https://placehold.co/48x48'
                                   }
                                   onError={(e) => {

@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { orderAPI } from '../services/api'
 import { formatDate, formatCurrency } from '../utils/formatters'
-import { resolveImageUrl } from '../utils/apiUrl'
 
 export default function Account() {
   const navigate = useNavigate()
@@ -179,7 +178,7 @@ export default function Account() {
                               <img
                                 className="w-full h-full object-cover"
                                 alt={order.items[0].name}
-                                src={resolveImageUrl(order.items[0].image) || 'https://placehold.co/64x64'}
+                                src={order.items[0].image || 'https://placehold.co/64x64'}
                                 onError={(e) => { e.target.src = 'https://placehold.co/64x64'; }}
                               />
                             )}

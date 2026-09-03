@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { productAPI, categoryAPI } from '../../services/api';
-import { resolveImageUrl } from '../../utils/apiUrl';
 
 const METALS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold'];
 const STATUS_OPTIONS = [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Disabled' }, { value: 'draft', label: 'Draft' }];
@@ -859,7 +858,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                       }`}
                     >
                       <img
-                        src={resolveImageUrl(img)}
+                        src={img}
                         alt={`Product ${idx + 1}`}
                         className="w-full h-24 object-cover"
                         onError={(e) => {
