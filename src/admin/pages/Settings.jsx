@@ -6,6 +6,7 @@ export default function Settings() {
   const [errorMessage, setErrorMessage] = useState('')
   const [googleDriveConnected, setGoogleDriveConnected] = useState(false)
   const [googleDriveEmail, setGoogleDriveEmail] = useState('')
+  const [googleDriveConnectedAt, setGoogleDriveConnectedAt] = useState('')
   const [googleDriveLoading, setGoogleDriveLoading] = useState(true)
   const [googleDriveActionLoading, setGoogleDriveActionLoading] = useState(false)
 
@@ -28,8 +29,9 @@ export default function Settings() {
         skipAuthRedirect: true,
       })
       const status = response.data?.data || response.data
-      setGoogleDriveConnected(Boolean(status?.connected))
-      setGoogleDriveEmail(status?.email || '')
+      setGoogleDriveConnected(Boolean(status?.connected ?? status?.isConnected))
+      setGoogleDriveEmail(status?.email || status?.account?.email || '')
+      setGoogleDriveConnectedAt(status?.connectedAt || status?.connectedDate || status?.createdAt || '')
     } catch (error) {
       const message = error.response?.status === 401
         ? 'Your admin session is not authorized to access Google Drive.'
@@ -81,7 +83,7 @@ export default function Settings() {
         },
         skipAuthRedirect: true,
       })
-      const authUrl = response.data?.authUrl
+      const authUrl = response.data?.authUrl || response.data?.data?.authUrl
       if (!authUrl) {
         throw new Error('The server did not return a Google authorization URL.')
       }
@@ -128,10 +130,10 @@ export default function Settings() {
         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
         : 'bg-amber-50 text-amber-700 border-amber-200',
       helper: googleDriveConnected
-        ? `Files can be synced and attached from Google Drive.${googleDriveEmail ? ` Connected as ${googleDriveEmail}.` : ''}`
+        ? `Files can be synced and attached from Google Drive.${googleDriveEmail ? ` Connected as ${googleDriveEmail}.` : ''}${googleDriveConnectedAt ? ` Connected on ${new Date(googleDriveConnectedAt).toLocaleDateString()}.` : ''}`
         : 'Connect your admin account to enable Drive file access.',
     }),
-    [googleDriveConnected, googleDriveEmail]
+    [googleDriveConnected, googleDriveEmail, googleDriveConnectedAt]
   )
 
   const settingSections = [

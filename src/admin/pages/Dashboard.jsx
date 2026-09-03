@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { productAPI, orderAPI } from '../../services/api'
+import { resolveImageUrl } from '../../utils/apiUrl'
 
 const KPI_CARD_BASE = 'bg-surface-white p-5 rounded-lg border border-outline-variant/30 hover:border-regal-gold/50 transition-colors duration-300 flex flex-col justify-between h-28 relative overflow-hidden group'
 const KPI_TITLE = 'font-label-caps text-label-caps text-outline z-10'
@@ -455,7 +456,7 @@ export default function Dashboard() {
               {topSellingProducts.map((product, idx) => (
                 <li key={product.id} className="flex items-center gap-3 p-2 rounded hover:bg-soft-cream transition-colors">
                   <div className="w-10 h-10 bg-surface-container rounded overflow-hidden shrink-0 border border-outline-variant/20">
-                    <img className="w-full h-full object-cover" alt={product.name} src={product.image} onError={(e) => { e.target.src = 'https://placehold.co/48x48' }} />
+                    <img className="w-full h-full object-cover" alt={product.name} src={resolveImageUrl(product.image)} onError={(e) => { e.target.src = 'https://placehold.co/48x48' }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-body-md text-sm text-deep-emerald font-medium leading-tight mb-0.5 truncate">{product.name}</p>
@@ -490,7 +491,7 @@ export default function Dashboard() {
                   {lowStockProducts.map((product) => (
                     <li key={product._id} className="flex items-center gap-3 p-2 rounded bg-soft-cream/50">
                       <div className="w-8 h-8 bg-surface-container rounded overflow-hidden shrink-0">
-                        <img className="w-full h-full object-cover" alt={product.name} src={product.primaryImage || product.images?.[0] || 'https://placehold.co/48x48'} onError={(e) => { e.target.src = 'https://placehold.co/48x48' }} />
+                        <img className="w-full h-full object-cover" alt={product.name} src={resolveImageUrl(product.primaryImage || product.images?.[0]) || 'https://placehold.co/48x48'} onError={(e) => { e.target.src = 'https://placehold.co/48x48' }} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs text-deep-emerald font-medium truncate">{product.name}</p>

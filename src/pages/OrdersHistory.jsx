@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { orderAPI } from '../services/api'
 import { formatDate, formatCurrency } from '../utils/formatters'
+import { resolveImageUrl } from '../utils/apiUrl'
 
 export default function OrdersHistory() {
   const { user, isAuthenticated } = useAuth()
@@ -173,7 +174,7 @@ export default function OrdersHistory() {
                         <img
                           className="w-full h-full object-cover"
                           alt={item.name}
-                          src={item.image}
+                          src={resolveImageUrl(item.image)}
                           onError={(e) => { e.target.src = 'https://placehold.co/64x64'; }}
                         />
                       )}

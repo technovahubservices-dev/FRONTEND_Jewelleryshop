@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { getApiBaseUrl } from '../utils/apiUrl';
+import { getApiBaseUrl, resolveImageUrl } from '../utils/apiUrl';
 
 const API_URL = getApiBaseUrl();
 
@@ -66,8 +66,8 @@ export const productAPI = {
     discount: p.discountPrice > 0 && p.price > 0
       ? `${Math.round(((p.price - p.discountPrice) / p.price) * 100)}% OFF`
       : null,
-    image: p.primaryImage || (p.images && p.images[0]) || 'https://placehold.co/400x400',
-    images: p.images || [],
+    image: resolveImageUrl(p.primaryImage || (p.images && p.images[0])) || 'https://placehold.co/400x400',
+    images: (p.images || []).map(resolveImageUrl),
     description: p.description || '',
     fullDescription: p.description || '',
     isNew: p.isNewArrival,

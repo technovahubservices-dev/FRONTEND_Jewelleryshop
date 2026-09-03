@@ -4,6 +4,7 @@ import FeaturedProducts from '../components/sections/FeaturedProducts'
 import { contentAPI, productAPI } from '../services/api'
 import TestimonialSection from '../components/sections/TestimonialSection'
 import heroPageImage from '../assets/images/homepage.png'
+import { resolveImageUrl } from '../utils/apiUrl'
 
 const DEFAULT_CATEGORIES = [
   { id: 'rings', name: 'Rings', image: 'https://cdn.orra.co.in/media/catalog/product/cache/10238651d5f95594b9023f998383bb67/e/r/erg26k54_2_tbruvc5lylrqqokd.jpg', link: '/shop?category=rings' },
@@ -130,7 +131,7 @@ export default function Home() {
   }, [])
 
   const heroImages = heroBanners.length > 0
-    ? heroBanners.map((b) => b.image || b.mobileImage).filter(Boolean)
+    ? heroBanners.map((b) => resolveImageUrl(b.image || b.mobileImage)).filter(Boolean)
     : fallbackHeroImages
 
   const [currentImage, setCurrentImage] = useState(0)
@@ -296,7 +297,7 @@ export default function Home() {
           } transition-opacity duration-700`}
         >
           <img
-            src={image}
+                src={resolveImageUrl(image)}
             alt={isActive ? (activeHero?.title || "JKR Jewellery Offers") : ""}
             className="w-full h-auto block object-contain"
           />
@@ -348,7 +349,7 @@ export default function Home() {
               className="group relative h-40 md:h-48 rounded-xl overflow-hidden block border border-outline-variant/10 shadow-sm bg-gray-50"
             >
               <img
-                src={category.image}
+                src={resolveImageUrl(category.image)}
                 alt={category.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 onError={(e) => {
@@ -388,7 +389,7 @@ export default function Home() {
                   <div className="group cursor-pointer relative overflow-hidden h-[400px] md:h-[500px] rounded-2xl shadow-lg">
                     <div
                       className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                      style={{ backgroundImage: `url('${collection.image}')` }}
+                      style={{ backgroundImage: `url('${resolveImageUrl(collection.image)}')` }}
                     ></div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-2xl"></div>
                     <div className={`absolute bottom-8 ${idx === 0 ? 'left-8' : 'left-6'} text-surface-white`}>
@@ -503,7 +504,7 @@ export default function Home() {
                   <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 p-3">
                     {thumbSrc ? (
                       <img
-                        src={thumbSrc}
+                        src={resolveImageUrl(thumbSrc)}
                         alt={reel.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {

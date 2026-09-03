@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { contentAPI } from '../services/api';
 import { formatDate } from '../utils/formatters';
+import { resolveImageUrl } from '../utils/apiUrl';
 
 export default function Blog() {
   const [posts, setPosts] = useState([]);
@@ -80,7 +81,7 @@ export default function Blog() {
                     <img
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       alt={post.title}
-                      src={post.image}
+                      src={resolveImageUrl(post.image)}
                       onError={(e) => { e.target.src = 'https://placehold.co/600x400'; }}
                     />
                   </div>

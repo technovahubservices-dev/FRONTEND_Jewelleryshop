@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { contentAPI } from '../services/api';
 import { formatDate } from '../utils/formatters';
+import { resolveImageUrl } from '../utils/apiUrl';
 
 export default function BlogPost() {
   const { slug } = useParams();
@@ -83,7 +84,7 @@ export default function BlogPost() {
           <img
             className="w-full h-full object-cover"
             alt={post.title}
-            src={post.image}
+            src={resolveImageUrl(post.image)}
             onError={(e) => { e.target.src = 'https://placehold.co/1200x400'; }}
           />
         </div>

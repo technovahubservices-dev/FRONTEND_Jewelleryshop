@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { productAPI, contentAPI } from '../../services/api'
+import { resolveImageUrl } from '../../utils/apiUrl'
 
 const tabs = [
   { id: 'all', label: 'All Products' },
@@ -54,7 +55,7 @@ export default function FeaturedProducts({ title, description }) {
         return {
           id: typeof product === 'string' ? product : (product?._id || product?.id || fp._id),
           name: fp.title || transform.name || product?.name || 'Product',
-          image: fp.image || transform.image || 'https://placehold.co/400x400',
+          image: resolveImageUrl(fp.image || transform.image) || 'https://placehold.co/400x400',
           description: fp.description || transform.description || '',
           price: price,
           originalPrice: product && product.discountPrice > 0 ? Number(product.price) : null,

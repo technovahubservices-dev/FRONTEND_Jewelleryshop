@@ -19,3 +19,8 @@ export const getApiBaseUrl = () => {
 
   return configuredUrl.endsWith('/api') ? configuredUrl : `${configuredUrl}/api`
 }
+
+export const resolveImageUrl = (image) => {
+  if (!image || typeof image !== 'string' || image.startsWith('http')) return image
+  return `${getApiBaseUrl()}${image}`
+}

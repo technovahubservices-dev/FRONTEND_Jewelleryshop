@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { contentAPI } from '../../services/api';
+import { resolveImageUrl } from '../../utils/apiUrl';
 
 const FALLBACK_TESTIMONIALS = [
   {
@@ -191,7 +192,7 @@ export default function TestimonialSection({ title }) {
                         <div className="flex items-center gap-3 mt-auto">
                           {testimonial.image ? (
                             <img
-                              src={testimonial.image}
+                              src={resolveImageUrl(testimonial.image)}
                               alt={testimonial.name}
                               className="w-12 h-12 rounded-full object-cover border border-outline-variant/30"
                               onError={(e) => {
