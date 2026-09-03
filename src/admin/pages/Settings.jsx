@@ -1,16 +1,17 @@
 import { useMemo, useState } from 'react'
+import { getBackendOrigin } from '../../utils/apiUrl'
 
 export default function Settings() {
   const [successMessage, setSuccessMessage] = useState('')
   const [googleDriveConnected, setGoogleDriveConnected] = useState(false)
+  const backendOrigin = getBackendOrigin()
 
   const handleSave = () => {
     setSuccessMessage('Settings saved successfully')
   }
 
   const handleGoogleDriveConnect = () => {
-    const authUrl =
-      import.meta.env.VITE_GOOGLE_DRIVE_AUTH_URL || '/api/auth/google-drive'
+    const authUrl = `${backendOrigin}/api/auth/google-drive`
 
     window.location.href = authUrl
   }
