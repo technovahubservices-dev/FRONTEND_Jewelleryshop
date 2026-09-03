@@ -24,7 +24,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !error.config?.skipAuthRedirect) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/account')) {
@@ -40,6 +40,12 @@ export const authAPI = {
     api.post('/auth/login', { email, password }),
   register: (name, email, password) =>
     api.post('/auth/register', { name, email, password }),
+};
+
+export const googleDriveAPI = {
+  startOAuth: (config) => api.get('/auth/google-drive', config),
+  getStatus: (config) => api.get('/integrations/google-drive/status', config),
+  disconnect: (config) => api.post('/integrations/google-drive/disconnect', undefined, config),
 };
 
 export const productAPI = {

@@ -1,24 +1,124 @@
-import { useMemo, useState } from 'react'
-import { getBackendOrigin } from '../../utils/apiUrl'
+import { useEffect, useMemo, useState } from 'react'
+import { googleDriveAPI } from '../../services/api'
 
 export default function Settings() {
   const [successMessage, setSuccessMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
   const [googleDriveConnected, setGoogleDriveConnected] = useState(false)
-  const backendOrigin = getBackendOrigin()
+  const [googleDriveEmail, setGoogleDriveEmail] = useState('')
+  const [googleDriveLoading, setGoogleDriveLoading] = useState(true)
+  const [googleDriveActionLoading, setGoogleDriveActionLoading] = useState(false)
+
+  const showError = (message) => {
+    setSuccessMessage('')
+    setErrorMessage(message)
+  }
+
+  const refreshGoogleDriveStatus = async () => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      showError('Your admin session has expired. Please log in again.')
+      setGoogleDriveLoading(false)
+      return
+    }
+
+    try {
+      const response = await googleDriveAPI.getStatus({
+        headers: { Authorization: `Bearer ${token}` },
+        skipAuthRedirect: true,
+      })
+      const status = response.data?.data || response.data
+      setGoogleDriveConnected(Boolean(status?.connected))
+      setGoogleDriveEmail(status?.email || '')
+    } catch (error) {
+      const message = error.response?.status === 401
+        ? 'Your admin session is not authorized to access Google Drive.'
+        : error.response?.data?.message || 'Unable to check Google Drive connection status.'
+      showError(message)
+    } finally {
+      setGoogleDriveLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const googleDriveResult = params.get('googleDrive')
+
+    if (googleDriveResult === 'connected') {
+      setSuccessMessage('Google Drive connected successfully')
+      params.delete('googleDrive')
+      params.delete('reason')
+      window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`)
+    } else if (googleDriveResult === 'error') {
+      const reason = params.get('reason')
+      setErrorMessage(reason ? `Google Drive connection failed: ${reason}` : 'Google Drive connection failed.')
+      params.delete('googleDrive')
+      params.delete('reason')
+      window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params}` : ''}`)
+    }
+
+    refreshGoogleDriveStatus()
+  }, [])
 
   const handleSave = () => {
     setSuccessMessage('Settings saved successfully')
   }
 
-  const handleGoogleDriveConnect = () => {
-    const authUrl = `${backendOrigin}/api/auth/google-drive`
+  const handleGoogleDriveConnect = async () => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      showError('Your admin session has expired. Please log in again.')
+      return
+    }
 
-    window.location.href = authUrl
+    setGoogleDriveActionLoading(true)
+    setErrorMessage('')
+    try {
+      const response = await googleDriveAPI.startOAuth({
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+        skipAuthRedirect: true,
+      })
+      const authUrl = response.data?.authUrl
+      if (!authUrl) {
+        throw new Error('The server did not return a Google authorization URL.')
+      }
+      window.location.href = authUrl
+    } catch (error) {
+      const message = error.response?.status === 401
+        ? 'Your admin session is not authorized to connect Google Drive.'
+        : error.response?.data?.message || error.message || 'Unable to start Google Drive connection.'
+      showError(message)
+      setGoogleDriveActionLoading(false)
+    }
   }
 
-  const handleGoogleDriveDisconnect = () => {
-    setGoogleDriveConnected(false)
-    setSuccessMessage('Google Drive disconnected')
+  const handleGoogleDriveDisconnect = async () => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      showError('Your admin session has expired. Please log in again.')
+      return
+    }
+
+    setGoogleDriveActionLoading(true)
+    setErrorMessage('')
+    try {
+      await googleDriveAPI.disconnect({
+        headers: { Authorization: `Bearer ${token}` },
+        skipAuthRedirect: true,
+      })
+      setSuccessMessage('Google Drive disconnected')
+      await refreshGoogleDriveStatus()
+    } catch (error) {
+      const message = error.response?.status === 401
+        ? 'Your admin session is not authorized to disconnect Google Drive.'
+        : error.response?.data?.message || 'Unable to disconnect Google Drive.'
+      showError(message)
+    } finally {
+      setGoogleDriveActionLoading(false)
+    }
   }
 
   const googleDriveStatus = useMemo(
@@ -28,10 +128,10 @@ export default function Settings() {
         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
         : 'bg-amber-50 text-amber-700 border-amber-200',
       helper: googleDriveConnected
-        ? 'Files can be synced and attached from Google Drive.'
+        ? `Files can be synced and attached from Google Drive.${googleDriveEmail ? ` Connected as ${googleDriveEmail}.` : ''}`
         : 'Connect your admin account to enable Drive file access.',
     }),
-    [googleDriveConnected]
+    [googleDriveConnected, googleDriveEmail]
   )
 
   const settingSections = [
@@ -136,13 +236,15 @@ export default function Settings() {
               <div className="flex flex-col gap-3 md:items-end">
                 <button
                   onClick={handleGoogleDriveConnect}
+                  disabled={googleDriveLoading || googleDriveActionLoading}
                   className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg bg-deep-emerald text-white font-medium shadow-sm transition-all duration-200 hover:bg-primary-container active:scale-95"
                 >
                   <span className="material-symbols-outlined text-base">link</span>
-                  {googleDriveConnected ? 'Reconnect Drive' : 'Connect with Google'}
+                  {googleDriveActionLoading ? 'Connecting...' : googleDriveConnected ? 'Reconnect Drive' : 'Connect with Google'}
                 </button>
                 <button
                   onClick={handleGoogleDriveDisconnect}
+                  disabled={googleDriveLoading || googleDriveActionLoading || !googleDriveConnected}
                   className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-lg border border-outline-variant/60 text-deep-emerald font-medium transition-all duration-200 hover:bg-surface-container-low"
                 >
                   <span className="material-symbols-outlined text-base">link_off</span>
@@ -155,8 +257,10 @@ export default function Settings() {
       </div>
 
       <div className="flex justify-end pt-6 border-t border-outline-variant/30">
-        {successMessage && (
-          <span className="text-sm text-primary mr-4 self-center">{successMessage}</span>
+        {(successMessage || errorMessage) && (
+          <span className={`text-sm mr-4 self-center ${errorMessage ? 'text-red-600' : 'text-primary'}`}>
+            {errorMessage || successMessage}
+          </span>
         )}
         <button onClick={handleSave} className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded transition-all duration-200 hover:bg-primary-container active:scale-95 shadow-sm">
           Save Changes
