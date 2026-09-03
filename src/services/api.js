@@ -1,10 +1,15 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
+// 💡 FIX 1: Prioritize explicit backend environment variables, or fallback to the specific Render API target
+const API_URL = import.meta.env.VITE_API_URL || 'https://backend-jewelleryshop.onrender.com/api';
 
 const api = axios.create({
   baseURL: API_URL,
   timeout: 30000,
+  // 💡 FIX 2: Mandate common header type parsing globally to prevent validation failures
+  headers: {
+    'Content-Type': 'application/json',
+  }
 });
 
 api.interceptors.request.use(
@@ -35,8 +40,9 @@ api.interceptors.response.use(
 );
 
 export const authAPI = {
+  // 💡 FIX 3: Explicitly construct the payload container object safely 
   login: (email, password) =>
-    api.post('/auth/login', { email, password }),
+    api.post('/auth/login', { email: email, password: password }),
   register: (name, email, password) =>
     api.post('/auth/register', { name, email, password }),
 };
@@ -45,9 +51,13 @@ export const productAPI = {
   getAll: (params) => api.get('/products', { params }),
   getById: (id) => api.get(`/products/${id}`),
   create: (formData) =>
-    api.post('/products', formData),
+    api.post('/products', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' } // Overrides JSON for media file uploads
+    }),
   update: (id, formData) =>
-    api.put(`/products/${id}`, formData),
+    api.put(`/products/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }),
   delete: (id) => api.delete(`/products/${id}`),
   transform: (p) => ({
     id: p._id,
@@ -131,7 +141,7 @@ export const contentAPI = {
   delete: (type, id) => api.delete(`/content/${type}/${id}`),
   reorder: (type, items) => api.put(`/content/${type}/reorder`, { items }),
   toggleActive: (type, id) => api.put(`/content/${type}/${id}/toggle`),
-   getHomepageSettings: () => api.get('/content/homepage/settings'),
+  getHomepageSettings: () => api.get('/content/homepage/settings'),
   updateHomepageSettings: (data) => api.put('/content/homepage/settings', data),
   uploadHomepageImage: (formData) =>
     api.post('/content/homepage/upload', formData),
