@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { contentAPI, productAPI } from '../../services/api'
+import { getMediaUrl } from '../../utils/apiUrl'
 import AnnouncementTab from './tabs/AnnouncementTab'
 import HeroTab from './tabs/HeroTab'
 import CategoriesTab from './tabs/CategoriesTab'
@@ -89,7 +90,9 @@ export default function ContentManagement() {
     try {
       const response = await contentAPI.uploadHomepageImage(formData)
       if (response.data.success) {
-        return response.data.url
+        const uploadData = response.data.data || response.data || {}
+        const imageUrl = uploadData?.url || uploadData?.path || uploadData?.fileUrl || (typeof uploadData === 'string' ? uploadData : '')
+        return getMediaUrl(imageUrl)
       }
     } catch (err) {
       console.error('Upload failed:', err)
@@ -132,7 +135,7 @@ export default function ContentManagement() {
     try {
       const response = await contentAPI.updateHomepageTab(activeTab, settings)
       if (response.data.success) {
-        setSettings(response.data.data)
+        setSettings((prev) => ({ ...prev, ...response.data.data }))
         setSuccess(`"${TABS.find(t => t.id === activeTab)?.label || 'Tab'}" saved successfully`)
       }
     } catch (err) {

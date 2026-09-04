@@ -16,10 +16,6 @@ export default function TopAppBar({ onMenuClick }) {
         />
       </div>
       <div className="flex items-center gap-4">
-        <button className="relative p-2 text-gray-500 hover:text-deep-emerald transition-colors">
-          <i className="fa-regular fa-bell text-lg"></i>
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-        </button>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-deep-emerald flex items-center justify-center text-white text-sm font-medium">
             {user?.name?.charAt(0) || 'A'}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { productAPI, quotationAPI } from '../../services/api'
+import { parseNumber, calculateLineItem, hasAnyDiscount } from '../../utils/formatters'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
@@ -12,22 +13,6 @@ import QuotationPreviewModal from './components/QuotationPreviewModal'
 import ExcelImportPanel from './components/ExcelImportPanel'
 
 const DEFAULT_GST = 18
-
-const DEFAULT_METAL_RATES = {
-  Gold: 8500,
-  Silver: 850,
-  Platinum: 4200,
-  'Rose Gold': 8700,
-  'White Gold': 8600,
-}
-
-const parseNumber = (value) => {
-  if (typeof value === 'number') return value
-  if (typeof value !== 'string') return 0
-  const cleaned = value.replace(/[^0-9.\-]/g, '')
-  const num = parseFloat(cleaned)
-  return Number.isFinite(num) ? num : 0
-}
 
 const normalizeProduct = (raw) => {
   if (!raw) return null
@@ -51,6 +36,17 @@ const normalizeProduct = (raw) => {
   }
 }
 
+const normalizeQuotationItem = (item) => ({
+  id: item?.id || item?._id || undefined,
+  productId: item?.productId || '',
+  productName: item?.productName || item?.name || '',
+  sku: item?.sku || '',
+  qty: parseNumber(item?.qty ?? item?.quantity) || 1,
+  price: parseNumber(item?.price) || 0,
+  gst: parseNumber(item?.gst) || DEFAULT_GST,
+  discount: parseNumber(item?.discount) || 0,
+})
+
 const MOCK_PRODUCTS = [
   { _id: 'p1', name: 'Elegant Gold Pendant', sku: 'SKU001', metal: 'Gold', purity: '22K', weight: '3.2', diamondWeight: '0.15', diamondShape: 'Round', price: 25000, category: 'Necklaces' },
   { _id: 'p2', name: 'Diamond Stud Earrings', sku: 'SKU002', metal: 'Gold', purity: '18K', weight: '1.8', diamondWeight: '0.40', diamondShape: 'Round', price: 45000, category: 'Earrings' },
@@ -69,7 +65,7 @@ export default function CreateQuotation() {
   const [editingQuotation, setEditingQuotation] = useState(location.state?.quotation || null)
 
   const initialCustomer = location.state?.quotation?.customer || { name: '', phone: '', email: '', address: '' }
-  const initialItems = location.state?.quotation?.items || []
+  const initialItems = (location.state?.quotation?.items || []).map(normalizeQuotationItem)
   const initialNotes = location.state?.quotation?.notes || ''
   const initialStatus = location.state?.quotation?.status || 'draft'
   const initialDate = location.state?.quotation?.date ? location.state.quotation.date.split('T')[0] : new Date().toISOString().split('T')[0]
@@ -118,20 +114,15 @@ export default function CreateQuotation() {
     if (products.length === 0 || items.length === 0) return
     let changed = false
     const updated = items.map((item) => {
-      if (item.productId && (!item.name || !item.sku)) {
+      if (item.productId && (!item.productName || !item.sku)) {
         const selected = products.find((p) => (p._id || p.id) === item.productId)
         if (selected) {
           changed = true
           return {
             ...item,
-            name: selected.name || item.name,
+            productName: selected.name || item.productName,
             sku: selected.SKU || selected.sku || item.sku,
-            metal: selected.metal || selected.metalColor || item.metal,
-            purity: selected.purity || item.purity,
-            grossWeight: selected.weight || item.grossWeight,
-            netWeight: selected.weight || item.netWeight,
-            stoneWeight: selected.diamondWeight || item.stoneWeight,
-            stoneType: selected.diamondShape || item.stoneType,
+            price: Number(selected.price) || item.price,
           }
         }
       }
@@ -146,23 +137,14 @@ export default function CreateQuotation() {
     setItems([
       ...items,
       {
+        id: Date.now(),
         productId: '',
-        name: '',
+        productName: '',
         sku: '',
-        metal: '',
-        purity: '',
-        grossWeight: '',
-        netWeight: '',
-        stoneWeight: '',
-        stoneType: '',
-        metalRate: 0,
-        makingCharges: 0,
-        wastage: 0,
-        stoneCharges: 0,
-        quantity: 1,
-        discount: 0,
-        gst: DEFAULT_GST,
+        qty: 1,
         price: 0,
+        gst: DEFAULT_GST,
+        discount: 0,
       },
     ])
   }
@@ -178,20 +160,9 @@ export default function CreateQuotation() {
     if (field === 'productId') {
       const selected = products.find((p) => (p._id || p.id) === value)
       if (selected) {
-        updated[index].name = selected.name || ''
+        updated[index].productName = selected.name || ''
         updated[index].sku = selected.SKU || selected.sku || ''
-        updated[index].metal = selected.metal || selected.metalColor || ''
-        updated[index].purity = selected.purity || ''
-        updated[index].grossWeight = selected.weight || ''
-        updated[index].netWeight = selected.weight || ''
-        updated[index].stoneWeight = selected.diamondWeight || ''
-        updated[index].stoneType = selected.diamondShape || ''
         updated[index].price = Number(selected.price) || 0
-        const metalType = selected.metal || selected.metalColor || ''
-        updated[index].metalRate = DEFAULT_METAL_RATES[metalType] || 0
-        updated[index].makingCharges = 0
-        updated[index].wastage = 0
-        updated[index].stoneCharges = 0
         updated[index].discount = 0
         updated[index].gst = DEFAULT_GST
       }
@@ -203,26 +174,15 @@ export default function CreateQuotation() {
         const matched = products.find((p) => (p.SKU || p.sku || '').toLowerCase() === trimmed.toLowerCase())
         if (matched && matched._id && matched._id !== updated[index].productId) {
           updated[index].productId = matched._id || matched.id || ''
-          updated[index].name = matched.name || ''
-          updated[index].metal = matched.metal || matched.metalColor || ''
-          updated[index].purity = matched.purity || ''
-          updated[index].grossWeight = matched.weight || ''
-          updated[index].netWeight = matched.weight || ''
-          updated[index].stoneWeight = matched.diamondWeight || ''
-          updated[index].stoneType = matched.diamondShape || ''
+          updated[index].productName = matched.name || ''
           updated[index].price = Number(matched.price) || 0
-          const metalType = matched.metal || matched.metalColor || ''
-          updated[index].metalRate = DEFAULT_METAL_RATES[metalType] || 0
-          updated[index].makingCharges = 0
-          updated[index].wastage = 0
-          updated[index].stoneCharges = 0
           updated[index].discount = 0
           updated[index].gst = DEFAULT_GST
         }
       }
     }
 
-    const numericFields = ['metalRate', 'makingCharges', 'wastage', 'stoneCharges', 'quantity', 'discount', 'gst', 'price']
+    const numericFields = ['qty', 'price', 'gst', 'discount']
     if (numericFields.includes(field)) {
       updated[index][field] = Number(value) || 0
     }
@@ -337,26 +297,17 @@ export default function CreateQuotation() {
 
   const importExcelToQuotation = () => {
     if (excelPreview.length === 0) return
-    const importedItems = excelPreview.map((item) => ({
-      productId: '',
-      name: item.name || '',
-      sku: item.sku || '',
-      hsn: item.hsn || '',
-      metal: item.metal || '',
-      purity: item.purity || '',
-      grossWeight: item.grossWeight || '',
-      netWeight: item.netWeight || '',
-      stoneWeight: item.stoneWeight || '',
-      stoneType: item.stoneType || '',
-      metalRate: parseNumber(item.metalRate) || 0,
-      makingCharges: parseNumber(item.makingCharges) || 0,
-      wastage: parseNumber(item.wastage) || 0,
-      stoneCharges: parseNumber(item.stoneCharges) || 0,
-      quantity: parseNumber(item.quantity) || 1,
-      discount: parseNumber(item.discount) || 0,
-      gst: parseNumber(item.gst) || 18,
-      price: parseNumber(item.price) || 0,
-    }))
+    const importedItems = excelPreview.map((item) =>
+      normalizeQuotationItem({
+        productId: '',
+        name: item.name,
+        sku: item.sku,
+        price: item.price,
+        qty: item.quantity,
+        gst: item.gst,
+        discount: item.discount,
+      })
+    )
     setItems(importedItems)
     setExcelPreview([])
     setExcelError('')
@@ -374,16 +325,7 @@ export default function CreateQuotation() {
 
   const calculations = items.reduce(
     (acc, item) => {
-      const qty = item.quantity || 0
-      const price = parseNumber(item.price) || 0
-      const discountPercent = parseNumber(item.discount) || 0
-      const gstPercent = parseNumber(item.gst) || 0
-
-      const basePriceTotal = qty * price
-      const discountAmount = basePriceTotal * (discountPercent / 100)
-      const taxableValue = Math.max(0, basePriceTotal - discountAmount)
-      const gstAmount = taxableValue * (gstPercent / 100)
-      const lineTotal = taxableValue + gstAmount
+      const { qty, basePriceTotal, discountAmount, gstAmount, lineTotal } = calculateLineItem(item)
 
       acc.totalQuantity += qty
       acc.totalGrossAmount += basePriceTotal
@@ -406,24 +348,12 @@ export default function CreateQuotation() {
         },
         validUntil,
         items: items.map((item) => ({
-          productId: item.productId || '',
-          name: item.name,
-          sku: item.sku,
-          hsn: item.hsn,
-          metal: item.metal,
-          purity: item.purity,
-          grossWeight: item.grossWeight,
-          netWeight: item.netWeight,
-          stoneWeight: item.stoneWeight,
-          stoneType: item.stoneType,
-          metalRate: parseNumber(item.metalRate) || 0,
-          makingCharges: parseNumber(item.makingCharges) || 0,
-          wastage: parseNumber(item.wastage) || 0,
-          stoneCharges: parseNumber(item.stoneCharges) || 0,
-          quantity: parseNumber(item.quantity) || 1,
-          discount: parseNumber(item.discount) || 0,
-          gst: parseNumber(item.gst) || 0,
+          productName: item.productName || '',
+          sku: item.sku || '',
+          qty: parseNumber(item.qty ?? item.quantity) || 0,
           price: parseNumber(item.price) || 0,
+          gst: parseNumber(item.gst) || 0,
+          discount: parseNumber(item.discount) || 0,
         })),
         notes,
         status: saveStatus,
@@ -575,6 +505,7 @@ export default function CreateQuotation() {
         notes={notes}
         items={items}
         calculations={calculations}
+        hasDiscount={hasAnyDiscount(items)}
         onGeneratePDF={generatePDF}
         onPrint={handlePrint}
       />

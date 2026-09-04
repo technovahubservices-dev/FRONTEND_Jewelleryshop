@@ -471,10 +471,9 @@ export default function Dashboard() {
         {/* 8. Alerts Section */}
         <div className="md:col-span-12 bg-surface-white rounded-lg border border-outline-variant/30 overflow-hidden">
           <div className="p-6 border-b border-outline-variant/20">
-            <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald flex items-center gap-2">
-              <span className="material-symbols-outlined text-regal-gold text-xl" data-icon="notifications">notifications</span>
-              Dashboard Alerts
-            </h3>
+             <h3 className="font-headline-md text-body-lg md:text-headline-md text-deep-emerald">
+               Dashboard Alerts
+             </h3>
           </div>
           <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Low Stock */}

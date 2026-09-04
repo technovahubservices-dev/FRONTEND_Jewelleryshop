@@ -9,10 +9,26 @@ export default function Settings() {
   const [googleDriveConnectedAt, setGoogleDriveConnectedAt] = useState('')
   const [googleDriveLoading, setGoogleDriveLoading] = useState(true)
   const [googleDriveActionLoading, setGoogleDriveActionLoading] = useState(false)
+  const [storeInfo, setStoreInfo] = useState({
+    storeName: 'JKR',
+    email: 'support@JKR.com',
+    phone: '+1 (555) 019-8234',
+    currency: 'INR',
+  })
+
+  const showMessage = (message) => {
+    setSuccessMessage(message)
+    setErrorMessage('')
+  }
 
   const showError = (message) => {
     setSuccessMessage('')
     setErrorMessage(message)
+  }
+
+  const handleStoreInfoChange = (e) => {
+    const { name, value } = e.target
+    setStoreInfo((prev) => ({ ...prev, [name]: value }))
   }
 
   const refreshGoogleDriveStatus = async () => {
@@ -63,7 +79,11 @@ export default function Settings() {
   }, [])
 
   const handleSave = () => {
-    setSuccessMessage('Settings saved successfully')
+    if (!storeInfo.storeName.trim()) {
+      showError('Store Name is required')
+      return
+    }
+    showMessage('Settings saved successfully')
   }
 
   const handleGoogleDriveConnect = async () => {
@@ -141,28 +161,10 @@ export default function Settings() {
       title: 'Store Information',
       icon: 'store',
       items: [
-        { label: 'Store Name', value: 'JKR' },
-        { label: 'Email', value: 'support@JKR.com' },
-        { label: 'Phone', value: '+1 (555) 019-8234' },
-        { label: 'Currency', value: 'INR (₹)' },
-      ],
-    },
-    {
-      title: 'Payment Gateway',
-      icon: 'payments',
-      items: [
-        { label: 'Gateway', value: 'Stripe' },
-        { label: 'Status', value: 'Active' },
-        { label: 'Test Mode', value: 'Enabled' },
-      ],
-    },
-    {
-      title: 'Shipping',
-      icon: 'local_shipping',
-      items: [
-        { label: 'Provider', value: 'Bluedart' },
-        { label: 'Free Shipping Threshold', value: '₹5,000' },
-        { label: 'Delivery Time', value: '3-5 Business Days' },
+        { label: 'Store Name', name: 'storeName', type: 'text' },
+        { label: 'Email', name: 'email', type: 'email' },
+        { label: 'Phone', name: 'phone', type: 'tel' },
+        { label: 'Currency', name: 'currency', type: 'select' },
       ],
     },
   ];
@@ -171,26 +173,46 @@ export default function Settings() {
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="mb-12">
         <h1 className="text-3xl font-playfair text-emerald-900 font-bold mb-1">Settings</h1>
-        <p className="text-sm text-gray-500">Configure your store preferences, payment gateways, and shipping options.</p>
+        <p className="text-sm text-gray-500">Configure your store information and integrations.</p>
       </div>
 
       <div className="space-y-6">
-        {settingSections.map((section) => (
-          <div key={section.title} className="bg-white rounded-xl border border-gray-100 shadow-sm">
-            <div className="flex items-center gap-4 p-6 border-b border-outline-variant/30">
-              <span className="material-symbols-outlined text-2xl text-deep-emerald">{section.icon}</span>
-              <h3 className="font-headline-md text-headline-md text-deep-emerald">{section.title}</h3>
-            </div>
-            <div className="p-6 space-y-4">
-              {section.items.map((item, index) => (
-                <div key={index} className="flex justify-between items-center py-3 border-b border-outline-variant/20 last:border-0">
-                  <span className="font-body-md text-body-md text-on-surface-variant">{item.label}</span>
-                  <span className="font-body-md text-body-md text-deep-emerald font-semibold">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+         {settingSections.map((section) => (
+           <div key={section.title} className="bg-white rounded-xl border border-gray-100 shadow-sm">
+             <div className="flex items-center gap-4 p-6 border-b border-outline-variant/30">
+               <span className="material-symbols-outlined text-2xl text-deep-emerald">{section.icon}</span>
+               <h3 className="font-headline-md text-headline-md text-deep-emerald">{section.title}</h3>
+             </div>
+             <div className="p-6 space-y-4">
+               {section.items.map((item, index) => (
+                 <div key={item.name || index} className="flex flex-col gap-2 py-3 last:pb-0">
+                   <label className="font-body-md text-sm text-on-surface-variant">{item.label}</label>
+                   {item.type === 'select' ? (
+                     <select
+                       name={item.name}
+                       value={storeInfo[item.name]}
+                       onChange={handleStoreInfoChange}
+                       className="px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md bg-surface-container-low"
+                     >
+                       <option value="INR">INR (₹) - Indian Rupee</option>
+                       <option value="USD">USD ($) - US Dollar</option>
+                       <option value="EUR">EUR (€) - Euro</option>
+                       <option value="GBP">GBP (£) - British Pound</option>
+                     </select>
+                   ) : (
+                     <input
+                       type={item.type}
+                       name={item.name}
+                       value={storeInfo[item.name]}
+                       onChange={handleStoreInfoChange}
+                       className="px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+                     />
+                   )}
+                 </div>
+               ))}
+             </div>
+           </div>
+         ))}
 
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="flex items-center gap-4 p-6 border-b border-outline-variant/30">

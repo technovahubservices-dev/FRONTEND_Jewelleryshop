@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { quotationAPI, orderAPI } from '../../services/api'
-import { formatCurrency, formatDate } from '../../utils/formatters'
+import { formatCurrency, formatDate, calculateLineItem, hasAnyDiscount } from '../../utils/formatters'
 import { exportToExcel } from '../../utils/excelExport'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -179,28 +179,19 @@ export default function Quotations() {
     y += 4
 
     const items = quotation.items || []
-    const tableColumn = ['Product', 'SKU', 'Metal', 'Purity', 'Qty', 'Price', 'Discount', 'GST', 'Total']
-    const tableRows = items.map((item) => {
-      const qty = item.quantity || 0
-      const price = parseFloat(item.price || 0)
-      const discountPercent = parseFloat(item.discount || 0)
-      const gstPercent = parseFloat(item.gst || 0)
-
-      const basePriceTotal = qty * price
-      const discountAmount = basePriceTotal * (discountPercent / 100)
-      const taxableValue = Math.max(0, basePriceTotal - discountAmount)
-      const gstAmount = taxableValue * (gstPercent / 100)
-      const lineTotal = taxableValue + gstAmount
+    const hasDiscount = hasAnyDiscount(items)
+    const tableColumn = ['Product', 'SKU', 'Qty', 'Price', ...(hasDiscount ? ['Discount'] : []), 'GST', 'Total']
+    const lineItems = items.map((item) => calculateLineItem(item))
+    const tableRows = lineItems.map((li, index) => {
+      const item = items[index]
       return [
-        item.name || '-',
+        item.productName || item.name || '-',
         item.sku || '-',
-        item.metal || '-',
-        item.purity || '-',
-        qty.toString(),
-        `₹ ${basePriceTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-        `₹ ${discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
-        `${gstPercent}%`,
-        `₹ ${lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        li.qty.toString(),
+        `₹ ${li.basePriceTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
+        ...(hasDiscount ? [`₹ ${li.discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`] : []),
+        `${li.gstPercent}%`,
+        `₹ ${li.lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
       ]
     })
 
@@ -216,29 +207,11 @@ export default function Quotations() {
 
     y = doc.lastAutoTable.finalY + 10
 
-    const totalQuantity = items.reduce((sum, item) => sum + (parseInt(item.quantity || 0)), 0)
-    const totalGrossAmount = items.reduce((sum, item) => {
-      const qty = parseFloat(item.quantity || 0)
-      const price = parseFloat(item.price || 0)
-      return sum + qty * price
-    }, 0)
-    const totalDiscount = items.reduce((sum, item) => {
-      const qty = parseFloat(item.quantity || 0)
-      const price = parseFloat(item.price || 0)
-      const discountPercent = parseFloat(item.discount || 0)
-      return sum + qty * price * (discountPercent / 100)
-    }, 0)
-    const totalGst = items.reduce((sum, item) => {
-      const qty = parseFloat(item.quantity || 0)
-      const price = parseFloat(item.price || 0)
-      const discountPercent = parseFloat(item.discount || 0)
-      const gstPercent = parseFloat(item.gst || 0)
-      const basePriceTotal = qty * price
-      const discountAmount = basePriceTotal * (discountPercent / 100)
-      const taxableValue = Math.max(0, basePriceTotal - discountAmount)
-      return sum + taxableValue * (gstPercent / 100)
-    }, 0)
-    const grandTotal = totalGrossAmount - totalDiscount + totalGst
+    const totalQuantity = lineItems.reduce((sum, li) => sum + li.qty, 0)
+    const totalGrossAmount = lineItems.reduce((sum, li) => sum + li.basePriceTotal, 0)
+    const totalDiscount = lineItems.reduce((sum, li) => sum + li.discountAmount, 0)
+    const totalGst = lineItems.reduce((sum, li) => sum + li.gstAmount, 0)
+    const grandTotal = lineItems.reduce((sum, li) => sum + li.lineTotal, 0)
 
     doc.setFont('helvetica', 'bold')
     doc.text('Total Items', margin, y)
@@ -252,11 +225,13 @@ export default function Quotations() {
     doc.text(`₹ ${totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
     y += 8
 
-    doc.setFont('helvetica', 'bold')
-    doc.text('Total Discount', margin, y)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`- ₹ ${totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
-    y += 8
+    if (hasDiscount) {
+      doc.setFont('helvetica', 'bold')
+      doc.text('Total Discount', margin, y)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`- ₹ ${totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`, pageWidth - margin, y, { align: 'right' })
+      y += 8
+    }
 
     doc.setFont('helvetica', 'bold')
     doc.text('Total GST', margin, y)
