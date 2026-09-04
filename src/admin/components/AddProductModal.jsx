@@ -16,15 +16,7 @@ const initialFormState = {
   stock: '',
   category: '',
   subcategory: '',
-  jewelleryCollection: '',
   metal: '',
-  purity: '',
-  weight: '',
-  diamondWeight: '',
-  diamondShape: 'N/A',
-  diamondClarity: 'N/A',
-  diamondColor: 'N/A',
-  tags: '',
   status: 'active',
   isFeatured: false,
   isBestSeller: false,
@@ -45,15 +37,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           stock: product.stock || '',
           category: product.category || '',
           subcategory: product.subcategory || '',
-          jewelleryCollection: product.jewelleryCollection || '',
           metal: product.metal || '',
-          purity: product.purity || '',
-          weight: product.weight || '',
-          diamondWeight: product.diamondWeight || '',
-          diamondShape: product.diamondShape || 'N/A',
-          diamondClarity: product.diamondClarity || 'N/A',
-          diamondColor: product.diamondColor || 'N/A',
-          tags: product.tags ? product.tags.join(', ') : '',
           status: product.status || 'active',
           isFeatured: product.isFeatured || false,
           isBestSeller: product.isBestSeller || false,
@@ -321,7 +305,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -582,20 +566,6 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                 placeholder="e.g., Engagement Rings"
               />
             </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Collection
-              </label>
-              <input
-                type="text"
-                name="jewelleryCollection"
-                value={formData.jewelleryCollection}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="e.g., Heritage, Eternal"
-              />
-            </div>
           </div>
 
           <div>
@@ -610,146 +580,6 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
               className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md resize-y"
               placeholder="Enter product description"
             ></textarea>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Purity
-              </label>
-              <select
-                name="purity"
-                value={formData.purity}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="">Select Purity</option>
-                <option value="10K">10K</option>
-                <option value="14K">14K</option>
-                <option value="18K">18K</option>
-                <option value="22K">22K</option>
-                <option value="24K">24K</option>
-                <option value="950PT">950PT</option>
-                <option value="Sterling Silver">Sterling Silver</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Weight
-              </label>
-              <input
-                type="text"
-                name="weight"
-                value={formData.weight}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="e.g., 3.2g"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stone Weight
-              </label>
-              <input
-                type="text"
-                name="diamondWeight"
-                value={formData.diamondWeight}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="e.g., 0.35 ct"
-              />
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stone Shape
-              </label>
-              <select
-                name="diamondShape"
-                value={formData.diamondShape}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="N/A">N/A</option>
-                <option value="Round">Round</option>
-                <option value="Princess">Princess</option>
-                <option value="Emerald">Emerald</option>
-                <option value="Cushion">Cushion</option>
-                <option value="Oval">Oval</option>
-                <option value="Pear">Pear</option>
-                <option value="Marquise">Marquise</option>
-                <option value="Asscher">Asscher</option>
-                <option value="Radiant">Radiant</option>
-                <option value="Heart">Heart</option>
-                <option value="Baguette">Baguette</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stone Clarity
-              </label>
-              <select
-                name="diamondClarity"
-                value={formData.diamondClarity}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="N/A">N/A</option>
-                <option value="FL">FL</option>
-                <option value="IF">IF</option>
-                <option value="VVS1">VVS1</option>
-                <option value="VVS2">VVS2</option>
-                <option value="VS1">VS1</option>
-                <option value="VS2">VS2</option>
-                <option value="SI1">SI1</option>
-                <option value="SI2">SI2</option>
-                <option value="I1">I1</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stone Color
-              </label>
-              <select
-                name="diamondColor"
-                value={formData.diamondColor}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="N/A">N/A</option>
-                <option value="DEF">DEF</option>
-                <option value="GHI">GHI</option>
-                <option value="D">D</option>
-                <option value="E">E</option>
-                <option value="F">F</option>
-                <option value="G">G</option>
-                <option value="H">H</option>
-                <option value="I">I</option>
-                <option value="J">J</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Tags
-              </label>
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="Comma separated tags (e.g., ring, gold, pendant)"
-              />
-            </div>
           </div>
 
           <div className="flex flex-col gap-3">
