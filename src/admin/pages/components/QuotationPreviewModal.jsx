@@ -1,12 +1,5 @@
 import logo from '../../../assets/icons/logo.jpeg'
-
-const parseNumberLocal = (value) => {
-  if (typeof value === 'number') return value
-  if (typeof value !== 'string') return 0
-  const cleaned = value.replace(/[^0-9.\-]/g, '')
-  const num = parseFloat(cleaned)
-  return Number.isFinite(num) ? num : 0
-}
+import { calculateLineItem, hasAnyDiscount } from '../../../utils/formatters'
 
 const printStyles = `
   @media print {
@@ -37,8 +30,10 @@ const printStyles = `
   }
 `
 
-export default function QuotationPreviewModal({ open, onClose, quotationNumber, date, validUntil, customer, notes, items, calculations, onGeneratePDF, onPrint }) {
+export default function QuotationPreviewModal({ open, onClose, quotationNumber, date, validUntil, customer, notes, items, calculations, hasDiscount, onGeneratePDF, onPrint }) {
   if (!open) return null
+
+  const showDiscount = hasDiscount !== undefined ? hasDiscount : hasAnyDiscount(items)
 
   return (
     <>
@@ -106,57 +101,50 @@ export default function QuotationPreviewModal({ open, onClose, quotationNumber, 
             )}
 
             {/* Products Table */}
-            <div className="mb-8">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Products</h3>
-              <table className="w-full border-collapse" style={{ tableLayout: 'fixed', width: '100%' }}>
-                <colgroup>
-                  <col style={{ width: '35%' }} />
-                  <col style={{ width: '15%' }} />
-                  <col style={{ width: '10%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '12%' }} />
-                  <col style={{ width: '8%' }} />
-                  <col style={{ width: '18%' }} />
-                </colgroup>
-                <thead>
-                  <tr className="bg-deep-emerald text-white">
-                    <th className="py-2.5 px-3 text-left text-xs font-bold uppercase tracking-wider">Product</th>
-                    <th className="py-2.5 px-3 text-left text-xs font-bold uppercase tracking-wider">SKU</th>
-                    <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">Qty</th>
-                    <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">Price</th>
-                    <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">Discount</th>
-                    <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">GST</th>
-                    <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">Total</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {items.map((item, index) => {
-                    const qty = item.quantity || 0
-                    const price = parseNumberLocal(item.price) || 0
-                    const discountPercent = parseNumberLocal(item.discount) || 0
-                    const gstPercent = parseNumberLocal(item.gst) || 0
+             <div className="mb-8">
+               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Products</h3>
+               <table className="w-full border-collapse" style={{ tableLayout: 'fixed', width: '100%' }}>
+                 <colgroup>
+                   <col style={{ width: '35%' }} />
+                   <col style={{ width: '15%' }} />
+                   <col style={{ width: '10%' }} />
+                   <col style={{ width: '12%' }} />
+                   {showDiscount && <col style={{ width: '12%' }} />}
+                   <col style={{ width: '8%' }} />
+                   <col style={{ width: '18%' }} />
+                 </colgroup>
+                 <thead>
+                   <tr className="bg-deep-emerald text-white">
+                     <th className="py-2.5 px-3 text-left text-xs font-bold uppercase tracking-wider">Product</th>
+                     <th className="py-2.5 px-3 text-left text-xs font-bold uppercase tracking-wider">SKU</th>
+                     <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">Qty</th>
+                     <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">Price</th>
+                     {hasDiscount && <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">Discount</th>}
+                     <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">GST</th>
+                     <th className="py-2.5 px-3 text-right text-xs font-bold uppercase tracking-wider">Total</th>
+                   </tr>
+                 </thead>
+                 <tbody className="divide-y divide-gray-100">
+                   {items.map((item, index) => {
+                     const { qty, basePriceTotal, discountAmount, gstPercent, lineTotal } = calculateLineItem(item)
 
-                    const basePriceTotal = qty * price
-                    const discountAmount = basePriceTotal * (discountPercent / 100)
-                    const taxableValue = Math.max(0, basePriceTotal - discountAmount)
-                    const gstAmount = taxableValue * (gstPercent / 100)
-                    const lineTotal = taxableValue + gstAmount
-
-                    return (
-                      <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                        <td className="py-3 px-3 text-sm text-gray-900 font-medium">{item.name || '-'}</td>
-                        <td className="py-3 px-3 text-sm text-gray-600">{item.sku || '-'}</td>
-                        <td className="py-3 px-3 text-sm text-gray-600 text-right">{qty}</td>
-                        <td className="py-3 px-3 text-sm text-gray-600 text-right whitespace-nowrap">₹ {basePriceTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                        <td className="py-3 px-3 text-sm text-gray-600 text-right whitespace-nowrap">₹ {discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                        <td className="py-3 px-3 text-sm text-gray-600 text-right">{gstPercent}%</td>
-                        <td className="py-3 px-3 text-sm text-deep-emerald font-semibold text-right whitespace-nowrap">₹ {lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+                     return (
+                       <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                         <td className="py-3 px-3 text-sm text-gray-900 font-medium">{item.productName || item.name || '-'}</td>
+                         <td className="py-3 px-3 text-sm text-gray-600">{item.sku || '-'}</td>
+                         <td className="py-3 px-3 text-sm text-gray-600 text-right">{qty}</td>
+                         <td className="py-3 px-3 text-sm text-gray-600 text-right whitespace-nowrap">₹ {basePriceTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+{showDiscount && (
+                          <td className="py-3 px-3 text-sm text-gray-600 text-right whitespace-nowrap">₹ {discountAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                        )}
+                         <td className="py-3 px-3 text-sm text-gray-600 text-right">{gstPercent}%</td>
+                         <td className="py-3 px-3 text-sm text-deep-emerald font-semibold text-right whitespace-nowrap">₹ {lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                       </tr>
+                     )
+                   })}
+                 </tbody>
+               </table>
+             </div>
 
             {/* Totals */}
             <div className="flex justify-end mb-8">
@@ -170,10 +158,12 @@ export default function QuotationPreviewModal({ open, onClose, quotationNumber, 
                     <span className="text-gray-500">Gross Amount</span>
                     <span className="text-gray-900 font-medium">₹ {calculations.totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Total Discount</span>
-                    <span className="text-gray-900 font-medium">- ₹ {calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                  </div>
+                  {showDiscount && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Total Discount</span>
+                      <span className="text-gray-900 font-medium">- ₹ {calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Total GST</span>
                     <span className="text-gray-900 font-medium">₹ {calculations.totalGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
