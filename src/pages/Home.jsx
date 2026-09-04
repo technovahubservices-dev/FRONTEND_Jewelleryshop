@@ -146,25 +146,13 @@ export default function Home() {
     fetchContent()
   }, [])
 
-  const heroSlides = homepageSettings?.heroSlides && Array.isArray(homepageSettings.heroSlides)
-    ? homepageSettings.heroSlides.filter((slide) => slide && slide.isActive !== false)
-    : []
-  const heroSlideImages = heroSlides
-    .map((slide) => getMediaUrl(slide.image))
-    .filter(Boolean)
-
-  const heroImages = heroSlideImages.length > 0
-    ? heroSlideImages
-    : homepageSettings?.heroSectionBgImage
-      ? [getMediaUrl(homepageSettings.heroSectionBgImage)]
-      : heroBanners.length > 0
-        ? heroBanners.map((b) => getMediaUrl(b.image || b.mobileImage)).filter(Boolean)
-        : fallbackHeroImages
+  const heroImages = heroBanners.length > 0
+    ? heroBanners.map((b) => getMediaUrl(b.image || b.mobileImage)).filter(Boolean)
+    : fallbackHeroImages
 
   const [currentImage, setCurrentImage] = useState(0)
 
   useEffect(() => {
-    setCurrentImage(0)
     if (heroImages.length <= 1) return
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % heroImages.length)
@@ -195,7 +183,7 @@ export default function Home() {
 
   const displayReels = reels && reels.length > 0 ? reels : DEFAULT_REELS
 
-  const activeHero = heroSlides[currentImage] || heroBanners[currentImage] || null
+  const activeHero = heroBanners[currentImage]
 
   const heroTitle = homepageSettings?.heroSectionTitle || ''
   const heroSubtitle = homepageSettings?.heroSectionSubtitle || ''
