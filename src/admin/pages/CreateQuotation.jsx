@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { productAPI, quotationAPI } from '../../services/api'
+import { parseNumber, calculateLineItem, hasAnyDiscount } from '../../utils/formatters'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
@@ -12,22 +13,6 @@ import QuotationPreviewModal from './components/QuotationPreviewModal'
 import ExcelImportPanel from './components/ExcelImportPanel'
 
 const DEFAULT_GST = 18
-
-const DEFAULT_METAL_RATES = {
-  Gold: 8500,
-  Silver: 850,
-  Platinum: 4200,
-  'Rose Gold': 8700,
-  'White Gold': 8600,
-}
-
-const parseNumber = (value) => {
-  if (typeof value === 'number') return value
-  if (typeof value !== 'string') return 0
-  const cleaned = value.replace(/[^0-9.\-]/g, '')
-  const num = parseFloat(cleaned)
-  return Number.isFinite(num) ? num : 0
-}
 
 const normalizeProduct = (raw) => {
   if (!raw) return null
@@ -50,6 +35,17 @@ const normalizeProduct = (raw) => {
     category: get(['category', 'Category']) || '',
   }
 }
+
+const normalizeQuotationItem = (item) => ({
+  id: item?.id || item?._id || undefined,
+  productId: item?.productId || '',
+  productName: item?.productName || item?.name || '',
+  sku: item?.sku || '',
+  qty: parseNumber(item?.qty ?? item?.quantity) || 1,
+  price: parseNumber(item?.price) || 0,
+  gst: parseNumber(item?.gst) || DEFAULT_GST,
+  discount: parseNumber(item?.discount) || 0,
+})
 
 const MOCK_PRODUCTS = [
   { _id: 'p1', name: 'Elegant Gold Pendant', sku: 'SKU001', metal: 'Gold', purity: '22K', weight: '3.2', diamondWeight: '0.15', diamondShape: 'Round', price: 25000, category: 'Necklaces' },
