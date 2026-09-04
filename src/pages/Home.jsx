@@ -296,7 +296,7 @@ export default function Home() {
           } transition-opacity duration-700`}
         >
           <img
-            src={image}
+                src={image}
             alt={isActive ? (activeHero?.title || "JKR Jewellery Offers") : ""}
             className="w-full h-auto block object-contain"
           />

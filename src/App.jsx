@@ -6,7 +6,12 @@ import { AuthProvider } from './context/AuthContext'
 
 export default function App() {
   const location = useLocation()
-  const isAdminRoute = location.pathname.startsWith('/admin')
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, '')
+  const pathname =
+    basePath !== '/' && location.pathname.startsWith(basePath)
+      ? location.pathname.slice(basePath.length) || '/'
+      : location.pathname
+  const isAdminRoute = pathname.startsWith('/admin')
 
   return (
     <AuthProvider>
