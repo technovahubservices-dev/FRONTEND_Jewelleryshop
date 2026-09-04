@@ -4,7 +4,6 @@ import FeaturedProducts from '../components/sections/FeaturedProducts'
 import { contentAPI, productAPI } from '../services/api'
 import { getMediaUrl } from '../utils/apiUrl'
 import TestimonialSection from '../components/sections/TestimonialSection'
-import heroPageImage from '../assets/images/homepage.png'
 
 const DEFAULT_CATEGORIES = [
   { id: 'rings', name: 'Rings', image: 'https://cdn.orra.co.in/media/catalog/product/cache/10238651d5f95594b9023f998383bb67/e/r/erg26k54_2_tbruvc5lylrqqokd.jpg', link: '/shop?category=rings' },
@@ -83,24 +82,6 @@ const getVideoSourceType = (url) => {
   return 'video'
 }
 
-const isGoogleDriveUrl = (url) => {
-  if (!url || typeof url !== 'string') return false
-  return url.includes('://google.com')
-}
-
-const getGoogleDriveImageUrl = (url) => {
-  if (!isGoogleDriveUrl(url)) return url
-
-  const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/)
-  if (fileIdMatch && fileIdMatch[1]) {
-    return `https://drive.google.com/uc?export=view&id=${fileIdMatch[1]}`
-  }
-
-  return url
-}
-
-const fallbackHeroImages = [heroPageImage]
-
 export default function Home() {
   const [heroBanners, setHeroBanners] = useState([])
   const [promoBanners, setPromoBanners] = useState([])
@@ -146,9 +127,14 @@ export default function Home() {
     fetchContent()
   }, [])
 
-  const heroImages = heroBanners.length > 0
-    ? heroBanners.map((b) => getMediaUrl(b.image || b.mobileImage)).filter(Boolean)
-    : fallbackHeroImages
+  const cmsHeroImages = [
+    homepageSettings?.heroSectionBgImage ? getMediaUrl(homepageSettings.heroSectionBgImage) : null,
+    ...(homepageSettings?.heroSlides || []).map((s) => getMediaUrl(s?.image || s?.url)).filter(Boolean),
+  ].filter(Boolean)
+
+  const heroImages = cmsHeroImages.length > 0
+    ? cmsHeroImages
+    : heroBanners.map((b) => getMediaUrl(b.image || b.mobileImage)).filter(Boolean)
 
   const [currentImage, setCurrentImage] = useState(0)
 
@@ -313,9 +299,10 @@ export default function Home() {
           } transition-opacity duration-700`}
         >
            <img
-                 src={getGoogleDriveImageUrl(image)}
+                 src={image}
              alt={isActive ? (activeHero?.title || "JKR Jewellery Offers") : ""}
             className="w-full h-auto block object-contain"
+            onError={(e) => { e.target.style.display = 'none' }}
           />
 
           <div className="absolute inset-0 bg-black/5"></div>

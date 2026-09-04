@@ -73,11 +73,16 @@ export default function ContentManagement() {
   const fetchSettings = async () => {
     try {
       const response = await contentAPI.getHomepageSettings()
-      if (response.data.success) {
-        setSettings({ ...DEFAULT_SETTINGS, ...response.data.data })
+      const payload = (response.data && typeof response.data === 'object')
+        ? response.data
+        : {}
+      if (payload.success || response.status === 204) {
+        setSettings({ ...DEFAULT_SETTINGS, ...(payload.data || {}) })
+      } else if (payload.message) {
+        setError(payload.message)
       }
     } catch (err) {
-      setError('Failed to load homepage settings')
+      setError(err.response?.data?.message || 'Failed to load homepage settings')
     } finally {
       setLoading(false)
     }
@@ -89,10 +94,19 @@ export default function ContentManagement() {
     formData.append('file', file)
     try {
       const response = await contentAPI.uploadHomepageImage(formData)
-      if (response.data.success) {
-        const uploadData = response.data.data || response.data || {}
+      const payload = (response.data && typeof response.data === 'object')
+        ? response.data
+        : {}
+      if (response.status === 204 || payload.success) {
+        const uploadData = payload.data || payload
         const imageUrl = uploadData?.url || uploadData?.path || uploadData?.fileUrl || (typeof uploadData === 'string' ? uploadData : '')
-        return getMediaUrl(imageUrl)
+        if (imageUrl) return getMediaUrl(imageUrl)
+        if (response.status === 204) {
+          setError('Upload succeeded, but no image URL was returned. Please try again.')
+          return ''
+        }
+      } else if (payload.message) {
+        setError(payload.message)
       }
     } catch (err) {
       console.error('Upload failed:', err)
@@ -134,12 +148,18 @@ export default function ContentManagement() {
     setSuccess('')
     try {
       const response = await contentAPI.updateHomepageTab(activeTab, settings)
-      if (response.data.success) {
-        setSettings((prev) => ({ ...prev, ...response.data.data }))
+      const payload = (response.data && typeof response.data === 'object')
+        ? response.data
+        : {}
+      const isSuccess = response.status === 204 || payload.success !== false
+      if (isSuccess) {
+        if (payload.data) setSettings((prev) => ({ ...prev, ...payload.data }))
         setSuccess(`"${TABS.find(t => t.id === activeTab)?.label || 'Tab'}" saved successfully`)
+      } else {
+        setError(payload.message || 'Failed to save changes')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save changes')
+      setError(err.response?.data?.message || err.message || 'Failed to save changes')
     } finally {
       setSaving(false)
     }
