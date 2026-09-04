@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import FeaturedProducts from '../components/sections/FeaturedProducts'
 import { contentAPI, productAPI } from '../services/api'
+import { getMediaUrl } from '../utils/apiUrl'
 import TestimonialSection from '../components/sections/TestimonialSection'
 import heroPageImage from '../assets/images/homepage.png'
 
@@ -82,6 +83,22 @@ const getVideoSourceType = (url) => {
   return 'video'
 }
 
+const isGoogleDriveUrl = (url) => {
+  if (!url || typeof url !== 'string') return false
+  return url.includes('://google.com')
+}
+
+const getGoogleDriveImageUrl = (url) => {
+  if (!isGoogleDriveUrl(url)) return url
+
+  const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/)
+  if (fileIdMatch && fileIdMatch[1]) {
+    return `https://drive.google.com/uc?export=view&id=${fileIdMatch[1]}`
+  }
+
+  return url
+}
+
 const fallbackHeroImages = [heroPageImage]
 
 export default function Home() {
@@ -130,7 +147,7 @@ export default function Home() {
   }, [])
 
   const heroImages = heroBanners.length > 0
-    ? heroBanners.map((b) => b.image || b.mobileImage).filter(Boolean)
+    ? heroBanners.map((b) => getMediaUrl(b.image || b.mobileImage)).filter(Boolean)
     : fallbackHeroImages
 
   const [currentImage, setCurrentImage] = useState(0)
@@ -295,9 +312,9 @@ export default function Home() {
               : "absolute inset-0 opacity-0 pointer-events-none"
           } transition-opacity duration-700`}
         >
-          <img
-                src={image}
-            alt={isActive ? (activeHero?.title || "JKR Jewellery Offers") : ""}
+           <img
+                 src={getGoogleDriveImageUrl(image)}
+             alt={isActive ? (activeHero?.title || "JKR Jewellery Offers") : ""}
             className="w-full h-auto block object-contain"
           />
 
@@ -347,14 +364,14 @@ export default function Home() {
               key={category._id || category.id}
               className="group relative h-40 md:h-48 rounded-xl overflow-hidden block border border-outline-variant/10 shadow-sm bg-gray-50"
             >
-              <img
-                src={category.image}
-                alt={category.name}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                onError={(e) => {
-                  e.target.src = 'https://placehold.co/500x500'
-                }}
-              />
+               <img
+                 src={getMediaUrl(category.image)}
+                 alt={category.name}
+                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                 onError={(e) => {
+                   e.target.src = 'https://placehold.co/500x500'
+                 }}
+               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
               <div className="absolute bottom-3 right-3 text-right flex flex-col items-end z-10">
                 <span className="font-playfair text-base md:text-lg font-bold text-white drop-shadow">
@@ -386,10 +403,10 @@ export default function Home() {
                   className={idx === 0 ? "md:col-span-8" : "md:col-span-4"}
                 >
                   <div className="group cursor-pointer relative overflow-hidden h-[400px] md:h-[500px] rounded-2xl shadow-lg">
-                    <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
-                      style={{ backgroundImage: `url('${collection.image}')` }}
-                    ></div>
+                   <div
+                       className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+                       style={{ backgroundImage: `url('${getMediaUrl(collection.image)}')` }}
+                   ></div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent rounded-2xl"></div>
                     <div className={`absolute bottom-8 ${idx === 0 ? 'left-8' : 'left-6'} text-surface-white`}>
                       <h3 className="font-headline-md text-headline-md mb-2">{collection.title}</h3>
@@ -463,27 +480,28 @@ export default function Home() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-7xl mx-auto px-4 md:px-8">
           {displayReels.map((reel) => {
-            const isYouTube = reel.sourceType === 'youtube'
-            const isPinterest = reel.sourceType === 'pinterest'
-            const embedUrl = isYouTube ? getYouTubeEmbedUrl(reel.videoUrl) : ''
-            const thumbSrc = reel.thumbnail || ''
+             const isYouTube = reel.sourceType === 'youtube'
+             const isPinterest = reel.sourceType === 'pinterest'
+             const embedUrl = isYouTube ? getYouTubeEmbedUrl(reel.videoUrl) : ''
+             const thumbSrc = getMediaUrl(reel.thumbnail) || ''
+             const videoSrc = getMediaUrl(reel.videoUrl)
 
             const renderMedia = () => {
               if (isYouTube) {
                 if (!embedUrl) {
                   return (
                     <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          window.open(reel.videoUrl, '_blank', 'noopener,noreferrer')
-                        }}
-                        className="text-xs text-deep-emerald underline text-center px-2"
-                      >
-                        Watch Video
-                      </button>
+                       <button
+                         type="button"
+                         onClick={(e) => {
+                           e.preventDefault()
+                           e.stopPropagation()
+                           window.open(videoSrc, '_blank', 'noopener,noreferrer')
+                         }}
+                         className="text-xs text-deep-emerald underline text-center px-2"
+                       >
+                         Watch Video
+                       </button>
                     </div>
                   )
                 }
@@ -515,37 +533,37 @@ export default function Home() {
                         <span className="material-symbols-outlined text-4xl">play_circle</span>
                       </div>
                     )}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        window.open(reel.videoUrl, '_blank', 'noopener,noreferrer')
-                      }}
-                      className="mt-2 text-[10px] font-sans font-medium text-gray-700 hover:text-deep-emerald transition-colors"
-                    >
-                      View Pin
-                    </button>
+                     <button
+                       type="button"
+                       onClick={(e) => {
+                         e.preventDefault()
+                         e.stopPropagation()
+                         window.open(videoSrc, '_blank', 'noopener,noreferrer')
+                       }}
+                       className="mt-2 text-[10px] font-sans font-medium text-gray-700 hover:text-deep-emerald transition-colors"
+                     >
+                       View Pin
+                     </button>
                   </div>
                 )
               }
 
               return (
-                <video
-                  src={reel.videoUrl}
-                  muted
-                  loop
-                  playsInline
-                  autoPlay
-                  preload="metadata"
-                  poster={reel.thumbnail}
-                  className="w-full h-full object-cover flex-1"
-                  onError={(e) => {
-                    if (reel.thumbnail) {
-                      e.target.style.display = 'none'
-                    }
-                  }}
-                />
+                 <video
+                   src={videoSrc}
+                   muted
+                   loop
+                   playsInline
+                   autoPlay
+                   preload="metadata"
+                   poster={thumbSrc}
+                   className="w-full h-full object-cover flex-1"
+                   onError={(e) => {
+                     if (thumbSrc) {
+                       e.target.style.display = 'none'
+                     }
+                   }}
+                 />
               )
             }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { contentAPI, productAPI } from '../../services/api'
+import { getMediaUrl } from '../../utils/apiUrl'
 import AnnouncementTab from './tabs/AnnouncementTab'
 import HeroTab from './tabs/HeroTab'
 import CategoriesTab from './tabs/CategoriesTab'
@@ -89,7 +90,7 @@ export default function ContentManagement() {
     try {
       const response = await contentAPI.uploadHomepageImage(formData)
       if (response.data.success) {
-        return response.data.url
+        return getMediaUrl(response.data.url)
       }
     } catch (err) {
       console.error('Upload failed:', err)

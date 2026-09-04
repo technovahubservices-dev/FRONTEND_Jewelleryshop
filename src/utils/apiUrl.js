@@ -19,3 +19,21 @@ export const getApiBaseUrl = () => {
 
   return configuredUrl.endsWith('/api') ? configuredUrl : `${configuredUrl}/api`
 }
+
+export const getMediaUrl = (path) => {
+  if (!path || typeof path !== 'string') return ''
+
+  const trimmed = path.trim()
+  if (trimmed === '') return ''
+
+  if (/^https?:\/\//i.test(trimmed) || /^\/\//.test(trimmed)) {
+    return trimmed
+  }
+
+  const origin = getBackendOrigin()
+  if (trimmed.startsWith('/')) {
+    return `${origin}${trimmed}`
+  }
+
+  return `${origin}/${trimmed}`
+}

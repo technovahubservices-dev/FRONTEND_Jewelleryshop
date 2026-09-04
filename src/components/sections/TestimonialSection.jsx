@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { contentAPI } from '../../services/api';
+import { getMediaUrl } from '../../utils/apiUrl';
 
 const FALLBACK_TESTIMONIALS = [
   {
@@ -189,16 +190,16 @@ export default function TestimonialSection({ title }) {
                           &quot;{testimonial.content}&quot;
                         </p>
                         <div className="flex items-center gap-3 mt-auto">
-                          {testimonial.image ? (
-                            <img
-                              src={testimonial.image}
-                              alt={testimonial.name}
-                              className="w-12 h-12 rounded-full object-cover border border-outline-variant/30"
-                              onError={(e) => {
-                                e.target.style.display = 'none'
-                              }}
-                            />
-                          ) : (
+                           {testimonial.image ? (
+                             <img
+                               src={getMediaUrl(testimonial.image)}
+                               alt={testimonial.name}
+                               className="w-12 h-12 rounded-full object-cover border border-outline-variant/30"
+                               onError={(e) => {
+                                 e.target.style.display = 'none'
+                               }}
+                             />
+                           ) : (
                             <div className="w-12 h-12 rounded-full bg-deep-emerald flex items-center justify-center text-surface-white font-bold">
                               {testimonial.name?.charAt(0) || '?'}
                             </div>
