@@ -85,7 +85,7 @@ const getVideoSourceType = (url) => {
 
 const isGoogleDriveUrl = (url) => {
   if (!url || typeof url !== 'string') return false
-  return url.includes('://google.com')
+  return /https?:\/\/(?:drive\.)?google\.com/i.test(url)
 }
 
 const getGoogleDriveImageUrl = (url) => {
@@ -146,13 +146,16 @@ export default function Home() {
     fetchContent()
   }, [])
 
-  const heroImages = heroBanners.length > 0
-    ? heroBanners.map((b) => getMediaUrl(b.image || b.mobileImage)).filter(Boolean)
-    : fallbackHeroImages
+  const heroImages = homepageSettings?.heroSectionBgImage
+    ? [getMediaUrl(homepageSettings.heroSectionBgImage)]
+    : heroBanners.length > 0
+      ? heroBanners.map((b) => getMediaUrl(b.image || b.mobileImage)).filter(Boolean)
+      : fallbackHeroImages
 
   const [currentImage, setCurrentImage] = useState(0)
 
   useEffect(() => {
+    setCurrentImage(0)
     if (heroImages.length <= 1) return
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % heroImages.length)
