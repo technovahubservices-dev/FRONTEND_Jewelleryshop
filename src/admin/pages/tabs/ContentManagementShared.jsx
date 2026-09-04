@@ -21,7 +21,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
               const file = e.target.files[0]
               if (file) {
                 const url = await fileInputRef.current.handleUpload(file)
-                onChange({ type: 'url', value: url })
+                if (url) onChange({ type: 'url', value: url })
               }
             }}
             className="text-xs"
