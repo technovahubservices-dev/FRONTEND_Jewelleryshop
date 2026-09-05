@@ -4,6 +4,23 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex items-end gap-4">
+          <div className="flex-1">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={settings?.heroSectionEnabled !== undefined ? settings.heroSectionEnabled : true}
+                onChange={(e) => updateSetting('heroSectionEnabled', e.target.checked)}
+                className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
+              />
+              <span className="font-body-md text-sm text-on-surface">Enable Hero Section</span>
+            </label>
+          </div>
+        </div>
+        <div></div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Section Title</label>
           <input

@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { getMediaUrl } from '../../../utils/apiUrl'
+import { resolveImageUrl } from '../../../utils/apiUrl'
 
 export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
   return (
@@ -31,7 +31,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
       {(value || '') && value.trim() !== '' && (
         <div className="w-16 h-16 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30 flex-shrink-0">
           <img
-            src={getMediaUrl(value)}
+            src={resolveImageUrl(value)}
             alt="preview"
             className="w-full h-full object-cover"
             onError={(e) => { e.target.style.display = 'none'; }}

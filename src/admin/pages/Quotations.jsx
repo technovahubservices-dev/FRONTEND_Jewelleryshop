@@ -19,14 +19,6 @@ export default function Quotations() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const parseNumber = (value) => {
-    if (typeof value === 'number') return value
-    if (typeof value !== 'string') return 0
-    const cleaned = value.replace(/[^0-9.\-]/g, '')
-    const num = parseFloat(cleaned)
-    return Number.isFinite(num) ? num : 0
-  }
-
   const [quotations, setQuotations] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')

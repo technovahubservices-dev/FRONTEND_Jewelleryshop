@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { productAPI, contentAPI } from '../../services/api'
+import { resolveImageUrl } from '../../utils/apiUrl'
 
 const tabs = [
   { id: 'all', label: 'All Products' },
@@ -99,7 +100,7 @@ export default function FeaturedProducts({ title, description }) {
             {title || 'Featured Products'}
           </h2>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
-            {description || 'Handpicked selections of our most cherished pieces, crafted with exceptional care and timeless elegance.'}
+            {description || ''}
           </p>
         </div>
 
@@ -145,7 +146,7 @@ export default function FeaturedProducts({ title, description }) {
                   <img
                     className="w-full h-full object-contain img-hover-zoom"
                     alt={product.description}
-                    src={product.image}
+                    src={resolveImageUrl(product.image)}
                     onError={(e) => {
                       e.target.src = 'https://placehold.co/400x400?text=No+Image'
                     }}

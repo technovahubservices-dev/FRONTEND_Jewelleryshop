@@ -1,105 +1,33 @@
 import { useState, useEffect, useCallback } from 'react';
 import { contentAPI } from '../../services/api';
-import { getMediaUrl } from '../../utils/apiUrl';
+import { resolveImageUrl } from '../../utils/apiUrl';
 
-const FALLBACK_TESTIMONIALS = [
-  {
-    id: 1,
-    name: 'Priya',
-    title: 'chennai, India',
-    content: 'Absolutely stunning craftsmanship! The gold pendant I purchased exceeded all my expectations. The attention to detail is remarkable.',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1599058915056-ac68a6e4f86a?w=150&h=150&fit=crop',
-  },
-  {
-    id: 2,
-    name: 'Rahul',
-    title: 'Vilupuram, India',
-    content: 'Best online jewellery shopping experience! The diamond studs are absolutely breathtaking. Will definitely shop again.',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1535713874-361094455634?w=150&h=150&fit=crop',
-  },
-  {
-    id: 3,
-    name: 'Ananya',
-    title: 'Bangalore, India',
-    content: 'Exceptional quality and beautiful packaging. The heritage collection bangles are simply gorgeous. Highly recommend!',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1494790115237-4c3e1f6b4d3a?w=150&h=150&fit=crop',
-  },
-  {
-    id: 4,
-    name: 'Sneha',
-    title: 'Kadalur, India',
-    content: 'The Kundan necklace set I ordered was exactly as shown on the website. Fast delivery and excellent packaging.',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop',
-  },
-  {
-    id: 5,
-    name: 'Vikram',
-    title: 'selam, India',
-    content: 'I bought a pair of jhumkas and they are even more beautiful in person. Great quality and reasonable prices.',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop',
-  },
-  {
-    id: 6,
-    name: 'Meera',
-    title: 'Pondicherry, India',
-    content: 'Amazing collection of temple jewellery. The finish is exquisite and the designs are truly unique.',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop',
-  },
-  {
-    id: 7,
-    name: 'Arjun ',
-    title: 'Kovai, India',
-    content: 'Purchased a gold chain for my wife. She loved it! The customer service was very helpful.',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop',
-  },
-  {
-    id: 8,
-    name: 'Kavya ',
-    title: 'Chennai, India',
-    content: 'The pearl earrings are so elegant. Perfect for daily wear and special occasions alike.',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop',
-  },
-  {
-    id: 9,
-    name: 'Rohan',
-    title: 'Puducherry, India',
-    content: 'Beautiful meenakari bangles. The colors are vibrant and the craftsmanship is top-notch.',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1464863976061-4f687ae9a9c5?w=150&h=150&fit=crop',
-  },
-]
-
-export default function TestimonialSection({ title }) {
+export default function TestimonialSection({ title, testimonials: propTestimonials }) {
   const [testimonials, setTestimonials] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [itemsPerSlide, setItemsPerSlide] = useState(3)
 
   useEffect(() => {
+    if (propTestimonials && propTestimonials.length > 0) {
+      setTestimonials(propTestimonials.filter((t) => t.isActive !== false))
+      setLoading(false)
+      return
+    }
     const fetchTestimonials = async () => {
       try {
         const response = await contentAPI.getActive('testimonials')
         if (response.data.success && response.data.data.length > 0) {
           setTestimonials(response.data.data.slice(0, 9))
-        } else {
-          setTestimonials(FALLBACK_TESTIMONIALS)
         }
       } catch (err) {
-        setTestimonials(FALLBACK_TESTIMONIALS)
+        console.error('Failed to fetch testimonials:', err)
       } finally {
         setLoading(false)
       }
     }
     fetchTestimonials()
-  }, [])
+  }, [propTestimonials])
 
   useEffect(() => {
     const handleResize = () => {
@@ -150,8 +78,11 @@ export default function TestimonialSection({ title }) {
     return null
   }
 
-  const testimonialsToShow = testimonials.length > 0 ? testimonials : FALLBACK_TESTIMONIALS
-  const totalSlides = Math.max(1, Math.ceil(testimonialsToShow.length / itemsPerSlide))
+  if (testimonials.length === 0) {
+    return null
+  }
+
+  const totalSlides = Math.max(1, Math.ceil(testimonials.length / itemsPerSlide))
 
   return (
     <section className="w-full bg-[#173B2D] py-8 md:py-6">
@@ -178,7 +109,7 @@ export default function TestimonialSection({ title }) {
                     className="grid gap-6 px-1"
                     style={{ gridTemplateColumns: `repeat(${itemsPerSlide}, minmax(0, 1fr))` }}
                   >
-                    {testimonialsToShow.slice(slideIndex * itemsPerSlide, slideIndex * itemsPerSlide + itemsPerSlide).map((testimonial) => (
+                    {testimonials.slice(slideIndex * itemsPerSlide, slideIndex * itemsPerSlide + itemsPerSlide).map((testimonial) => (
                       <div
                         key={testimonial._id || testimonial.id}
                         className="bg-[#faf9f6] p-6 rounded-xl border border-outline-variant/20 shadow-sm flex flex-col h-full"
@@ -191,9 +122,9 @@ export default function TestimonialSection({ title }) {
                         </p>
                         <div className="flex items-center gap-3 mt-auto">
                            {testimonial.image ? (
-                             <img
-                               src={getMediaUrl(testimonial.image)}
-                               alt={testimonial.name}
+<img
+                                src={resolveImageUrl(testimonial.image)}
+                                alt={testimonial.name}
                                className="w-12 h-12 rounded-full object-cover border border-outline-variant/30"
                                onError={(e) => {
                                  e.target.style.display = 'none'
@@ -206,7 +137,7 @@ export default function TestimonialSection({ title }) {
                           )}
                           <div>
                             <p className="font-medium text-deep-emerald">{testimonial.name}</p>
-                            <p className="text-xs text-on-surface-variant">{testimonial.title}</p>
+                            <p className="text-xs text-on-surface-variant">{testimonial.title || testimonial.location}</p>
                           </div>
                         </div>
                       </div>

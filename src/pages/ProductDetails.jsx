@@ -2,6 +2,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { productAPI, userAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { useState, useEffect } from 'react'
+import { resolveImageUrl } from '../utils/apiUrl'
 
 export default function ProductDetails() {
   const { id } = useParams()
@@ -129,7 +130,7 @@ export default function ProductDetails() {
           <div className="hidden md:flex flex-col gap-4 w-24 flex-shrink-0">
             {product.images.map((img, index) => (
               <button key={index} onClick={() => setSelectedImage(index)} className={`w-full aspect-square bg-surface-white rounded-lg overflow-hidden p-1 ${selectedImage === index ? 'border-2 border-regal-gold' : 'border border-outline-variant'}`}>
-                <img className="w-full h-full object-cover rounded" alt={`${product.name} view ${index + 1}`} src={img} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
+                <img className="w-full h-full object-cover rounded" alt={`${product.name} view ${index + 1}`} src={resolveImageUrl(img)} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
               </button>
             ))}
             <button className="w-full aspect-square bg-surface-white/80 backdrop-blur-sm border border-outline-variant rounded-lg overflow-hidden p-1 flex items-center justify-center text-on-surface-variant">
@@ -148,7 +149,7 @@ export default function ProductDetails() {
                  New
                </div>
              )}
-             <img className="w-full h-full object-cover img-hover-zoom" alt={product.description} src={product.images[selectedImage]} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
+              <img className="w-full h-full object-cover img-hover-zoom" alt={product.description} src={resolveImageUrl(product.images[selectedImage])} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
             {/* Mobile Thumbnails (Horizontal) */}
             <div className="md:hidden absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4 z-10">
               {product.images.map((_, index) => (
@@ -297,7 +298,7 @@ export default function ProductDetails() {
                  {relatedProduct.isNew && (
                    <div className="absolute top-3 left-3 z-10 bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-label-caps text-on-surface-variant">New</div>
                  )}
-                 <img className="w-full h-full object-contain img-hover-zoom" alt={relatedProduct.name} src={relatedProduct.image} onClick={() => handleQuickViewRelated(relatedProduct)} />
+                  <img className="w-full h-full object-contain img-hover-zoom" alt={relatedProduct.name} src={resolveImageUrl(relatedProduct.image)} onClick={() => handleQuickViewRelated(relatedProduct)} />
                </div>
               <div className="text-center px-2">
                 <h3 className="font-body-md text-sm text-on-surface-variant truncate mb-1">{relatedProduct.name}</h3>

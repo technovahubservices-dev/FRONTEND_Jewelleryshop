@@ -19,7 +19,7 @@ const TABS = [
 ]
 
 const DEFAULT_SETTINGS = {
-  announcementText: 'welcome to jkr. 10% offer earrings! 20% offer Rings!.. 10% offer Necklace!....',
+  announcementText: '',
   announcementActive: true,
   announcementBgColor: '#013220',
   announcementTextColor: '#ffffff',
@@ -29,8 +29,9 @@ const DEFAULT_SETTINGS = {
   heroSectionSubtitle: '',
   heroSectionDescription: '',
   heroSectionBgImage: '',
-  heroSectionCtaText: 'Explore Collection',
+   heroSectionCtaText: 'Explore Collection',
   heroSectionCtaLink: '/shop',
+  heroSectionEnabled: true,
   categorySectionTitle: 'Shop by Category',
   categorySectionDescription: '',
   categories: [],

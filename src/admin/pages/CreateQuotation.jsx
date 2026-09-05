@@ -295,20 +295,12 @@ export default function CreateQuotation() {
     })
   }
 
-  const importExcelToQuotation = () => {
-    if (excelPreview.length === 0) return
-    const importedItems = excelPreview.map((item) =>
-      normalizeQuotationItem({
-        productId: '',
-        name: item.name,
-        sku: item.sku,
-        price: item.price,
-        qty: item.quantity,
-        gst: item.gst,
-        discount: item.discount,
-      })
+  const importExcelToQuotation = (importedItems) => {
+    if (!importedItems || importedItems.length === 0) return
+    const normalizedItems = importedItems.map((item) =>
+      normalizeQuotationItem(item)
     )
-    setItems(importedItems)
+    setItems(normalizedItems)
     setExcelPreview([])
     setExcelError('')
   }

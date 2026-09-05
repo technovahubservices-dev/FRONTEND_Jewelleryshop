@@ -1,15 +1,8 @@
 import { useState } from 'react'
 import * as XLSX from 'xlsx'
+import { parseNumber } from '../../../utils/formatters'
 
 const DEFAULT_GST = 18
-
-const parseNumber = (value) => {
-  if (typeof value === 'number') return value
-  if (typeof value !== 'string') return 0
-  const cleaned = value.replace(/[^0-9.\-]/g, '')
-  const num = parseFloat(cleaned)
-  return Number.isFinite(num) ? num : 0
-}
 
 export default function ExcelImportPanel({ onImport, excelPreview, excelError, isUploading, onUpload, onRemovePreviewItem, onUpdatePreviewItem }) {
   const [localError, setLocalError] = useState('')

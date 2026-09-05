@@ -14,7 +14,7 @@ export default function AnnouncementBar() {
           setAnnouncement(response.data.data);
         }
       } catch (err) {
-        // Silent fallback to defaults
+        // Silent fallback to empty state
       } finally {
         setLoading(false);
       }
@@ -22,22 +22,22 @@ export default function AnnouncementBar() {
     fetchSettings();
   }, []);
 
+  const isActive = announcement?.announcementActive !== false;
+
   const getMarqueeText = () => {
-    // 1. Customized repeating texts structured with professional diamond dividers
-    const baseText = "Welcome to JKR· 10% offer Rings ! 20 % offer Bangels ! ";
-    
-    if (loading || !announcement) {
-      return baseText;
-    }
-    
-    // Fallback overrides if admin panel configuration settings are present
-    const text = announcement.announcementText || '10% offer Earings ! 20 % offer Necklace !';
+    if (!announcement) return '';
+
+    const text = announcement.announcementText || '';
     const ctaText = announcement.announcementCtaText || '';
     return ctaText ? `${text} · ${ctaText} · ` : `${text} · `;
   };
 
   const marqueeText = getMarqueeText();
-  
+
+  if (loading || !isActive || !marqueeText) {
+    return null;
+  }
+
   // Create a long continuous string row to ensure seamless looping without blank gaps
   const fullRepeatedRow = `${marqueeText}${marqueeText}${marqueeText}${marqueeText}`;
 
@@ -56,16 +56,16 @@ export default function AnnouncementBar() {
 
       {/* 3. Positioning Layout: Sits explicitly above the logo text row */}
       <div className="w-full bg-deep-emerald text-surface-white py-3 overflow-hidden relative flex items-center h-12 z-50 select-none border-b border-white/5">
-  <div className="flex whitespace-nowrap min-w-full animate-infinite-scroll">
-    <div className="inline-block px-2 font-label-caps text-[10px] md:text-xs tracking-widest uppercase text-[#FDFBF7] font-lg">
-      {fullRepeatedRow}
-    </div>
+    <div className="flex whitespace-nowrap min-w-full animate-infinite-scroll">
+      <div className="inline-block px-2 font-label-caps text-[10px] md:text-xs tracking-widest uppercase text-[#FDFBF7] font-lg">
+        {fullRepeatedRow}
+      </div>
 
-    <div className="inline-block px-2 font-label-caps text-[10px] md:text-xs tracking-widest uppercase text-[#FDFBF7] font-lg">
-      {fullRepeatedRow}
+      <div className="inline-block px-2 font-label-caps text-[10px] md:text-xs tracking-widest uppercase text-[#FDFBF7] font-lg">
+        {fullRepeatedRow}
+      </div>
     </div>
   </div>
-</div>
     </>
   );
 }
