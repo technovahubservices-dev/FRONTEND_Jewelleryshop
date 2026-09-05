@@ -24,7 +24,7 @@ const DEFAULT_SETTINGS = {
   announcementBgColor: '#013220',
   announcementTextColor: '#ffffff',
   announcementCtaText: '',
-  announcementCtaLink: '/shop',
+  announcementCtaLink: '',
   heroSectionTitle: '',
   heroSectionSubtitle: '',
   heroSectionDescription: '',
