@@ -153,9 +153,10 @@ export const contentAPI = {
 };
 
 // Admin Settings API
-export const adminSettingsAPI = {    
+export const adminSettingsAPI = {
   get: () => api.get('/admin/settings'),
   update: (data) => api.put('/admin/settings', data),
+  changePassword: (data) => api.put('/admin/settings/password', data),
 };
 
 export default api;
