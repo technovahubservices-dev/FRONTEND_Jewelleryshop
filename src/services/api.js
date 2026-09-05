@@ -55,6 +55,8 @@ export const productAPI = {
     api.post('/products', formData),
   update: (id, formData) =>
     api.put(`/products/${id}`, formData),
+  checkSku: (sku) =>
+    api.get('/products/check-sku', { params: { sku } }),
   delete: (id) => api.delete(`/products/${id}`),
   transform: (p) => ({
     id: p._id,

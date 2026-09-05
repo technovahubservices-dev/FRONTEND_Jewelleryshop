@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { productAPI, categoryAPI } from '../../services/api';
 
 const METALS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold'];
@@ -58,9 +58,12 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [skuLoading, setSkuLoading] = useState(false);
+  const [skuCheckLoading, setSkuCheckLoading] = useState(false);
+  const [skuError, setSkuError] = useState('');
+  const skuDebounceRef = useRef(null);
   const [categories, setCategories] = useState([]);
 
-  useEffect(() => {
+   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await categoryAPI.getAll();
@@ -72,6 +75,14 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
       }
     };
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (skuDebounceRef.current) {
+        clearTimeout(skuDebounceRef.current);
+      }
+    };
   }, []);
 
   const generateSkuPrefix = useCallback((name, category, metal) => {
@@ -136,7 +147,56 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     if (!isEdit && formData.name && formData.category && formData.metal) {
       autoGenerateSku(formData.name, formData.category, formData.metal);
     }
-  }, [formData.name, formData.category, formData.metal, isEdit, autoGenerateSku]);
+   }, [formData.name, formData.category, formData.metal, isEdit, autoGenerateSku]);
+
+  /* =========================================================
+     SKU AVAILABILITY CHECK
+     ========================================================= */
+
+  const checkSkuAvailability = useCallback(async (sku) => {
+    const trimmed = sku?.trim() || '';
+    if (!trimmed || isEdit) {
+      setSkuError('');
+      return;
+    }
+
+    setSkuCheckLoading(true);
+    setSkuError('');
+
+    try {
+      const response = await productAPI.checkSku(trimmed);
+      if (response.data?.exists) {
+        setSkuError('This SKU is already taken.');
+      } else {
+        setSkuError('');
+      }
+    } catch {
+      setSkuError('');
+    } finally {
+      setSkuCheckLoading(false);
+    }
+  }, [isEdit]);
+
+  const debouncedCheckSku = useCallback((sku) => {
+    if (skuDebounceRef.current) {
+      clearTimeout(skuDebounceRef.current);
+    }
+    skuDebounceRef.current = setTimeout(() => {
+      checkSkuAvailability(sku);
+    }, 500);
+  }, [checkSkuAvailability]);
+
+  const handleSkuBlur = (e) => {
+    const value = e.target.value;
+    if (skuDebounceRef.current) {
+      clearTimeout(skuDebounceRef.current);
+    }
+    void checkSkuAvailability(value);
+  };
+
+  /* =========================================================
+     EVENT HANDLERS
+     ========================================================= */
 
   const toggleCheckbox = (field) => {
     setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
@@ -144,12 +204,19 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: newValue,
     }));
+
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+
+    if (name === 'sku' && !isEdit) {
+      debouncedCheckSku(newValue);
     }
   };
 
@@ -412,12 +479,22 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                 name="sku"
                 value={formData.sku}
                 onChange={handleInputChange}
+                onBlur={handleSkuBlur}
                 className={`w-full px-4 py-2.5 border ${
-                  errors.sku ? 'border-error' : 'border-outline-variant'
+                  errors.sku || skuError ? 'border-error' : 'border-outline-variant'
                 } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md font-mono`}
                 placeholder="Enter or edit SKU"
               />
               {errors.sku && <p className="text-error text-xs mt-1">{errors.sku}</p>}
+              {!errors.sku && skuError && (
+                <p className="text-error text-xs mt-1">{skuError}</p>
+              )}
+              {!errors.sku && skuCheckLoading && (
+                <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
+                  <span className="animate-spin w-3 h-3 border-2 border-on-surface-variant border-t-transparent rounded-full"></span>
+                  Checking SKU availability...
+                </p>
+              )}
               {!isEdit && formData.category && formData.metal ? (
                 <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
                   {skuLoading ? 'Generating...' : `Auto-generated: ${formData.sku}`}
@@ -736,12 +813,12 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           >
             Cancel
           </button>
-           <button
-             type="button"
-             onClick={handleSubmit}
-             disabled={loading}
-            className="px-6 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded hover:bg-deep-emerald/90 transition-colors flex items-center gap-2 disabled:opacity-50"
-          >
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={loading || skuCheckLoading || !!skuError}
+             className="px-6 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded hover:bg-deep-emerald/90 transition-colors flex items-center gap-2 disabled:opacity-50"
+            >
             {loading ? (
               <>
                 <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
