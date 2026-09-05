@@ -1,5 +1,106 @@
-import { useRef } from 'react'
-import { resolveImageUrl } from '../../../utils/apiUrl'
+import { useRef, useState } from 'react'
+import { resolveImageUrl, resolveVideoUrl } from '../../../utils/apiUrl'
+
+const getVideoSourceType = (url) => {
+  if (!url || typeof url !== 'string') return 'video'
+  const lowerUrl = url.toLowerCase()
+  if (lowerUrl.includes('youtube.com') || lowerUrl.includes('youtu.be')) return 'youtube'
+  if (lowerUrl.includes('pin.it') || lowerUrl.includes('pinterest.com')) return 'pinterest'
+  if (/\.(mp4|webm|ogg|mov|avi|mpeg)(\?.*)?$/i.test(lowerUrl)) return 'video'
+  return 'video'
+}
+
+const getYouTubeVideoId = (url) => {
+  if (!url || typeof url !== 'string') return ''
+  const patterns = [
+    /youtube\.com\/shorts\/([^/?&]+)/,
+    /youtube\.com\/watch\?v=([^/?&]+)/,
+    /youtu\.be\/([^/?&]+)/,
+    /youtube\.com\/embed\/([^/?&]+)/,
+  ]
+  for (const pattern of patterns) {
+    const match = url.match(pattern)
+    if (match?.[1]) return match[1]
+  }
+  return ''
+}
+
+const getYouTubeEmbedUrl = (url) => {
+  const videoId = getYouTubeVideoId(url)
+  if (!videoId) return ''
+  return `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=0&loop=0&playlist=${videoId}`
+}
+
+export const PreviewModal = ({ isOpen, onClose, media }) => {
+  if (!isOpen || !media) return null
+
+  const srcType = media.url ? getVideoSourceType(media.url) : 'video'
+  const isYouTube = srcType === 'youtube'
+  const isPinterest = srcType === 'pinterest'
+  const embedUrl = isYouTube ? getYouTubeEmbedUrl(media.url) : ''
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4"
+      onClick={onClose}
+    >
+      <div
+        className="relative max-w-5xl max-h-[90vh] w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+        >
+          <span className="material-symbols-outlined text-2xl">close</span>
+        </button>
+
+        {isYouTube ? (
+          embedUrl && (
+            <iframe
+              src={embedUrl}
+              title={media.title || 'Video Preview'}
+              className="w-full h-[500px] md:h-[600px] rounded-lg"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          )
+        ) : isPinterest ? (
+          <img
+            src={resolveImageUrl(media.url)}
+            alt={media.title || 'Preview'}
+            className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+            onError={(e) => {
+              e.target.src = 'https://placehold.co/800x600?text=Preview'
+            }}
+          />
+        ) : media.type === 'video' ? (
+          <video
+            src={resolveVideoUrl(media.url)}
+            controls
+            autoPlay
+            className="w-full h-auto max-h-[80vh] rounded-lg"
+          />
+        ) : srcType === 'video' && !media.type ? (
+          <video
+            src={resolveVideoUrl(media.url)}
+            controls
+            className="w-full h-auto max-h-[80vh] rounded-lg"
+          />
+        ) : (
+          <img
+            src={resolveImageUrl(media.url)}
+            alt={media.title || 'Preview'}
+            className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+            onError={(e) => {
+              e.target.src = 'https://placehold.co/800x600?text=Preview'
+            }}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
 
 export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
   return (
@@ -59,10 +160,33 @@ export const Toast = ({ message, type, onClose }) => {
   )
 }
 
-export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle, toggleLabel = 'Active' }) => {
+export const EmptyState = ({ message = 'No content added yet. Add your first item below.' }) => (
+  <div className="text-center py-12 text-on-surface-variant">
+    <span className="material-symbols-outlined text-4xl mb-3">inventory_2</span>
+    <p className="font-body-md text-sm">{message}</p>
+  </div>
+)
+
+export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle, onPreview, toggleLabel = 'Active', imageField }) => {
+  const thumbValue = imageField ? item[imageField] : null
+  const hasThumb = (thumbValue || '') && thumbValue.trim() !== ''
+
   return (
     <div className="p-4 bg-surface-white rounded-lg border border-outline-variant/50">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+        {hasThumb && (
+          <div className="md:col-span-1 flex-shrink-0">
+            <div className="w-20 h-20 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30">
+              <img
+                src={resolveImageUrl(thumbValue)}
+                alt="thumb"
+                className="w-full h-full object-cover"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            </div>
+          </div>
+        )}
+
         {fields.map((field) => (
           <div key={field.key} className={field.fullWidth ? 'md:col-span-6' : 'md:col-span-2'}>
             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">{field.label}</label>
@@ -109,6 +233,18 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
               {toggleLabel}
             </label>
           </div>
+
+          {onPreview && hasThumb && (
+            <button
+              type="button"
+              onClick={() => onPreview(thumbValue)}
+              className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded transition-colors"
+              title="Preview image"
+            >
+              <span className="material-symbols-outlined text-sm">visibility</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => onDelete(index)}

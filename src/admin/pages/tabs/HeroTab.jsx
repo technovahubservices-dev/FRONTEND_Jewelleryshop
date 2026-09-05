@@ -1,6 +1,8 @@
-import { DualImageInput, ListCardItem, Toast } from './ContentManagementShared'
+import { DualImageInput, ListCardItem, EmptyState } from './ContentManagementShared'
 
-export default function HeroTab({ settings, updateSetting, toggleItem, deleteItem, addItem, handleFileUpload }) {
+export default function HeroTab({ settings, updateSetting, toggleItem, deleteItem, addItem, handleFileUpload, onPreview }) {
+  const heroSlides = settings?.heroSlides || []
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -53,14 +55,27 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
         />
       </div>
 
-      <DualImageInput
-        label="Background Image"
-        value={settings?.heroSectionBgImage || ''}
-        onChange={(val) => {
-          if (val.type === 'url') updateSetting('heroSectionBgImage', val.value)
-        }}
-        fileInputRef={{ current: { handleUpload: handleFileUpload } }}
-      />
+      <div>
+        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Background Image</label>
+        <DualImageInput
+          label="Background Image"
+          value={settings?.heroSectionBgImage || ''}
+          onChange={(val) => {
+            if (val.type === 'url') updateSetting('heroSectionBgImage', val.value)
+          }}
+          fileInputRef={{ current: { handleUpload: handleFileUpload } }}
+        />
+        {settings?.heroSectionBgImage && onPreview && (
+          <button
+            type="button"
+            onClick={() => onPreview(settings.heroSectionBgImage, 'Hero Background')}
+            className="mt-2 p-2 text-on-surface-variant hover:bg-surface-container-low rounded transition-colors text-xs flex items-center gap-1"
+          >
+            <span className="material-symbols-outlined text-sm">visibility</span>
+            Preview
+          </button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
@@ -87,39 +102,42 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
 
       <div className="pt-6 border-t border-outline-variant/30">
         <h3 className="font-headline-md text-headline-md text-deep-emerald mb-4">Hero Slides (Array)</h3>
-        <div className="space-y-3 mb-4">
-          {(settings.heroSlides || []).map((slide, idx) => (
-            <ListCardItem
-              key={slide.id || idx}
-              item={slide}
-              index={idx}
-              fields={[
-                { key: 'title', label: 'Title', placeholder: 'Slide title' },
-                { key: 'subtitle', label: 'Subtitle', placeholder: 'Slide subtitle' },
-                { key: 'image', label: 'Image URL', component: (val, onChange) => (
-                  <DualImageInput
-                    label="Image URL"
-                    value={val || ''}
-                    onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
-                    fileInputRef={{ current: { handleUpload: handleFileUpload } }}
-                  />
-                )},
-                { key: 'link', label: 'Link', placeholder: '/shop' },
-              ]}
-              onChange={(i, key, val) => {
-                const updated = [...(settings.heroSlides || [])]
-                updated[i] = { ...updated[i], [key]: val }
-                updateSetting('heroSlides', updated)
-              }}
-              onDelete={(i) => {
-                const updated = (settings.heroSlides || []).filter((_, j) => j !== i)
-                updateSetting('heroSlides', updated)
-              }}
-              onToggle={(i, checked) => toggleItem('heroSlides', i, checked)}
-              toggleLabel="Display active on homepage"
-            />
-          ))}
-        </div>
+        {heroSlides.length === 0 ? (
+          <EmptyState message="No hero slides added yet. Add your first slide below." />
+        ) : (
+          <div className="space-y-3 mb-4">
+            {heroSlides.map((slide, idx) => (
+              <ListCardItem
+                key={slide.id || idx}
+                item={slide}
+                index={idx}
+                imageField="image"
+                onPreview={onPreview && slide.image ? (val) => onPreview(val, slide.title) : undefined}
+                fields={[
+                  { key: 'title', label: 'Title', placeholder: 'Slide title' },
+                  { key: 'subtitle', label: 'Subtitle', placeholder: 'Slide subtitle' },
+                  { key: 'image', label: 'Image URL', component: (val, onChange) => (
+                    <DualImageInput
+                      label="Image URL"
+                      value={val || ''}
+                      onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
+                      fileInputRef={{ current: { handleUpload: handleFileUpload } }}
+                    />
+                  )},
+                  { key: 'link', label: 'Link', placeholder: '/shop' },
+                ]}
+                onChange={(i, key, val) => {
+                  const updated = [...(settings.heroSlides || [])]
+                  updated[i] = { ...updated[i], [key]: val }
+                  updateSetting('heroSlides', updated)
+                }}
+                onDelete={(i) => deleteItem('heroSlides', i)}
+                onToggle={(i, checked) => toggleItem('heroSlides', i, checked)}
+                toggleLabel="Display active on homepage"
+              />
+            ))}
+          </div>
+        )}
         <button
           type="button"
           onClick={() => addItem('heroSlides', { title: '', subtitle: '', image: '', link: '', isActive: true })}

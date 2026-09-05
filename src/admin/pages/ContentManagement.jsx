@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import { contentAPI, productAPI } from '../../services/api'
-import { getMediaUrl } from '../../utils/apiUrl'
+import { contentAPI } from '../../services/api'
+import { resolveImageUrl } from '../../utils/apiUrl'
 import AnnouncementTab from './tabs/AnnouncementTab'
 import HeroTab from './tabs/HeroTab'
 import CategoriesTab from './tabs/CategoriesTab'
 import VideoReelsTab from './tabs/VideoReelsTab'
 import FestiveExclusiveTab from './tabs/FestiveExclusiveTab'
 import TestimonialsTab from './tabs/TestimonialsTab'
-import { Toast } from './tabs/ContentManagementShared'
+import { Toast, PreviewModal } from './tabs/ContentManagementShared'
 
 const TABS = [
   { id: 'announcement', label: 'Announcement Bar', icon: 'campaign' },
@@ -39,6 +39,7 @@ const DEFAULT_SETTINGS = {
   videoSectionDescription: '',
   videoReels: [],
   festiveExclusiveImages: [],
+  heritageCollectionImages: [],
   homepageTestimonials: [],
   hipChainsSectionTitle: 'The Hip Chain Collection',
   hipChainsSectionDescription: '',
@@ -55,6 +56,7 @@ export default function ContentManagement() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [previewMedia, setPreviewMedia] = useState(null)
   const uploadFileInputRef = useRef(null)
 
   useEffect(() => {
@@ -100,8 +102,8 @@ export default function ContentManagement() {
         : {}
       if (response.status === 204 || payload.success) {
         const uploadData = payload.data || payload
-        const imageUrl = uploadData?.url || uploadData?.path || uploadData?.fileUrl || (typeof uploadData === 'string' ? uploadData : '')
-        if (imageUrl) return getMediaUrl(imageUrl)
+        const imageUrl = payload?.url || uploadData?.url || uploadData?.path || uploadData?.fileUrl || (typeof uploadData === 'string' ? uploadData : '')
+        if (imageUrl) return resolveImageUrl(imageUrl)
         if (response.status === 204) {
           setError('Upload succeeded, but no image URL was returned. Please try again.')
           return ''
@@ -141,6 +143,22 @@ export default function ContentManagement() {
       ...prev,
       [arrayField]: [...(prev[arrayField] || []), { id: Date.now(), ...newItem }],
     }))
+  }
+
+  const confirmDeleteItem = (arrayField, index) => {
+    const item = settings[arrayField]?.[index]
+    const label = item?.title || item?.name || item?.label || 'this item'
+    if (
+      window.confirm(
+        `Are you sure you want to remove "${label}"?\nThis action cannot be undone.`
+      )
+    ) {
+      deleteItem(arrayField, index)
+    }
+  }
+
+  const handlePreview = (url, title = 'Preview') => {
+    setPreviewMedia({ url, title })
   }
 
   const handleSaveTab = async () => {
@@ -237,9 +255,10 @@ export default function ContentManagement() {
                 settings={settings}
                 updateSetting={updateSetting}
                 toggleItem={toggleItem}
-                deleteItem={deleteItem}
+                deleteItem={confirmDeleteItem}
                 addItem={addItem}
                 handleFileUpload={handleFileUpload}
+                onPreview={handlePreview}
               />
             )}
           </div>
@@ -269,6 +288,11 @@ export default function ContentManagement() {
       </div>
 
       <Toast message={success} type="success" onClose={() => setSuccess('')} />
+      <PreviewModal
+        isOpen={!!previewMedia}
+        onClose={() => setPreviewMedia(null)}
+        media={previewMedia}
+      />
     </div>
   )
 }

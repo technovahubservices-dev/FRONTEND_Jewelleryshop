@@ -90,7 +90,7 @@ export const productAPI = {
     slug: p.slug,
   }),
 };
-
+//user api
 export const userAPI = {
   getAll: (params) => api.get('/users', { params }),
   getProfile: () => api.get('/users/profile'),
@@ -102,7 +102,7 @@ export const userAPI = {
   deleteAddress: (id) => api.delete(`/users/addresses/${id}`),
   setDefaultAddress: (id) => api.put(`/users/addresses/${id}/default`),
 };
-
+//order api
 export const orderAPI = {
   create: (orderData) => api.post('/orders', orderData),
   getAll: () => api.get('/orders'),
@@ -115,7 +115,7 @@ export const orderAPI = {
   verifyPayment: (data) => api.post('/orders/payment/verify-payment', data),
   retryPayment: (id, data) => api.post(`/orders/payment/${id}/retry-payment`, data),
 };
-
+// Quotation API
 export const quotationAPI = {
   getAll: (params) => api.get('/quotations', { params }),
   getById: (id) => api.get(`/quotations/${id}`),
@@ -124,7 +124,7 @@ export const quotationAPI = {
   delete: (id) => api.delete(`/quotations/${id}`),
   uploadExcel: (formData) => api.post('/quotations/upload-excel', formData),
 };
-
+// Category API
 export const categoryAPI = {
   getAll: () => api.get('/categories'),
   getById: (id) => api.get(`/categories/${id}`),
@@ -132,7 +132,7 @@ export const categoryAPI = {
   update: (id, categoryData) => api.put(`/categories/${id}`, categoryData),
   delete: (id) => api.delete(`/categories/${id}`),
 };
-
+// Content API
 export const contentAPI = {
   getAll: (type, params) => api.get(`/content/${type}`, { params }),
   getActive: (type, params) => api.get(`/content/${type}/active`, { params }),
@@ -150,6 +150,12 @@ export const contentAPI = {
     api.post('/content/homepage/upload', formData),
   updateHomepageTab: (tab, payload) =>
     api.put('/content/homepage/settings/updateTab', { tab, payload }),
+};
+
+// Admin Settings API
+export const adminSettingsAPI = {    
+  get: () => api.get('/admin/settings'),
+  update: (data) => api.put('/admin/settings', data),
 };
 
 export default api;

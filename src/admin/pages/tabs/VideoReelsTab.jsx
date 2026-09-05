@@ -1,9 +1,11 @@
-import { DualImageInput, ListCardItem, Toast } from './ContentManagementShared'
+import { DualImageInput, ListCardItem, EmptyState } from './ContentManagementShared'
 
-export default function VideoReelsTab({ settings, updateSetting, toggleItem, deleteItem, addItem, handleFileUpload }) {
+export default function VideoReelsTab({ settings, updateSetting, toggleItem, deleteItem, addItem, handleFileUpload, onPreview }) {
+  const videoReels = settings?.videoReels || []
+
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Section Title</label>
           <input
@@ -28,37 +30,43 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
 
       <div className="pt-6 border-t border-outline-variant/30">
         <h3 className="font-headline-md text-headline-md text-deep-emerald mb-4">Video Reels (Array)</h3>
-        <div className="space-y-3 mb-4">
-          {(settings.videoReels || []).map((reel, idx) => (
-            <ListCardItem
-              key={reel._id || reel.id || idx}
-              item={reel}
-              index={idx}
-              fields={[
-                { key: 'title', label: 'Title', placeholder: 'Reel title' },
-                { key: 'videoUrl', label: 'Video URL', placeholder: 'https://...' },
-                { key: 'price', label: 'Price', placeholder: '₹ 4,999' },
-                { key: 'shopLink', label: 'Shop Link', placeholder: '/shop' },
-                { key: 'thumbnail', label: 'Thumbnail', component: (val, onChange) => (
-                  <DualImageInput
-                    label="Thumbnail"
-                    value={val || ''}
-                    onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
-                    fileInputRef={{ current: { handleUpload: handleFileUpload } }}
-                  />
-                )},
-              ]}
-              onChange={(i, key, val) => {
-                const updated = [...(settings.videoReels || [])]
-                updated[i] = { ...updated[i], [key]: val }
-                updateSetting('videoReels', updated)
-              }}
-              onDelete={(i) => deleteItem('videoReels', i)}
-              onToggle={(i, checked) => toggleItem('videoReels', i, checked)}
-              toggleLabel="Display active on homepage"
-            />
-          ))}
-        </div>
+        {videoReels.length === 0 ? (
+          <EmptyState message="No video reels added yet. Add your first reel below." />
+        ) : (
+          <div className="space-y-3 mb-4">
+            {videoReels.map((reel, idx) => (
+              <ListCardItem
+                key={reel._id || reel.id || idx}
+                item={reel}
+                index={idx}
+                imageField="thumbnail"
+                onPreview={onPreview && reel.videoUrl ? (val) => onPreview(val, reel.title) : undefined}
+                fields={[
+                  { key: 'title', label: 'Title', placeholder: 'Reel title' },
+                  { key: 'videoUrl', label: 'Video URL', placeholder: 'https://...' },
+                  { key: 'price', label: 'Price', placeholder: '₹ 4,999' },
+                  { key: 'shopLink', label: 'Shop Link', placeholder: '/shop' },
+                  { key: 'thumbnail', label: 'Thumbnail', component: (val, onChange) => (
+                    <DualImageInput
+                      label="Thumbnail"
+                      value={val || ''}
+                      onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
+                      fileInputRef={{ current: { handleUpload: handleFileUpload } }}
+                    />
+                  )},
+                ]}
+                onChange={(i, key, val) => {
+                  const updated = [...(settings.videoReels || [])]
+                  updated[i] = { ...updated[i], [key]: val }
+                  updateSetting('videoReels', updated)
+                }}
+                onDelete={(i) => deleteItem('videoReels', i)}
+                onToggle={(i, checked) => toggleItem('videoReels', i, checked)}
+                toggleLabel="Display active on homepage"
+              />
+            ))}
+          </div>
+        )}
         <button
           type="button"
           onClick={() => addItem('videoReels', { title: '', videoUrl: '', price: '', shopLink: '/shop', thumbnail: '', isActive: true })}
