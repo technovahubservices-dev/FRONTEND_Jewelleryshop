@@ -165,7 +165,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
 
     try {
       const response = await productAPI.checkSku(trimmed);
-      if (response.data?.exists) {
+      if (!response.data?.available) {
         setSkuError('This SKU is already taken.');
       } else {
         setSkuError('');
