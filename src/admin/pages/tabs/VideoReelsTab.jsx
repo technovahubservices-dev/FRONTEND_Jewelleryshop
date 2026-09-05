@@ -39,13 +39,13 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
                 key={reel._id || reel.id || idx}
                 item={reel}
                 index={idx}
-                imageField="thumbnail"
+                imageField=""
                 onPreview={onPreview && reel.videoUrl ? (val) => onPreview(val, reel.title) : undefined}
                 fields={[
                   { key: 'title', label: 'Title', placeholder: 'Reel title' },
                   { key: 'videoUrl', label: 'Video URL', placeholder: 'https://...' },
                   { key: 'price', label: 'Price', placeholder: '₹ 4,999' },
-                  { key: 'shopLink', label: 'Shop Link', placeholder: '/shop' },
+                  { key: 'shopLink', label: 'Shop Link', placeholder: '' },
                   { key: 'thumbnail', label: 'Thumbnail', component: (val, onChange) => (
                     <DualImageInput
                       label="Thumbnail"

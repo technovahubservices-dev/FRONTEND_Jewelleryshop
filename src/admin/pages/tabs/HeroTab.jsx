@@ -92,7 +92,7 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
           <label className="block font-label-caps text-xs text-on-surface-variant mb-1">CTA Link</label>
           <input
             type="text"
-            value={settings?.heroSectionCtaLink || '/shop'}
+            value={settings?.heroSectionCtaLink || ''}
             onChange={(e) => updateSetting('heroSectionCtaLink', e.target.value)}
             className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
             placeholder="e.g. /shop"
