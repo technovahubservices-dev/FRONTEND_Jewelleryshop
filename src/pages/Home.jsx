@@ -1312,96 +1312,107 @@ export default function Home() {
       )}
 
       {/* ===================================================
-          FESTIVE EXCLUSIVE
-      =================================================== */}
+    FESTIVE EXCLUSIVE
+=================================================== */}
 
-      {activeFestiveImages.length > 0 ? (
-        <section className="w-full bg-surface-white py-12">
-          <div className="max-w-7xl mx-auto px-4 md:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 bg-soft-cream border border-outline-variant/30 overflow-hidden rounded-2xl">
-              ```jsx
-<div className="p-12 md:p-20 flex flex-col justify-center">
-  <span className="font-label-caps text-label-caps uppercase tracking-widest text-regal-gold mb-4">
-    Festive Exclusive
-  </span>
+{activeFestiveImages.length > 0 ? (
+  <section className="w-full bg-surface-white py-12 md:py-16">
+    <div className="max-w-7xl mx-auto px-4 md:px-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 bg-soft-cream border border-outline-variant/30 overflow-hidden rounded-2xl">
 
-  <h2 className="font-headline-lg text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight text-deep-emerald mb-6">
-    {homepageSettings?.festiveExclusiveTitle || ''}
-  </h2>
+        {/* ================= LEFT CONTENT ================= */}
+        <div className="p-8 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-center">
 
-  <p className="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md">
-    {homepageSettings?.festiveExclusiveDescription || ''}
-  </p>
+          {/* Section Label */}
+          <span className="font-label-caps text-label-caps uppercase tracking-[0.2em] text-regal-gold mb-5">
+            Festive Exclusive
+          </span>
 
-  {/* Jewellery related content */}
-  <div className="space-y-2 mb-8 max-w-lg">
-    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
-      Discover timeless jewellery crafted to celebrate every special moment.
-    </p>
+          {/* Main Heading */}
+          <h2 className="font-headline-lg text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] text-deep-emerald mb-6">
+            {homepageSettings?.festiveExclusiveTitle || ''}
+          </h2>
 
-    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
-      From elegant necklaces to statement earrings, find pieces made to shine.
-    </p>
+          {/* CMS Description */}
+          <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-6 max-w-xl">
+            {homepageSettings?.festiveExclusiveDescription || ''}
+          </p>
 
-    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
-      Carefully selected designs bring together traditional craftsmanship and modern elegance.
-    </p>
+          {/* Jewellery Content */}
+          <div className="space-y-2.5 mb-8 max-w-xl">
 
-    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
-      Perfect for festive celebrations, weddings, gifting, and everyday luxury.
-    </p>
+            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+              Discover timeless jewellery crafted to celebrate every special moment.
+            </p>
 
-    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
-      Find your signature piece and make every celebration unforgettable.
-    </p>
-  </div>
+            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+              From elegant necklaces to statement earrings, find pieces designed to shine.
+            </p>
 
-  <a
-    className="self-start border-b border-deep-emerald text-deep-emerald font-label-caps text-label-caps uppercase tracking-widest pb-1 hover:text-regal-gold hover:border-regal-gold transition-colors"
-    href={
-      homepageSettings?.festiveExclusiveCtaLink ||
-      '/shop'
-    }
-  >
-    {homepageSettings?.festiveExclusiveCtaText ||
-      'View Collection'}
-  </a>
-</div>
-```
+            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+              Traditional craftsmanship meets contemporary elegance in every detail.
+            </p>
 
+            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+              Perfect for festive celebrations, weddings, gifting, and everyday luxury.
+            </p>
 
-                <div className="h-[400px] md:h-auto relative overflow-hidden">
-                <div className="heritage-scroll-track">
-                  {activeFestiveImages.map(
-                    (image, index) => (
-                      <div
-                        key={index}
-                        className="heritage-image"
-                      >
-                        <img
-                          src={image.src}
-                          alt={
-                            image.alt ||
-                            'Heritage Jewellery'
-                          }
-                          loading="lazy"
-                          onError={(
-                            event
-                          ) => {
-                            event.currentTarget.src =
-                              'https://placehold.co/600x400?text=Heritage+Jewellery'
-                          }}
-                        />
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            </div>
+            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+              Find your signature piece and make every celebration unforgettable.
+            </p>
+
           </div>
-        </section>
-      ) : null}
 
+          {/* CTA */}
+          <a
+            className="self-start inline-flex items-center border-b border-deep-emerald text-deep-emerald font-label-caps text-label-caps uppercase tracking-widest pb-1.5 hover:text-regal-gold hover:border-regal-gold transition-colors"
+            href={
+              homepageSettings?.festiveExclusiveCtaLink ||
+              '/shop'
+            }
+          >
+            {homepageSettings?.festiveExclusiveCtaText ||
+              'View Collection'}
+          </a>
+
+        </div>
+
+        {/* ================= RIGHT IMAGE ================= */}
+        <div className="h-[400px] md:h-auto min-h-[500px] relative overflow-hidden">
+
+          <div className="heritage-scroll-track h-full">
+
+            {activeFestiveImages.map(
+              (image, index) => (
+                <div
+                  key={index}
+                  className="heritage-image h-full"
+                >
+                  <img
+                    src={image.src}
+                    alt={
+                      image.alt ||
+                      'Heritage Jewellery'
+                    }
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src =
+                        'https://placehold.co/600x400?text=Heritage+Jewellery';
+                    }}
+                  />
+                </div>
+              )
+            )}
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </section>
+) : null}
       {/* ===================================================
           TESTIMONIALS
       =================================================== */}
