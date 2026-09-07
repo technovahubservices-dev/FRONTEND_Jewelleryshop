@@ -1312,50 +1312,53 @@ export default function Home() {
       )}
 
       {/* ===================================================
-    FESTIVE EXCLUSIVE
-=================================================== */}
+          FESTIVE EXCLUSIVE
+      =================================================== */}
 
-{activeFestiveImages.length > 0 ? (
-  <section className="w-full bg-surface-white py-12 md:py-16">
-    <div className="max-w-7xl mx-auto px-4 md:px-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 bg-soft-cream border border-outline-variant/30 overflow-hidden rounded-2xl">
-
-        {/* ================= LEFT CONTENT ================= */}
-        <div className="p-8 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-center">
-
-          {/* Section Label */}
-          <span className="font-label-caps text-label-capsuppercase tracking-[0.2em] text-regal-gold mb-5">
-            Festive Exclusive
-          </span>
-
-          {/* Main Heading */}
-          <h2 className="font-headline-lg text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-semibold leading-[1.05] text-deep-emerald mb-6">
-            {homepageSettings?.festiveExclusiveTitle || ''}
-          </h2>
-
-          {/* CMS Description */}
-          <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-6 max-w-xl">
-            {homepageSettings?.festiveExclusiveDescription || ''}
-          </p>
-
-          {/* Jewellery Content */}
-          <div className="space-y-2.5 mb-8 max-w-xl">
-
-            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
-              Discover timeless jewellery crafted to celebrate every special moment.
-          
-              From elegant necklaces to statement earrings, find pieces designed to shine.
-            </p>
-
-            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
-              Traditional craftsmanship meets contemporary elegance in every detail.
-           
-              Perfect for festive celebrations, weddings, gifting, and everyday luxury.
-            
-              Find your signature piece and make every celebration unforgettable.
-            </p>
-
+      {activeFestiveImages.length > 0 ? (
+      <section className="w-full bg-surface-white py-12 md:py-16">
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          <div className="text-center mb-8">
+            <h2 className="font-playfair text-3xl md:text-4xl text-[#2c2c2c] italic">
+              Festive Exclusive
+            </h2>
+            {homepageSettings?.festiveExclusiveTitle && (
+              <h3 className="font-headline-md text-headline-md text-deep-emerald mt-2">
+                {homepageSettings?.festiveExclusiveTitle}
+              </h3>
+            )}
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 bg-soft-cream border border-outline-variant/30 overflow-hidden rounded-2xl">
+
+          {/* ================= LEFT CONTENT ================= */}
+          <div className="p-8 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-center">
+
+            {/* CMS Description */}
+            {homepageSettings?.festiveExclusiveDescription && (
+              <p className="font-body-md text-sm sm:text-base text-on-surface-variant/80 leading-relaxed mb-6 max-w-xl">
+                {homepageSettings?.festiveExclusiveDescription}
+              </p>
+            )}
+
+            {/* Jewellery Content */}
+            <div className="space-y-2.5 mb-8 max-w-xl">
+
+              <p className="text-sm md:text-base text-on-surface-variant/80 leading-relaxed">
+                Discover timeless jewellery crafted to celebrate every special moment.
+            
+                From elegant necklaces to statement earrings, find pieces designed to shine.
+              </p>
+
+              <p className="text-sm md:text-base text-on-surface-variant/80 leading-relaxed">
+                Traditional craftsmanship meets contemporary elegance in every detail.
+              
+                Perfect for festive celebrations, weddings, gifting, and everyday luxury.
+              
+                Find your signature piece and make every celebration unforgettable.
+              </p>
+
+            </div>
 
           {/* CTA */}
           <a
