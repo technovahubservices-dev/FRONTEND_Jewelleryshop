@@ -347,25 +347,12 @@ export default function Home() {
   ])
 
   /* =======================================================
-     HERO TEXT
-     ======================================================= */
+      HERO TEXT
+      ======================================================= */
 
   const heroTitle =
     homepageSettings?.heroSectionTitle || ''
 
-  const heroSubtitle =
-    homepageSettings?.heroSectionSubtitle || ''
-
-  const heroDescription =
-    homepageSettings?.heroSectionDescription || ''
-
-  const heroCtaText =
-    homepageSettings?.heroSectionCtaText ||
-    ''
-
-  const heroCtaLink =
-    homepageSettings?.heroSectionCtaLink ||
-    '/shop'
 
   /* =======================================================
      CATEGORY DATA
@@ -713,42 +700,6 @@ export default function Home() {
             }
           )}
         </div>
-
-        {/* Optional hero text overlay */}
-        {(heroTitle ||
-          heroSubtitle ||
-          heroDescription) && (
-          <div className="absolute inset-0 flex items-center pointer-events-none">
-            <div className="max-w-7xl w-full mx-auto px-6 md:px-10">
-              <div className="max-w-xl pointer-events-auto">
-                {heroSubtitle && (
-                  <p className="text-sm uppercase tracking-widest text-regal-gold mb-3">
-                    {heroSubtitle}
-                  </p>
-                )}
-
-                {heroTitle && (
-                  <h1 className="font-playfair text-3xl md:text-5xl lg:text-6xl font-bold text-white drop-shadow-lg mb-4">
-                    {heroTitle}
-                  </h1>
-                )}
-
-                {heroDescription && (
-                  <p className="text-white text-sm md:text-base max-w-lg mb-6 drop-shadow">
-                    {heroDescription}
-                  </p>
-                )}
-
-                <Link
-                  to={heroCtaLink}
-                  className="inline-flex items-center bg-white text-deep-emerald px-6 py-3 rounded-md text-sm font-semibold hover:bg-regal-gold hover:text-white transition-colors"
-                >
-                  {heroCtaText}
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
 
         {heroImages.length > 1 && (
           <>
