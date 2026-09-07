@@ -1343,21 +1343,15 @@ export default function Home() {
 
             <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
               Discover timeless jewellery crafted to celebrate every special moment.
-            </p>
-
-            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+          
               From elegant necklaces to statement earrings, find pieces designed to shine.
             </p>
 
             <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
               Traditional craftsmanship meets contemporary elegance in every detail.
-            </p>
-
-            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+           
               Perfect for festive celebrations, weddings, gifting, and everyday luxury.
-            </p>
-
-            <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+            
               Find your signature piece and make every celebration unforgettable.
             </p>
 

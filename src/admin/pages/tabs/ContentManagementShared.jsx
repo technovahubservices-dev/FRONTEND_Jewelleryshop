@@ -103,8 +103,9 @@ export const PreviewModal = ({ isOpen, onClose, media }) => {
 }
 
 export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
-  const hasValue = (value || '').trim() !== ''
-  const videoSrc = hasValue ? resolveVideoUrl(value) : ''
+  const safeValue = typeof value === 'string' ? value : ''
+  const hasValue = safeValue.trim() !== ''
+  const videoSrc = hasValue ? resolveVideoUrl(safeValue) : ''
 
   return (
     <div className="flex items-end gap-3">
@@ -113,7 +114,7 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
         <div className="flex gap-3">
           <input
             type="text"
-            value={value || ''}
+            value={safeValue}
             onChange={(e) => onChange({ type: 'url', value: e.target.value })}
             className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
             placeholder="Enter video URL"
@@ -155,6 +156,8 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
 }
 
 export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
+  const safeValue = typeof value === 'string' ? value : ''
+
   return (
     <div className="flex items-end gap-3">
       <div className="flex-1">
@@ -162,7 +165,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
         <div className="flex gap-3">
           <input
             type="text"
-            value={value || ''}
+            value={safeValue}
             onChange={(e) => onChange({ type: 'url', value: e.target.value })}
             className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
             placeholder="Enter image URL"
@@ -176,15 +179,16 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
                 const url = await fileInputRef.current.handleUpload(file)
                 if (url) onChange({ type: 'url', value: url })
               }
+              e.target.value = ''
             }}
             className="text-xs"
           />
         </div>
       </div>
-      {(value || '') && value.trim() !== '' && (
+      {safeValue && safeValue.trim() !== '' && (
         <div className="w-16 h-16 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30 flex-shrink-0">
           <img
-            src={resolveImageUrl(value)}
+            src={resolveImageUrl(safeValue)}
             alt="preview"
             className="w-full h-full object-cover"
             onError={(e) => { e.target.style.display = 'none'; }}
@@ -221,7 +225,8 @@ export const EmptyState = ({ message = 'No content added yet. Add your first ite
 
 export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle, onPreview, toggleLabel = 'Active', imageField }) => {
   const thumbValue = imageField ? item[imageField] : null
-  const hasThumb = (thumbValue || '') && thumbValue.trim() !== ''
+  const safeThumbValue = typeof thumbValue === 'string' ? thumbValue : ''
+  const hasThumb = safeThumbValue.trim() !== ''
 
   return (
     <div className="p-4 bg-surface-white rounded-lg border border-outline-variant/50">
@@ -229,8 +234,8 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
         {hasThumb && (
           <div className="md:col-span-1 flex-shrink-0">
             <div className="w-20 h-20 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30">
-              <img
-                src={resolveImageUrl(thumbValue)}
+                <img
+                    src={resolveImageUrl(safeThumbValue)}
                 alt="thumb"
                 className="w-full h-full object-cover"
                 onError={(e) => { e.target.style.display = 'none'; }}

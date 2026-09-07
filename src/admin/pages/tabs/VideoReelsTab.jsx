@@ -47,7 +47,7 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
                     <DualVideoInput
                       label="Video"
                       value={val || ''}
-                      onChange={onChange}
+                      onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
                       fileInputRef={{ current: { handleUpload: handleFileUpload } }}
                     />
                   )},
