@@ -95,6 +95,17 @@ export default function ContentManagement() {
     if (!file) return ''
     const formData = new FormData()
     formData.append('file', file)
+    if (process.env.NODE_ENV === 'development') {
+      for (const [key, value] of formData.entries()) {
+        console.log(
+          '[Upload FormData]',
+          key,
+          value instanceof File
+            ? { name: value.name, type: value.type, size: value.size }
+            : value
+        )
+      }
+    }
     try {
       const response = await contentAPI.uploadHomepageImage(formData)
       const payload = (response.data && typeof response.data === 'object')
