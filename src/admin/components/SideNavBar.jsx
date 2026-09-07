@@ -10,9 +10,10 @@ export default function SideNavBar({ isOpen, onClose }) {
     
     { name: 'Products', icon: 'fa-regular fa-gem', path: '/admin/products' },
     { name: 'Categories', icon: 'fa-solid fa-layer-group', path: '/admin/categories' },
-   
+    
     { name: 'Quotations', icon: 'fa-solid fa-file-invoice', path: '/admin/quotations' },
     { name: 'Content Management', icon: 'fa-regular fa-file-lines', path: '/admin/content' },
+    { name: 'Google Drive', icon: 'fa-solid fa-cloud', path: '/admin/google-drive' },
     { name: 'Settings', icon: 'fa-solid fa-gear', path: '/admin/settings' },
   ]
 

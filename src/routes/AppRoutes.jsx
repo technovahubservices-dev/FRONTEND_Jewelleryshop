@@ -21,6 +21,7 @@ import Categories from '../admin/pages/Categories'
 import Orders from '../admin/pages/Orders'
 import Customers from '../admin/pages/Customers'
 import ContentManagement from '../admin/pages/ContentManagement'
+import GoogleDrive from '../admin/pages/GoogleDrive'
 import AdminSettings from '../admin/pages/Settings'
 import NotFound from '../pages/NotFound'
 import Contact from '../pages/Contact'
@@ -81,6 +82,7 @@ export default function AppRoutes() {
       <Route path="/admin/quotations" element={adminElement(Quotations)} />
       <Route path="/admin/quotations/create" element={adminElement(CreateQuotation)} />
       <Route path="/admin/content" element={adminElement(ContentManagement)} />
+      <Route path="/admin/google-drive" element={adminElement(GoogleDrive)} />
       <Route path="/admin/settings" element={adminElement(AdminSettings)} />
 
       {/* 404 */}
