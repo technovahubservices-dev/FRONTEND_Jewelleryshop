@@ -406,7 +406,7 @@ export default function Home() {
       homepageSettings.videoReels.length > 0
     ) {
       return homepageSettings.videoReels
-        .filter(Boolean)
+        .filter((reel) => reel && reel.isActive !== false)
         .map((reel, index) => {
           const rawUrl =
             reel.videoUrl ||
@@ -421,7 +421,7 @@ export default function Home() {
 
             title:
               reel.title ||
-              'Jewellery Showcase',
+              '',
 
             price: reel.price
               ? `₹ ${Number(
@@ -443,7 +443,7 @@ export default function Home() {
             shopLink:
               reel.shopLink ||
               reel.link ||
-              '/shop',
+              '',
           }
         })
     }
@@ -1079,6 +1079,7 @@ export default function Home() {
           WATCH & SHOP
       =================================================== */}
 
+      {reels.length > 0 && (
       <section className="w-full bg-white py-8 md:py-12 border-t border-gray-100">
         <div className="text-center mb-8">
           <h2 className="font-playfair text-3xl md:text-4xl text-[#2c2c2c] italic">
@@ -1088,6 +1089,12 @@ export default function Home() {
             </span>{' '}
             Shop
           </h2>
+          {homepageSettings?.videoSectionTitle && (
+            <h3 className="font-headline-md text-headline-md text-deep-emerald mt-2">{homepageSettings.videoSectionTitle}</h3>
+          )}
+          {homepageSettings?.videoSectionDescription && (
+            <p className="text-sm text-on-surface-variant mt-2 max-w-2xl mx-auto">{homepageSettings.videoSectionDescription}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-7xl mx-auto px-4 md:px-8">
@@ -1250,13 +1257,9 @@ export default function Home() {
                 )
               }
 
-              return (
+              return reel.shopLink ? (
                 <Link
-                  to={
-                    reel.shopLink ||
-                    reel.link ||
-                    '/shop'
-                  }
+                  to={reel.shopLink}
                   key={reel.id}
                   className="flex flex-col aspect-[9/16] w-full rounded-2xl overflow-hidden relative group bg-black shadow-sm"
                 >
@@ -1280,11 +1283,33 @@ export default function Home() {
                     </span>
                   </div>
                 </Link>
+              ) : (
+                <div
+                  key={reel.id}
+                  className="flex flex-col aspect-[9/16] w-full rounded-2xl overflow-hidden relative group bg-black shadow-sm"
+                >
+                  <div className="w-full flex-1 relative overflow-hidden bg-black">
+                    {renderMedia()}
+                  </div>
+
+                  <div className="bg-white p-3 flex flex-col">
+                    <h3 className="line-clamp-2 min-h-[32px] text-xs text-gray-700 font-medium">
+                      {reel.title}
+                    </h3>
+
+                    {reel.price && (
+                      <p className="text-xs text-gray-900 font-semibold mt-1">
+                        {reel.price}
+                      </p>
+                    )}
+                  </div>
+                </div>
               )
             }
           )}
         </div>
       </section>
+      )}
 
       {/* ===================================================
           FESTIVE EXCLUSIVE

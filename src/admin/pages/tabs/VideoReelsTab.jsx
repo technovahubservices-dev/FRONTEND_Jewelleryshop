@@ -1,4 +1,4 @@
-import { DualImageInput, ListCardItem, EmptyState } from './ContentManagementShared'
+import { DualVideoInput, DualImageInput, ListCardItem, EmptyState } from './ContentManagementShared'
 
 export default function VideoReelsTab({ settings, updateSetting, toggleItem, deleteItem, addItem, handleFileUpload, onPreview }) {
   const videoReels = settings?.videoReels || []
@@ -39,11 +39,18 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
                 key={reel._id || reel.id || idx}
                 item={reel}
                 index={idx}
-                imageField=""
-                onPreview={onPreview && reel.videoUrl ? (val) => onPreview(val, reel.title) : undefined}
+                 imageField="thumbnail"
+                 onPreview={onPreview && reel.videoUrl ? (val) => onPreview(val, reel.title) : undefined}
                 fields={[
                   { key: 'title', label: 'Title', placeholder: 'Reel title' },
-                  { key: 'videoUrl', label: 'Video URL', placeholder: 'https://...' },
+                  { key: 'videoUrl', label: 'Video URL', component: (val, onChange) => (
+                    <DualVideoInput
+                      label="Video"
+                      value={val || ''}
+                      onChange={onChange}
+                      fileInputRef={{ current: { handleUpload: handleFileUpload } }}
+                    />
+                  )},
                   { key: 'price', label: 'Price', placeholder: '₹ 4,999' },
                   { key: 'shopLink', label: 'Shop Link', placeholder: '' },
                   { key: 'thumbnail', label: 'Thumbnail', component: (val, onChange) => (
@@ -69,7 +76,7 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
         )}
         <button
           type="button"
-          onClick={() => addItem('videoReels', { title: '', videoUrl: '', price: '', shopLink: '/shop', thumbnail: '', isActive: true })}
+          onClick={() => addItem('videoReels', { title: '', videoUrl: '', price: '', shopLink: '', thumbnail: '', isActive: true })}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-xs rounded hover:bg-deep-emerald/90 transition-colors"
         >
           <span className="material-symbols-outlined text-sm">add</span>
