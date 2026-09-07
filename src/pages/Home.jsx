@@ -1319,30 +1319,56 @@ export default function Home() {
         <section className="w-full bg-surface-white py-12">
           <div className="max-w-7xl mx-auto px-4 md:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 bg-soft-cream border border-outline-variant/30 overflow-hidden rounded-2xl">
-              <div className="p-12 md:p-20 flex flex-col justify-center">
-                <span className="font-label-caps text-label-caps uppercase tracking-widest text-regal-gold mb-4">
-                  Festive Exclusive
-                </span>
+              ```jsx
+<div className="p-12 md:p-20 flex flex-col justify-center">
+  <span className="font-label-caps text-label-caps uppercase tracking-widest text-regal-gold mb-4">
+    Festive Exclusive
+  </span>
 
-                <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-emerald mb-6">
-                   {homepageSettings?.festiveExclusiveTitle || ''}
-                </h2>
+  <h2 className="font-headline-lg text-4xl md:text-5xl lg:text-6xl font-semibold leading-tight text-deep-emerald mb-6">
+    {homepageSettings?.festiveExclusiveTitle || ''}
+  </h2>
 
-                <p className="font-body-md text-body-md text-on-surface-variant mb-8 max-w-md">
-                   {homepageSettings?.festiveExclusiveDescription || ''}
-                </p>
+  <p className="font-body-md text-body-md text-on-surface-variant mb-6 max-w-md">
+    {homepageSettings?.festiveExclusiveDescription || ''}
+  </p>
 
-                <a
-                  className="self-start border-b border-deep-emerald text-deep-emerald font-label-caps text-label-caps uppercase tracking-widest pb-1 hover:text-regal-gold hover:border-regal-gold transition-colors"
-                  href={
-                    homepageSettings?.festiveExclusiveCtaLink ||
-                    '/shop'
-                  }
-                >
-                  {homepageSettings?.festiveExclusiveCtaText ||
-                    'View Collection'}
-                </a>
-              </div>
+  {/* Jewellery related content */}
+  <div className="space-y-2 mb-8 max-w-lg">
+    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+      Discover timeless jewellery crafted to celebrate every special moment.
+    </p>
+
+    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+      From elegant necklaces to statement earrings, find pieces made to shine.
+    </p>
+
+    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+      Carefully selected designs bring together traditional craftsmanship and modern elegance.
+    </p>
+
+    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+      Perfect for festive celebrations, weddings, gifting, and everyday luxury.
+    </p>
+
+    <p className="text-sm md:text-base text-on-surface-variant leading-relaxed">
+      Find your signature piece and make every celebration unforgettable.
+    </p>
+  </div>
+
+  <a
+    className="self-start border-b border-deep-emerald text-deep-emerald font-label-caps text-label-caps uppercase tracking-widest pb-1 hover:text-regal-gold hover:border-regal-gold transition-colors"
+    href={
+      homepageSettings?.festiveExclusiveCtaLink ||
+      '/shop'
+    }
+  >
+    {homepageSettings?.festiveExclusiveCtaText ||
+      'View Collection'}
+  </a>
+</div>
+```
+
 
                 <div className="h-[400px] md:h-auto relative overflow-hidden">
                 <div className="heritage-scroll-track">
