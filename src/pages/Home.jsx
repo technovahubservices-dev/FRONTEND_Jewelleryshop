@@ -361,7 +361,7 @@ export default function Home() {
 
   const heroCtaText =
     homepageSettings?.heroSectionCtaText ||
-    'Explore Collection'
+    ''
 
   const heroCtaLink =
     homepageSettings?.heroSectionCtaLink ||

@@ -29,7 +29,7 @@ const DEFAULT_SETTINGS = {
   heroSectionSubtitle: '',
   heroSectionDescription: '',
   heroSectionBgImage: '',
-   heroSectionCtaText: 'Explore Collection',
+   heroSectionCtaText: '',
   heroSectionCtaLink: '/shop',
   heroSectionEnabled: true,
   categorySectionTitle: 'Shop by Category',
