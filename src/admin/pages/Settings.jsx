@@ -60,9 +60,9 @@ export default function Settings() {
       const response = await adminSettingsAPI.get()
       const data = response.data?.data || response.data || {}
       const info = {
-        storeName: data.storeName || '',
-        email: data.email || '',
-        phone: data.phone || '',
+        storeName: String(data.storeName || ''),
+        email: String(data.email || ''),
+        phone: String(data.phone || ''),
       }
       setStoreInfo(info)
       setSavedStoreInfo(info)
@@ -88,7 +88,8 @@ export default function Settings() {
   }
 
   const handleSaveStoreInfo = async () => {
-    if (!storeInfo.storeName.trim()) {
+    const storeName = String(storeInfo.storeName || '').trim()
+    if (!storeName) {
       showError('Store Name is required')
       return
     }
@@ -96,15 +97,15 @@ export default function Settings() {
     showError('')
     try {
       const response = await adminSettingsAPI.update({
-        storeName: storeInfo.storeName.trim(),
-        email: storeInfo.email.trim(),
-        phone: storeInfo.phone.trim(),
+        storeName: storeName,
+        email: String(storeInfo.email || '').trim(),
+        phone: String(storeInfo.phone || '').trim(),
       })
       const data = response.data?.data || response.data || {}
       const info = {
-        storeName: data.storeName || storeInfo.storeName,
-        email: data.email || storeInfo.email,
-        phone: data.phone || storeInfo.phone,
+        storeName: String(data.storeName || storeName),
+        email: String(data.email || storeInfo.email || ''),
+        phone: String(data.phone || storeInfo.phone || ''),
       }
       setStoreInfo(info)
       setSavedStoreInfo(info)

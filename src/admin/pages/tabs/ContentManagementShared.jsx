@@ -294,7 +294,7 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
           {onPreview && hasThumb && (
             <button
               type="button"
-              onClick={() => onPreview(thumbValue)}
+              onClick={() => onPreview(safeThumbValue)}
               className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded transition-colors"
               title="Preview image"
             >

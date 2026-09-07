@@ -1324,7 +1324,7 @@ export default function Home() {
         <div className="p-8 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-center">
 
           {/* Section Label */}
-          <span className="font-label-caps text-label-caps uppercase tracking-[0.2em] text-regal-gold mb-5">
+          <span className="font-label-caps text-label-capsuppercase tracking-[0.2em] text-regal-gold mb-5">
             Festive Exclusive
           </span>
 
