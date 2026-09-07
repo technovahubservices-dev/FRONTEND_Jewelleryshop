@@ -77,28 +77,7 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">CTA Text</label>
-          <input
-            type="text"
-            value={settings?.heroSectionCtaText || 'Explore Collection'}
-            onChange={(e) => updateSetting('heroSectionCtaText', e.target.value)}
-            className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-            placeholder="e.g. Explore Collection"
-          />
-        </div>
-        <div>
-          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">CTA Link</label>
-          <input
-            type="text"
-            value={settings?.heroSectionCtaLink || ''}
-            onChange={(e) => updateSetting('heroSectionCtaLink', e.target.value)}
-            className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-            placeholder="e.g. /shop"
-          />
-        </div>
-      </div>
+  
 
       <div className="pt-6 border-t border-outline-variant/30">
         <h3 className="font-headline-md text-headline-md text-deep-emerald mb-4">Hero Slides (Array)</h3>
