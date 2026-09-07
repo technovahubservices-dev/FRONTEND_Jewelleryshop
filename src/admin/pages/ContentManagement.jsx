@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { contentAPI } from '../../services/api'
-import { resolveImageUrl, resolveVideoUrl } from '../../utils/apiUrl'
+import { contentAPI, videoReelsAPI } from '../../services/api'
+import { resolveImageUrl } from '../../utils/apiUrl'
 import AnnouncementTab from './tabs/AnnouncementTab'
 import HeroTab from './tabs/HeroTab'
 import CategoriesTab from './tabs/CategoriesTab'
@@ -107,20 +107,39 @@ export default function ContentManagement() {
       }
     }
     try {
-      const response = await contentAPI.uploadHomepageImage(formData)
-      const payload = (response.data && typeof response.data === 'object')
-        ? response.data
-        : {}
-      if (response.status === 204 || payload.success) {
-        const uploadData = payload.data || payload
-        const imageUrl = payload?.url || uploadData?.url || uploadData?.path || uploadData?.fileUrl || (typeof uploadData === 'string' ? uploadData : '')
-        if (imageUrl) return options.isVideo ? resolveVideoUrl(imageUrl) : resolveImageUrl(imageUrl)
-        if (response.status === 204) {
-          setError('Upload succeeded, but no image URL was returned. Please try again.')
+      if (options.isVideo) {
+        const response = await videoReelsAPI.upload(formData)
+        const payload = (response.data && typeof response.data === 'object')
+          ? response.data
+          : {}
+        if (response.status === 201 || response.status === 200 || payload.success) {
+          const reels = payload?.data?.videoReels
+          const lastReel = Array.isArray(reels) && reels.length > 0
+            ? reels[reels.length - 1]
+            : null
+          const videoUrl = lastReel?.videoUrl
+          if (videoUrl) return videoUrl
+          setError('Upload succeeded, but no video URL was returned. Please try again.')
           return ''
+        } else if (payload.message) {
+          setError(payload.message)
         }
-      } else if (payload.message) {
-        setError(payload.message)
+      } else {
+        const response = await contentAPI.uploadHomepageImage(formData)
+        const payload = (response.data && typeof response.data === 'object')
+          ? response.data
+          : {}
+        if (response.status === 204 || payload.success) {
+          const uploadData = payload.data || payload
+          const imageUrl = payload?.url || uploadData?.url || uploadData?.path || uploadData?.fileUrl || (typeof uploadData === 'string' ? uploadData : '')
+          if (imageUrl) return resolveImageUrl(imageUrl)
+          if (response.status === 204) {
+            setError('Upload succeeded, but no image URL was returned. Please try again.')
+            return ''
+          }
+        } else if (payload.message) {
+          setError(payload.message)
+        }
       }
     } catch (err) {
       console.error('Upload failed:', err)

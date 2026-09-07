@@ -148,8 +148,21 @@ export const contentAPI = {
   updateHomepageSettings: (data) => api.put('/content/homepage/settings', data),
   uploadHomepageImage: (formData) =>
     api.post('/content/homepage/upload', formData),
-  updateHomepageTab: (tab, payload) =>
+   updateHomepageTab: (tab, payload) =>
     api.put('/content/homepage/settings/updateTab', { tab, payload }),
+};
+
+export const videoReelsAPI = {
+  upload: (formData) =>
+    api.post('/content/homepage/video-reels/upload', formData),
+  listAdmin: () => api.get('/content/homepage/video-reels'),
+  listPublic: () => api.get('/content/homepage/video-reels/active'),
+  update: (id, data) =>
+    api.put(`/content/homepage/video-reels/${id}`, data),
+  remove: (id) => api.delete(`/content/homepage/video-reels/${id}`),
+  toggle: (id) => api.put(`/content/homepage/video-reels/${id}/toggle`),
+  reorder: (items) =>
+    api.put('/content/homepage/video-reels/reorder', { items }),
 };
 
 // Admin Settings API

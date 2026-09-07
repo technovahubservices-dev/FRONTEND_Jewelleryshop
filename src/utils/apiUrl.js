@@ -41,14 +41,18 @@ const isGoogleDriveUrl = (url) => {
 }
 
 /**
- * Convert any Google Drive share/link URL into a direct, hot-linkable
- * URL suitable for <img> tags.
+ * Convert any Google Drive share/link URL into a backend-proxied URL.
  *
- * - thumbnail URLs are preserved as-is (they already serve images)
- * - /uc? URLs are preserved (already direct)
- * - /file/d/ and ?id= URLs are converted to thumbnail URLs (best for <img>)
+ * Instead of creating a direct Google Drive URL (which can fail due to
+ * invalid file IDs, CORS issues, or lack of streaming support), the file
+ * ID is extracted and routed through the backend's proxy endpoint:
+ *   GET /api/upload/drive/:fileId
+ *
+ * The backend proxy handles CORS, content-type detection (image vs video),
+ * byte-range streaming, and returns proper error responses for invalid
+ * or inaccessible file IDs.
  */
-const getGoogleDriveImageUrl = (url) => {
+const resolveGoogleDriveToProxyUrl = (url) => {
   if (!url || typeof url !== 'string') return ''
 
   const value = url.trim()
@@ -58,34 +62,11 @@ const getGoogleDriveImageUrl = (url) => {
   const fileId = getGoogleDriveFileId(value)
   if (!fileId) return value
 
-  // Already a direct thumbnail URL – preserve it.
-  if (value.includes('/thumbnail')) return value
-
-  // Already a direct uc? URL – preserve it.
-  if (value.includes('/uc?')) return value
-
-  // Convert file/d or open?id URL to a thumbnail URL.
-  return `https://drive.google.com/thumbnail?id=${fileId}&sz=w2000`
+  return getMediaUrl(`/api/upload/drive/${encodeURIComponent(fileId)}`)
 }
 
-/**
- * Convert any Google Drive share/link URL into a direct, hot-linkable
- * URL suitable for <video> tags.
- *
- * Uses /uc?export=view&id=… which supports byte-range streaming.
- */
-const getGoogleDriveVideoUrl = (url) => {
-  if (!url || typeof url !== 'string') return ''
-
-  const value = url.trim()
-
-  if (!isGoogleDriveUrl(value)) return value
-
-  const fileId = getGoogleDriveFileId(value)
-  if (!fileId) return value
-
-  return `https://drive.google.com/uc?export=view&id=${fileId}`
-}
+const getGoogleDriveImageUrl = resolveGoogleDriveToProxyUrl
+const getGoogleDriveVideoUrl = resolveGoogleDriveToProxyUrl
 
 export const getBackendOrigin = () => {
   const configuredUrl = stripTrailingSlash(import.meta.env.VITE_API_URL)
@@ -139,9 +120,10 @@ export const getMediaUrl = (path) => {
  * Single reusable media resolver for images.
  *
  * Combines getMediaUrl (relative → absolute backend URL) with
- * getGoogleDriveImageUrl (Google Drive share link → direct thumbnail URL).
+ * resolveGoogleDriveToProxyUrl (Google Drive share link → backend proxy URL).
  *
- * Never prepends the backend origin to an already-absolute Google Drive URL.
+ * Never creates direct Google Drive thumbnail URLs — all Drive content is
+ * routed through the backend proxy at /api/upload/drive/:fileId.
  */
 export const resolveImageUrl = (path) => {
   if (!path) return ''
@@ -159,7 +141,10 @@ export const resolveImageUrl = (path) => {
  * Single reusable media resolver for videos.
  *
  * Combines getMediaUrl (relative → absolute backend URL) with
- * getGoogleDriveVideoUrl (Google Drive share link → direct video URL).
+ * resolveGoogleDriveToProxyUrl (Google Drive share link → backend proxy URL).
+ *
+ * Never creates direct Google Drive uc?export=view URLs — all Drive content
+ * is routed through the backend proxy at /api/upload/drive/:fileId.
  */
 export const resolveVideoUrl = (path) => {
   if (!path) return ''

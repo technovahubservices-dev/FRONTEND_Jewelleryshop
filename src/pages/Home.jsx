@@ -1294,6 +1294,9 @@ export default function Home() {
 
             {/* Jewellery Content */}
             <div className="space-y-2.5 mb-8 max-w-xl">
+              <h2 className="font-playfair text-2xl md:text-3xl text-[#2c2c2c] italic">
+              Festive Exclusive
+            </h2>
 
               <p className="text-sm md:text-base text-on-surface-variant/80 leading-relaxed">
                 Discover timeless jewellery crafted to celebrate every special moment.
