@@ -21,40 +21,6 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
         </div>
         <div></div>
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Section Title</label>
-          <input
-            type="text"
-            value={settings?.heroSectionTitle || ''}
-            onChange={(e) => updateSetting('heroSectionTitle', e.target.value)}
-            className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-            placeholder="Main hero heading"
-          />
-        </div>
-        <div>
-          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Subtitle</label>
-          <input
-            type="text"
-            value={settings?.heroSectionSubtitle || ''}
-            onChange={(e) => updateSetting('heroSectionSubtitle', e.target.value)}
-            className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-            placeholder="Subtitle"
-          />
-        </div>
-      </div>
-      <div>
-        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Description</label>
-        <textarea
-          value={settings?.heroSectionDescription || ''}
-          onChange={(e) => updateSetting('heroSectionDescription', e.target.value)}
-          rows={3}
-          className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md resize-y"
-          placeholder="Hero description"
-        />
-      </div>
-
       <div>
         <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Background Image</label>
         <DualImageInput

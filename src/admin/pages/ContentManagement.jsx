@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { contentAPI } from '../../services/api'
-import { resolveImageUrl } from '../../utils/apiUrl'
+import { resolveImageUrl, resolveVideoUrl } from '../../utils/apiUrl'
 import AnnouncementTab from './tabs/AnnouncementTab'
 import HeroTab from './tabs/HeroTab'
 import CategoriesTab from './tabs/CategoriesTab'
@@ -91,7 +91,7 @@ export default function ContentManagement() {
     }
   }
 
-  const handleFileUpload = async (file) => {
+  const handleFileUpload = async (file, options = {}) => {
     if (!file) return ''
     const formData = new FormData()
     formData.append('file', file)
@@ -103,7 +103,7 @@ export default function ContentManagement() {
       if (response.status === 204 || payload.success) {
         const uploadData = payload.data || payload
         const imageUrl = payload?.url || uploadData?.url || uploadData?.path || uploadData?.fileUrl || (typeof uploadData === 'string' ? uploadData : '')
-        if (imageUrl) return resolveImageUrl(imageUrl)
+        if (imageUrl) return options.isVideo ? resolveVideoUrl(imageUrl) : resolveImageUrl(imageUrl)
         if (response.status === 204) {
           setError('Upload succeeded, but no image URL was returned. Please try again.')
           return ''

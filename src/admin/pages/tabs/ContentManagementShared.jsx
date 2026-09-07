@@ -102,6 +102,58 @@ export const PreviewModal = ({ isOpen, onClose, media }) => {
   )
 }
 
+export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
+  const hasValue = (value || '').trim() !== ''
+  const videoSrc = hasValue ? resolveVideoUrl(value) : ''
+
+  return (
+    <div className="flex items-end gap-3">
+      <div className="flex-1">
+        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">{label}</label>
+        <div className="flex gap-3">
+          <input
+            type="text"
+            value={value || ''}
+            onChange={(e) => onChange({ type: 'url', value: e.target.value })}
+            className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+            placeholder="Enter video URL"
+          />
+          <input
+            type="file"
+            accept="video/*"
+            onChange={async (e) => {
+              const file = e.target.files[0]
+              if (file) {
+                const url = await fileInputRef.current.handleUpload(file, { isVideo: true })
+                if (url) onChange({ type: 'url', value: url })
+              }
+              e.target.value = ''
+            }}
+            className="text-xs"
+          />
+        </div>
+      </div>
+      {hasValue && (
+        <div className="w-16 h-16 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30 flex-shrink-0 flex items-center justify-center">
+          {videoSrc ? (
+            <video
+              src={videoSrc}
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              className="w-full h-full object-cover"
+              onError={(e) => { e.currentTarget.style.display = 'none' }}
+            />
+          ) : (
+            <span className="material-symbols-outlined text-2xl text-on-surface-variant">play_circle</span>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
   return (
     <div className="flex items-end gap-3">
