@@ -22,7 +22,7 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
         <div></div>
       </div>
       <div>
-        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Background Image</label>
+        <label className="block font-label-caps text-xs text-on-surface-variant mb-1"></label>
         <DualImageInput
           label="Background Image"
           value={settings?.heroSectionBgImage || ''}
