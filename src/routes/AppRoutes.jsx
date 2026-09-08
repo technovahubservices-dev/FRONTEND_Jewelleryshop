@@ -8,6 +8,7 @@ import Register from '../pages/Register'
 import Search from '../pages/Search'
 import OrderConfirmation from '../pages/OrderConfirmation'
 import Cart from '../pages/Cart'
+import Wishlist from '../pages/Wishlist'
 import Checkout from '../pages/Checkout'
 import OrdersHistory from '../pages/OrdersHistory'
 import Tracking from '../pages/Tracking'
@@ -69,6 +70,7 @@ export default function AppRoutes() {
       {/* Account / User routes */}
        <Route path="/account" element={<Account />} />
        <Route path="/cart" element={<Cart />} />
+       <Route path="/wishlist" element={<Wishlist />} />
        <Route path="/order-confirmation" element={<OrderConfirmation />} />
        <Route path="/payment" element={<Payment />} />
        <Route path="/checkout" element={<Checkout />} />

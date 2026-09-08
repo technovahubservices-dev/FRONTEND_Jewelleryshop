@@ -3,6 +3,7 @@ import Header from './components/layout/Header'
 import AppRoutes from './routes/AppRoutes'
 import Footer from './components/layout/Footer'
 import { CartProvider } from './context/CartContext'
+import { WishlistProvider } from './context/WishlistContext'
 import { AuthProvider } from './context/AuthContext'
 
 export default function App() {
@@ -17,12 +18,14 @@ export default function App() {
   return (
   <AuthProvider>
     <CartProvider>
-      <div className="font-body-md text-on-background min-h-screen flex flex-col antialiased">
+      <WishlistProvider>
+        <div className="font-body-md text-on-background min-h-screen flex flex-col antialiased">
         {!isAdminRoute && <Header />}
         <AppRoutes />
         {!isAdminRoute && <Footer />}
       </div>
-    </CartProvider>
+    </WishlistProvider>
+  </CartProvider>
   </AuthProvider>
   )
 }

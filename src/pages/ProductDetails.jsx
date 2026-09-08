@@ -1,9 +1,13 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { productAPI, userAPI } from '../services/api'
+import { productAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { useCart } from '../context/CartContext'
+import { useWishlist } from '../context/WishlistContext'
 import { useState, useEffect } from 'react'
 import { resolveImageUrl } from '../utils/apiUrl'
+import ProductGallery from '../components/products/ProductGallery'
+import ProductCard from '../components/products/ProductCard'
+import RecentlyViewed, { trackProductView } from '../components/products/RecentlyViewed'
 
 export default function ProductDetails() {
   const { id } = useParams()
@@ -14,11 +18,12 @@ export default function ProductDetails() {
   const [loading, setLoading] = useState(true)
   const [successMessage, setSuccessMessage] = useState('')
   const [error, setError] = useState('')
-  const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState(null)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
+  const { isInWishlist, toggle } = useWishlist()
+  const isWishlisted = product ? isInWishlist(product.id) : false
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -27,6 +32,7 @@ export default function ProductDetails() {
         if (response.data.success) {
           const transformed = productAPI.transform(response.data.data);
           setProduct(transformed);
+          trackProductView(transformed.id);
         }
       } catch (err) {
         console.error('Failed to fetch product:', err);
@@ -83,10 +89,6 @@ export default function ProductDetails() {
     )
   }
 
-  const handleQuickViewRelated = (relatedProduct) => {
-    navigate(`/product/${relatedProduct.id}`)
-  }
-
   return (
     <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-16">
       {/* Breadcrumbs */}
@@ -128,38 +130,12 @@ export default function ProductDetails() {
       {/* Product Hero Section (Bento/Asymmetric Layout) */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-24">
         {/* Image Gallery (Left - 7 cols) */}
-        <div className="md:col-span-7 flex flex-col md:flex-row gap-4 h-full">
-          {/* Thumbnails (Vertical on desktop) */}
-          <div className="hidden md:flex flex-col gap-4 w-24 flex-shrink-0">
-            {product.images.map((img, index) => (
-              <button key={index} onClick={() => setSelectedImage(index)} className={`w-full aspect-square bg-surface-white rounded-lg overflow-hidden p-1 ${selectedImage === index ? 'border-2 border-regal-gold' : 'border border-outline-variant'}`}>
-                <img className="w-full h-full object-cover rounded" alt={`${product.name} view ${index + 1}`} src={resolveImageUrl(img)} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
-              </button>
-            ))}
-            <button className="w-full aspect-square bg-surface-white/80 backdrop-blur-sm border border-outline-variant rounded-lg overflow-hidden p-1 flex items-center justify-center text-on-surface-variant">
-              <span className="material-symbols-outlined text-3xl">play_circle</span>
-            </button>
-          </div>
-          {/* Main Image */}
-          <div className="flex-grow bg-surface-white rounded-xl overflow-hidden shadow-sm relative group aspect-square md:aspect-[4/5]">
-            {product.isBestSeller && (
-              <div className="absolute top-4 left-4 z-10 bg-surface-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-label-caps text-primary border border-outline-variant">
-                Best Seller
-              </div>
-            )}
-             {product.isNew && (
-               <div className="absolute top-4 left-4 z-10 bg-surface-white/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-label-caps text-regal-gold border border-outline-variant">
-                 New
-               </div>
-             )}
-              <img className="w-full h-full object-cover img-hover-zoom" alt={product.description} src={resolveImageUrl(product.images[selectedImage])} onError={(e) => { e.target.src = 'https://placehold.co/400x400?text=No+Image'; }} />
-            {/* Mobile Thumbnails (Horizontal) */}
-            <div className="md:hidden absolute bottom-4 left-0 right-0 flex justify-center gap-2 px-4 z-10">
-              {product.images.map((_, index) => (
-                <div key={index} className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-regal-gold' : 'bg-outline-variant'}`}></div>
-              ))}
-            </div>
-          </div>
+        <div className="md:col-span-7">
+          <ProductGallery
+            images={product.images}
+            video={product.video}
+            productName={product.name}
+          />
         </div>
         {/* Product Info (Right - 5 cols) */}
         <div className="md:col-span-5 flex flex-col justify-center px-2 md:px-6 py-4 md:py-0">
@@ -221,10 +197,31 @@ export default function ProductDetails() {
                </div>
              )}
           </div>
-           {/* Actions */}
-           <div className="flex flex-col gap-4 mb-8">
-             {/* Quantity Selector */}
-             <div className="flex items-center gap-3">
+            {/* Actions */}
+            <div className="flex flex-col gap-4 mb-8">
+              {/* Wishlist Button */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggle(product.id)
+                  }}
+                  aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                  className={`flex items-center justify-center gap-2 px-4 py-2.5 border rounded-lg font-body-md text-body-md transition-all ${
+                    isWishlisted
+                      ? 'bg-primary/10 border-primary text-primary'
+                      : 'border-outline-variant text-on-surface-variant hover:bg-surface-container-low hover:text-deep-emerald'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {isWishlisted ? 'favorite' : 'favorite_border'}
+                  </span>
+                  {isWishlisted ? 'In Wishlist' : 'Add to Wishlist'}
+                </button>
+              </div>
+
+              {/* Quantity Selector */}
+              <div className="flex items-center gap-3">
                <label className="font-body-md font-semibold text-primary">Quantity</label>
                <div className="flex items-center gap-2">
                  <button
@@ -336,28 +333,20 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+      {/* Recently Viewed */}
+      <RecentlyViewed currentProductId={product.id} />
+
       {/* Similar Products (Horizontal Scroll / Grid) */}
       <div>
         <div className="flex justify-between items-end mb-8">
           <h2 className="font-headline-md text-headline-md text-primary">You May Also Like</h2>
-       <Link to="/shop" className="text-sm font-label-caps uppercase text-surface-tint hover:text-primary transition-colors flex items-center gap-1 border-b border-transparent hover:border-primary">
-             View All <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-           </Link>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {relatedProducts.map((relatedProduct) => (
-            <div key={relatedProduct.id} className="group cursor-pointer">
-               <div className="bg-surface-white rounded-lg overflow-hidden aspect-square mb-4 relative flex items-center justify-center p-4 border border-transparent hover:border-outline-variant/30 transition-all shadow-sm group-hover:shadow-md">
-                 {relatedProduct.isNew && (
-                   <div className="absolute top-3 left-3 z-10 bg-surface-container-low px-2 py-0.5 rounded text-[10px] font-label-caps text-on-surface-variant">New</div>
-                 )}
-                  <img className="w-full h-full object-contain img-hover-zoom" alt={relatedProduct.name} src={resolveImageUrl(relatedProduct.image)} onClick={() => handleQuickViewRelated(relatedProduct)} />
-               </div>
-              <div className="text-center px-2">
-                <h3 className="font-body-md text-sm text-on-surface-variant truncate mb-1">{relatedProduct.name}</h3>
-                <p className="font-headline-md text-base text-primary">₹ {relatedProduct.price.toLocaleString('en-IN')}</p>
-              </div>
-            </div>
+        <Link to="/shop" className="text-sm font-label-caps uppercase text-surface-tint hover:text-primary transition-colors flex items-center gap-1 border-b border-transparent hover:border-primary">
+              View All <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </Link>
+         </div>
+         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+           {relatedProducts.map((relatedProduct) => (
+            <ProductCard key={relatedProduct.id} product={relatedProduct} />
           ))}
         </div>
       </div>

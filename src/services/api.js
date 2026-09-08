@@ -70,6 +70,7 @@ export const productAPI = {
       : null,
     image: p.primaryImage || (p.images && p.images[0]) || 'https://placehold.co/400x400',
     images: p.images || [],
+    video: p.video || '',
     description: p.description || '',
     fullDescription: p.description || '',
     isNew: p.isNewArrival,
