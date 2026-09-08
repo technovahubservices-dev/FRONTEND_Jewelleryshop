@@ -95,7 +95,7 @@ export default function OrderConfirmation() {
 
         {order && (
           <div className="bg-surface-white border border-outline-variant rounded-lg shadow-sm overflow-hidden mb-8">
-            <!-- Order Info -->
+            {/* Order Info */}
             <div className="p-6 border-b border-outline-variant">
               <h2 className="font-headline-md text-headline-md text-deep-emerald mb-4">
                 Order Details
@@ -130,7 +130,7 @@ export default function OrderConfirmation() {
               </div>
             </div>
 
-            <!-- Ordered Products -->
+            {/* Ordered Products */}
             <div className="p-6 border-b border-outline-variant">
               <h2 className="font-headline-md text-headline-md text-deep-emerald mb-4">
                 Ordered Products
@@ -166,7 +166,7 @@ export default function OrderConfirmation() {
               </div>
             </div>
 
-            <!-- Delivery Address -->
+            {/* Delivery Address */}
             <div className="p-6 border-b border-outline-variant">
               <h2 className="font-headline-md text-headline-md text-deep-emerald mb-4">
                 Delivery Address
@@ -192,7 +192,7 @@ export default function OrderConfirmation() {
               )}
             </div>
 
-            <!-- Price Summary -->
+            {/* Price Summary */}
             <div className="p-6">
               <h2 className="font-headline-md text-headline-md text-deep-emerald mb-4">
                 Price Summary
