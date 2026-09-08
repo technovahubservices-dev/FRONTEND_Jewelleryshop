@@ -115,6 +115,7 @@ export const orderAPI = {
   createPaymentOrder: (data) => api.post('/orders/payment/create-payment-order', data),
   verifyPayment: (data) => api.post('/orders/payment/verify-payment', data),
   retryPayment: (id, data) => api.post(`/orders/payment/${id}/retry-payment`, data),
+  downloadInvoice: (id) => api.get(`/orders/${id}/invoice`, { responseType: 'blob' }),
 };
 // Quotation API
 export const quotationAPI = {

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { orderAPI } from '../services/api'
 import { formatDate, formatCurrency } from '../utils/formatters'
+import { resolveImageUrl } from '../utils/apiUrl'
 
 export default function Account() {
   const navigate = useNavigate()
@@ -175,19 +176,19 @@ export default function Account() {
                         <div className="flex items-center gap-4">
                           <div className="w-16 h-16 bg-surface-container-low rounded flex-shrink-0 overflow-hidden border border-outline-variant/30">
                             {order.items && order.items.length > 0 && (
-                              <img
-                                className="w-full h-full object-cover"
-                                alt={order.items[0].name}
-                                src={order.items[0].image || 'https://placehold.co/64x64'}
-                                onError={(e) => { e.target.src = 'https://placehold.co/64x64'; }}
-                              />
-                            )}
-                          </div>
-                          <div>
-                            <Link to="/account/orders" className="font-medium text-deep-emerald group-hover:text-regal-gold transition-colors">
-                              Order #{(order._id || order.id).toString().slice(-6).toUpperCase()}
-                            </Link>
-                            <p className="text-sm text-on-surface-variant mt-1">{order.items?.length || 0} item(s)</p>
+                               <img
+                                 className="w-full h-full object-cover"
+                                 alt={order.items[0].name}
+                                 src={resolveImageUrl(order.items[0].image)}
+                                 onError={(e) => { e.target.src = 'https://placehold.co/64x64'; }}
+                               />
+                             )}
+                           </div>
+                           <div>
+                             <Link to={`/account/orders/${order._id || order.id}`} className="font-medium text-deep-emerald group-hover:text-regal-gold transition-colors">
+                               {order.orderNumber || `#${(order._id || order.id).toString().slice(-6).toUpperCase()}`}
+                             </Link>
+                             <p className="text-sm text-on-surface-variant mt-1">{order.items?.length || 0} item(s)</p>
                           </div>
                         </div>
                       </td>

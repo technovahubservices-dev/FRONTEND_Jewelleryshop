@@ -11,6 +11,7 @@ import Cart from '../pages/Cart'
 import Wishlist from '../pages/Wishlist'
 import Checkout from '../pages/Checkout'
 import OrdersHistory from '../pages/OrdersHistory'
+import OrderDetail from '../pages/OrderDetail'
 import Tracking from '../pages/Tracking'
 import Payment from '../pages/Payment'
 import Addresses from '../pages/Addresses'
@@ -74,7 +75,8 @@ export default function AppRoutes() {
        <Route path="/order-confirmation" element={<OrderConfirmation />} />
        <Route path="/payment" element={<Payment />} />
        <Route path="/checkout" element={<Checkout />} />
-      <Route path="/account/orders" element={<OrdersHistory />} />
+       <Route path="/account/orders" element={<OrdersHistory />} />
+       <Route path="/account/orders/:orderId" element={<OrderDetail />} />
       <Route path="/account/tracking" element={<Tracking />} />
       <Route path="/account/addresses" element={<Addresses />} />
       <Route path="/account/settings" element={<Settings />} />

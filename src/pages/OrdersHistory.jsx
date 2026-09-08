@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { orderAPI } from '../services/api'
 import { formatDate, formatCurrency } from '../utils/formatters'
+import { resolveImageUrl } from '../utils/apiUrl'
 
 export default function OrdersHistory() {
   const { user, isAuthenticated } = useAuth()
@@ -33,6 +34,34 @@ export default function OrdersHistory() {
     }
     fetchOrders()
   }, [isAuthenticated, navigate])
+
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState(null)
+
+  const handleDownloadInvoice = async (orderId) => {
+    setDownloadingInvoiceId(orderId)
+    try {
+      const response = await orderAPI.downloadInvoice(orderId)
+      const blob = new Blob([response.data], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      const order = orders.find(o => (o._id || o.id) === orderId)
+      const filename = `invoice-${order?.invoiceNumber || order?.orderNumber || orderId}.pdf`
+      link.href = url
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Failed to download invoice:', err)
+    } finally {
+      setDownloadingInvoiceId(null)
+    }
+  }
+
+  const handleTrackOrder = (order) => {
+    navigate('/account/tracking', { state: { orderId: order._id || order.id } })
+  }
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -78,6 +107,8 @@ export default function OrdersHistory() {
     switch (status) {
       case 'delivered': return 'Delivered'
       case 'shipped': return 'Shipped'
+      case 'out_for_delivery':
+      case 'out for delivery': return 'Out for Delivery'
       case 'packed': return 'Packed'
       case 'quality_check': return 'Quality Check'
       case 'manufacturing': return 'Manufacturing'
@@ -85,6 +116,8 @@ export default function OrdersHistory() {
       case 'payment_received': return 'Payment Received'
       case 'confirmed': return 'Confirmed'
       case 'new': return 'Order Placed'
+      case 'pending_payment': return 'Pending Payment'
+      case 'failed': return 'Failed'
       case 'cancelled': return 'Cancelled'
       default: return 'Pending'
     }
@@ -135,12 +168,12 @@ export default function OrdersHistory() {
           {orders.map((order) => (
             <div key={order._id || order.id} className="bg-surface-white border border-outline-variant rounded-lg shadow-sm overflow-hidden">
               <div className="p-6 border-b border-outline-variant flex justify-between items-center">
-                <div>
-                  <p className="font-label-caps text-label-caps text-xs text-on-surface-variant uppercase tracking-wider">
-                    Order #{(order._id || order.id).toString().slice(-6).toUpperCase()}
-                  </p>
-                  <p className="font-body-md text-sm text-on-surface-variant mt-1">
-                    Placed on {formatDate(order.createdAt)}
+                 <div>
+                   <p className="font-label-caps text-label-caps text-xs text-on-surface-variant uppercase tracking-wider">
+                     {order.orderNumber || `#${(order._id || order.id).toString().slice(-6).toUpperCase()}`}
+                   </p>
+                   <p className="font-body-md text-sm text-on-surface-variant mt-1">
+                     Placed on {formatDate(order.createdAt)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -170,12 +203,12 @@ export default function OrdersHistory() {
                   <div key={idx} className="flex gap-4 items-center">
                     <div className="w-16 h-16 bg-surface-container-low rounded overflow-hidden flex-shrink-0 border border-outline-variant/30">
                       {item.image && (
-                        <img
-                          className="w-full h-full object-cover"
-                          alt={item.name}
-                          src={item.image}
-                          onError={(e) => { e.target.src = 'https://placehold.co/64x64'; }}
-                        />
+                         <img
+                           className="w-full h-full object-cover"
+                           alt={item.name}
+                           src={resolveImageUrl(item.image)}
+                           onError={(e) => { e.target.src = 'https://placehold.co/64x64'; }}
+                         />
                       )}
                     </div>
                     <div className="flex-1">
@@ -190,9 +223,32 @@ export default function OrdersHistory() {
                   </div>
                 ))}
                 <div className="flex justify-between pt-4 border-t border-outline-variant font-headline-md text-headline-md text-deep-emerald">
-                  <span>Total</span>
-                  <span>{formatCurrency(order.totalPrice)}</span>
-                </div>
+                   <span>Total</span>
+                   <span>{formatCurrency(order.totalPrice)}</span>
+                 </div>
+                 <div className="flex justify-end gap-3 pt-4 border-t border-outline-variant">
+                   <button
+                     onClick={() => handleDownloadInvoice(order._id || order.id)}
+                     disabled={downloadingInvoiceId === (order._id || order.id)}
+                     className="inline-flex items-center gap-1 px-4 py-2 text-xs font-label-caps text-deep-emerald border border-outline-variant rounded hover:bg-surface-container-low transition-colors disabled:opacity-50"
+                     title="Download Invoice"
+                   >
+                     {downloadingInvoiceId === (order._id || order.id) ? (
+                       <span className="material-symbols-outlined text-[14px] animate-spin">progress_activity</span>
+                     ) : (
+                       <span className="material-symbols-outlined text-[14px]">download</span>
+                     )}
+                     Invoice
+                   </button>
+                   <Link
+                     to={`/account/orders/${order._id || order.id}`}
+                     className="inline-flex items-center gap-1 px-4 py-2 text-xs font-label-caps text-deep-emerald border border-outline-variant rounded hover:bg-surface-container-low transition-colors"
+                     title="View Order"
+                   >
+                     <span className="material-symbols-outlined text-[14px]">visibility</span>
+                     View Order
+                   </Link>
+                 </div>
               </div>
             </div>
           ))}

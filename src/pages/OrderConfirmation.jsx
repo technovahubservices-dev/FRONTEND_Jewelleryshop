@@ -239,23 +239,49 @@ export default function OrderConfirmation() {
           </div>
         )}
 
-        <div className="flex flex-col gap-3 sm:flex-row justify-center">
-          <Link
-            to="/shop"
-            className="inline-flex items-center justify-center gap-2 bg-deep-emerald text-surface-white px-8 py-4 font-label-caps text-label-caps rounded hover:bg-deep-emerald/90 transition-colors shadow-sm"
-          >
-            <span className="material-symbols-outlined text-sm">arrow_forward</span>
-            Continue Shopping
-          </Link>
-          {order && (
-            <Link
-              to="/account/orders"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 border border-outline-variant text-deep-emerald font-label-caps text-label-caps rounded hover:bg-surface-container-low transition-colors"
-            >
-              View Order
-            </Link>
-          )}
-        </div>
+         <div className="flex flex-col gap-3 sm:flex-row justify-center">
+           <Link
+             to="/shop"
+             className="inline-flex items-center justify-center gap-2 bg-deep-emerald text-surface-white px-8 py-4 font-label-caps text-label-caps rounded hover:bg-deep-emerald/90 transition-colors shadow-sm"
+           >
+             <span className="material-symbols-outlined text-sm">arrow_forward</span>
+             Continue Shopping
+           </Link>
+           {order && (
+             <Link
+               to={`/account/orders/${order._id}`}
+               className="inline-flex items-center justify-center gap-2 px-8 py-4 border border-outline-variant text-deep-emerald font-label-caps text-label-caps rounded hover:bg-surface-container-low transition-colors"
+             >
+               <span className="material-symbols-outlined text-sm">visibility</span>
+               View Order
+             </Link>
+           )}
+           {orderId && (
+             <button
+               onClick={async () => {
+                 try {
+                   const response = await orderAPI.downloadInvoice(orderId)
+                   const blob = new Blob([response.data], { type: 'application/pdf' })
+                   const url = window.URL.createObjectURL(blob)
+                   const link = document.createElement('a')
+                   const filename = `invoice-${order?.invoiceNumber || order?.orderNumber || orderId}.pdf`
+                   link.href = url
+                   link.download = filename
+                   document.body.appendChild(link)
+                   link.click()
+                   document.body.removeChild(link)
+                   window.URL.revokeObjectURL(url)
+                 } catch (err) {
+                   console.error('Failed to download invoice:', err)
+                 }
+               }}
+               className="inline-flex items-center justify-center gap-2 px-8 py-4 border border-outline-variant text-deep-emerald font-label-caps text-label-caps rounded hover:bg-surface-container-low transition-colors"
+             >
+               <span className="material-symbols-outlined text-sm">download</span>
+               Download Invoice
+             </button>
+           )}
+         </div>
       </div>
     </main>
   )
