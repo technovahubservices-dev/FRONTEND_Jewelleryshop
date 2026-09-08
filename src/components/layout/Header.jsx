@@ -1,10 +1,12 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useCart } from '../../context/CartContext'
 import AnnouncementBar from '../../pages/AnnouncementBar'
 import logo from '../../assets/icons/logo.jpeg'
 
 export default function Header() {
   const { isAuthenticated, logout } = useAuth()
+  const { itemCount } = useCart()
   const navigate = useNavigate()
 
   return (
@@ -39,6 +41,14 @@ export default function Header() {
           <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/search')} title="Search">
             <span className="material-symbols-outlined text-[24px]">search</span>
           </button>
+          <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out relative" onClick={() => navigate('/cart')} title="Cart">
+            <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
+            {itemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] px-[2px]">
+                {itemCount > 99 ? '99+' : itemCount}
+              </span>
+            )}
+          </button>
           <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/shop')} title="Shop">
             <span className="material-symbols-outlined text-[24px]">storefront</span>
           </button>
@@ -58,14 +68,24 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile view header remains untouched */}
+      {/* Mobile view header */}
       <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant flex items-center justify-between p-4 shadow-sm">
         <button onClick={() => navigate('/shop')}><span className="material-symbols-outlined">menu</span></button>
         <Link className="flex items-center gap-2 font-display-lg text-[24px] text-deep-emerald tracking-tighter" to="/">
           <img src={logo} alt="JKR" className="w-6 h-6 object-contain" />
           <span>JKR</span>
         </Link>
-        <Link to="/account"><span className="material-symbols-outlined">person</span></Link>
+        <div className="flex items-center gap-3">
+          <button className="relative" onClick={() => navigate('/cart')} title="Cart">
+            <span className="material-symbols-outlined">shopping_cart</span>
+            {itemCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center min-w-[16px] px-[1px]">
+                {itemCount > 99 ? '99+' : itemCount}
+              </span>
+            )}
+          </button>
+          <Link to="/account"><span className="material-symbols-outlined">person</span></Link>
+        </div>
       </header>
     </header>
   )

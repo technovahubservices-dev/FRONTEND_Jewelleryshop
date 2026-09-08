@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { productAPI, userAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useCart } from '../context/CartContext'
 import { useState, useEffect } from 'react'
 import { resolveImageUrl } from '../utils/apiUrl'
 
@@ -16,6 +17,8 @@ export default function ProductDetails() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [selectedSize, setSelectedSize] = useState(null)
   const [showSizeGuide, setShowSizeGuide] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  const { addItem } = useCart()
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -220,7 +223,57 @@ export default function ProductDetails() {
           </div>
            {/* Actions */}
            <div className="flex flex-col gap-4 mb-8">
-             <button onClick={() => navigate('/account')} className="w-full bg-deep-emerald text-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-surface-tint transition-colors shadow-sm flex items-center justify-center gap-2">
+             {/* Quantity Selector */}
+             <div className="flex items-center gap-3">
+               <label className="font-body-md font-semibold text-primary">Quantity</label>
+               <div className="flex items-center gap-2">
+                 <button
+                   type="button"
+                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                   className="w-9 h-9 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:border-deep-emerald hover:text-deep-emerald transition-colors"
+                 >
+                   <span className="material-symbols-outlined text-[16px]">remove</span>
+                 </button>
+                 <span className="w-12 text-center font-body-md text-body-md text-primary">{quantity}</span>
+                 <button
+                   type="button"
+                   onClick={() => setQuantity(quantity + 1)}
+                   className="w-9 h-9 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:border-deep-emerald hover:text-deep-emerald transition-colors"
+                 >
+                   <span className="material-symbols-outlined text-[16px]">add</span>
+                 </button>
+               </div>
+             </div>
+
+             {/* Add to Cart */}
+             <button
+               onClick={() => {
+                 addItem(product, quantity)
+                 setSuccessMessage(`Added ${quantity} ${quantity === 1 ? 'item' : 'items'} to cart`)
+                 setTimeout(() => setSuccessMessage(''), 3000)
+               }}
+               className="w-full bg-regal-gold text-surface-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-regal-gold/90 transition-colors shadow-sm flex items-center justify-center gap-2"
+             >
+               <span className="material-symbols-outlined text-lg">shopping_cart</span>
+               Add to Cart
+             </button>
+
+             {/* Buy Now */}
+             <button
+               onClick={() => {
+                 addItem(product, quantity)
+                 navigate('/checkout')
+               }}
+               className="w-full bg-deep-emerald text-surface-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-deep-emerald/90 transition-colors shadow-sm flex items-center justify-center gap-2"
+             >
+               <span className="material-symbols-outlined text-lg">flash_on</span>
+               Buy Now
+             </button>
+
+             <button
+               onClick={() => navigate('/account')}
+               className="w-full bg-surface-container-low border border-outline-variant text-deep-emerald py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-surface-container-low/80 transition-colors flex items-center justify-center gap-2"
+             >
                <span className="material-symbols-outlined text-lg">person</span>
                My Account
              </button>

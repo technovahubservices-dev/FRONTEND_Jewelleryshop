@@ -7,6 +7,8 @@ import Login from '../pages/Login'
 import Register from '../pages/Register'
 import Search from '../pages/Search'
 import OrderConfirmation from '../pages/OrderConfirmation'
+import Cart from '../pages/Cart'
+import Checkout from '../pages/Checkout'
 import OrdersHistory from '../pages/OrdersHistory'
 import Tracking from '../pages/Tracking'
 import Payment from '../pages/Payment'
@@ -65,9 +67,11 @@ export default function AppRoutes() {
       <Route path="/contact" element={<Contact />} />
 
       {/* Account / User routes */}
-      <Route path="/account" element={<Account />} />
-      <Route path="/order-confirmation" element={<OrderConfirmation />} />
-      <Route path="/payment" element={<Payment />} />
+       <Route path="/account" element={<Account />} />
+       <Route path="/cart" element={<Cart />} />
+       <Route path="/order-confirmation" element={<OrderConfirmation />} />
+       <Route path="/payment" element={<Payment />} />
+       <Route path="/checkout" element={<Checkout />} />
       <Route path="/account/orders" element={<OrdersHistory />} />
       <Route path="/account/tracking" element={<Tracking />} />
       <Route path="/account/addresses" element={<Addresses />} />
