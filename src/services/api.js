@@ -68,8 +68,20 @@ export const productAPI = {
     discount: p.discountPrice > 0 && p.price > 0
       ? `${Math.round(((p.price - p.discountPrice) / p.price) * 100)}% OFF`
       : null,
-    image: p.primaryImage || (p.images && p.images[0]) || 'https://placehold.co/400x400',
-    images: p.images || [],
+    image:
+  typeof p.primaryImage === 'string'
+    ? p.primaryImage
+    : p.primaryImage?.url ||
+      (Array.isArray(p.images)
+        ? (typeof p.images[0] === 'string' ? p.images[0] : p.images[0]?.url)
+        : '') ||
+      'https://placehold.co/400x400',
+
+images: Array.isArray(p.images)
+  ? p.images
+      .map((img) => (typeof img === 'string' ? img : img?.url))
+      .filter(Boolean)
+  : [],
     video: p.video || '',
     description: p.description || '',
     fullDescription: p.description || '',
