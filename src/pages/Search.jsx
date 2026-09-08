@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { productAPI } from '../services/api'
+import { resolveImageUrl } from '../utils/apiUrl'
 
 export default function Search() {
   const navigate = useNavigate()
@@ -109,7 +110,7 @@ export default function Search() {
                     <img
                       className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
                       alt={product.description}
-                      src={product.image}
+                      src={resolveImageUrl(product.image)}
                       onError={(e) => {
                         e.target.src = 'https://placehold.co/400x400?text=No+Image';
                       }}

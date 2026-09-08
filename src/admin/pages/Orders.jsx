@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { orderAPI } from '../../services/api'
 import { formatDateTime, formatCurrency, formatDate } from '../../utils/formatters'
+import { resolveImageUrl } from '../../utils/apiUrl'
 import { exportToExcel } from '../../utils/excelExport'
 
 const ORDER_STATES = [
@@ -449,7 +450,7 @@ export default function Orders() {
                                   <img
                                     className="w-full h-full object-cover"
                                     alt={firstItem.name}
-                                    src={firstItem.image}
+                                    src={resolveImageUrl(firstItem.image)}
                                     onError={(e) => { e.target.src = 'https://placehold.co/40x40'; }}
                                   />
                                 )}
@@ -609,7 +610,7 @@ export default function Orders() {
                             <img
                               className="w-full h-full object-cover"
                               alt={item.name}
-                              src={item.image}
+                              src={resolveImageUrl(item.image)}
                               onError={(e) => { e.target.src = 'https://placehold.co/48x48'; }}
                             />
                           )}
