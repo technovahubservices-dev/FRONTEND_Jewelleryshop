@@ -43,7 +43,8 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
         )}
       </div>
 
-  
+      
+
 
       <div className="pt-6 border-t border-outline-variant/30">
         <h3 className="font-headline-md text-headline-md text-deep-emerald mb-4">Hero Slides (Array)</h3>
@@ -59,8 +60,6 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
                 imageField="image"
                 onPreview={onPreview && slide.image ? (val) => onPreview(val, slide.title) : undefined}
                 fields={[
-                  { key: 'title', label: 'Title', placeholder: 'Slide title' },
-                  { key: 'subtitle', label: 'Subtitle', placeholder: 'Slide subtitle' },
                   { key: 'image', label: 'Image URL', component: (val, onChange) => (
                     <DualImageInput
                       label="Image URL"
@@ -69,7 +68,6 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
                       fileInputRef={{ current: { handleUpload: handleFileUpload } }}
                     />
                   )},
-                  { key: 'link', label: 'Link', placeholder: '/shop' },
                 ]}
                 onChange={(i, key, val) => {
                   const updated = [...(settings.heroSlides || [])]
@@ -85,7 +83,7 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
         )}
         <button
           type="button"
-          onClick={() => addItem('heroSlides', { title: '', subtitle: '', image: '', link: '', isActive: true })}
+          onClick={() => addItem('heroSlides', { image: '', isActive: true })}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-xs rounded hover:bg-deep-emerald/90 transition-colors"
         >
           <span className="material-symbols-outlined text-sm">add</span>

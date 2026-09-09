@@ -186,13 +186,14 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
         </div>
       </div>
       {safeValue && safeValue.trim() !== '' && (
-        <div className="w-16 h-16 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30 flex-shrink-0">
+        <div className="w-24 h-24 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30 flex-shrink-0 flex flex-col items-center justify-center">
           <img
             src={resolveImageUrl(safeValue)}
             alt="preview"
-            className="w-full h-full object-cover"
+            className="max-w-full max-h-full object-contain"
             onError={(e) => { e.target.style.display = 'none'; }}
           />
+          <span className="text-[10px] font-label-caps text-on-surface-variant mt-1">Preview</span>
         </div>
       )}
     </div>

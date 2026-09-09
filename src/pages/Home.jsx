@@ -427,16 +427,23 @@ export default function Home() {
               reel.image ||
               '',
 
-            shopLink:
-              reel.shopLink ||
-              reel.link ||
-              '',
+             shopLink: (() => {
+              const existingLink = reel.shopLink || reel.link || ''
+              if (existingLink) return existingLink
+              if (reel.sku && products.length > 0) {
+                const product = products.find(
+                  (p) => (p.SKU || p.sku || '').toLowerCase() === String(reel.sku || '').toLowerCase()
+                )
+                return product ? `/product/${product.id}` : ''
+              }
+              return ''
+            })(),
           }
         })
     }
 
     return []
-  }, [homepageSettings])
+  }, [homepageSettings, products])
 
   /* =======================================================
       FESTIVE EXCLUSIVE
@@ -1034,9 +1041,7 @@ export default function Home() {
       <section className="w-full bg-white py-8 md:py-12 border-t border-gray-100">
         <div className="text-center mb-8">
           
-          {homepageSettings?.videoSectionTitle && (
-            <h3 className="font-headline-md text-headline-md text-deep-emerald mt-2">{homepageSettings.videoSectionTitle}</h3>
-          )}
+          <h3 className="font-headline-md text-headline-md text-deep-emerald mt-2">{homepageSettings?.videoSectionTitle || 'Watch & Shop'}</h3>
           {homepageSettings?.videoSectionDescription && (
             <p className="text-sm text-on-surface-variant mt-2 max-w-2xl mx-auto">{homepageSettings.videoSectionDescription}</p>
           )}

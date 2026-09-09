@@ -59,26 +59,6 @@ export default function AnnouncementTab({ settings, updateSetting }) {
             />
           </div>
         </div>
-        <div>
-          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">CTA Text</label>
-          <input
-            type="text"
-            value={settings?.announcementCtaText || ''}
-            onChange={(e) => updateSetting('announcementCtaText', e.target.value)}
-            className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-            placeholder="e.g. Shop Now"
-          />
-        </div>
-        <div>
-          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">CTA Link</label>
-          <input
-            type="text"
-            value={settings?.announcementCtaLink || ''}
-            onChange={(e) => updateSetting('announcementCtaLink', e.target.value)}
-            className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-            placeholder="e.g. /shop"
-          />
-        </div>
       </div>
     </div>
   )

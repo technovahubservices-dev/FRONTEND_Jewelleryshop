@@ -17,10 +17,8 @@ export default function FestiveExclusiveTab({ settings, updateSetting, toggleIte
                 item={img}
                 index={idx}
                 imageField="image"
-                onPreview={onPreview && img.image ? (val) => onPreview(val, img.title) : undefined}
+                onPreview={onPreview && img.image ? (val) => onPreview(val, img.link || 'Festive Image') : undefined}
                 fields={[
-                  { key: 'title', label: 'Title', placeholder: 'Slide title' },
-                  { key: 'link', label: 'Link', placeholder: '/shop' },
                   { key: 'image', label: 'Image', component: (val, onChange) => (
                     <DualImageInput
                       label="Image"
@@ -29,6 +27,7 @@ export default function FestiveExclusiveTab({ settings, updateSetting, toggleIte
                       fileInputRef={{ current: { handleUpload: handleFileUpload } }}
                     />
                   )},
+                  { key: 'link', label: 'Link', placeholder: '/shop' },
                 ]}
                 onChange={(i, key, val) => {
                   const updated = [...(settings.festiveExclusiveImages || [])]
@@ -44,7 +43,7 @@ export default function FestiveExclusiveTab({ settings, updateSetting, toggleIte
         )}
         <button
           type="button"
-          onClick={() => addItem('festiveExclusiveImages', { image: '', title: '', link: '', isActive: true })}
+          onClick={() => addItem('festiveExclusiveImages', { image: '', link: '', isActive: true })}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-xs rounded hover:bg-deep-emerald/90 transition-colors"
         >
           <span className="material-symbols-outlined text-sm">add</span>
