@@ -127,16 +127,33 @@ export const userAPI = {
 //order api
 export const orderAPI = {
   create: (orderData) => api.post('/orders', orderData),
-  getAll: () => api.get('/orders'),
+  getAll: (params) => api.get('/orders', { params }),
   getById: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, statusOrData) =>
-    api.put(`/orders/${id}`, typeof statusOrData === 'string' ? { status: statusOrData } : statusOrData),
+    api.put(`/orders/${id}/status`, typeof statusOrData === 'string' ? { status: statusOrData } : statusOrData),
   delete: (id) => api.delete(`/orders/${id}`),
   convertFromQuotation: (quotationId, data) => api.post(`/orders/convert-from-quotation/${quotationId}`, data),
   createPaymentOrder: (data) => api.post('/orders/payment/create-payment-order', data),
   verifyPayment: (data) => api.post('/orders/payment/verify-payment', data),
   retryPayment: (id, data) => api.post(`/orders/payment/${id}/retry-payment`, data),
   downloadInvoice: (id) => api.get(`/orders/${id}/invoice`, { responseType: 'blob' }),
+  getViewInvoice: (id) => api.get(`/orders/${id}/invoice`, { responseType: 'blob' }),
+};
+
+// Dashboard API
+export const dashboardAPI = {
+  getAnalytics: (params) => api.get('/admin/dashboard/analytics', { params }),
+  getOrderStatusCounts: () => api.get('/admin/dashboard/order-status-counts'),
+};
+
+// Contact Enquiries API
+export const contactAPI = {
+  getAll: (params) => api.get('/contact/admin', { params }),
+  getById: (id) => api.get(`/contact/admin/${id}`),
+  updateStatus: (id, data) => api.put(`/contact/admin/${id}/status`, data),
+  reply: (id, data) => api.post(`/contact/admin/${id}/reply`, data),
+  getStatuses: () => api.get('/contact/admin/statuses'),
+  getStats: () => api.get('/contact/admin/stats'),
 };
 // Quotation API
 export const quotationAPI = {

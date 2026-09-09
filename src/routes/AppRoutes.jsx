@@ -23,6 +23,7 @@ import Dashboard from '../admin/pages/Dashboard'
 import Products from '../admin/pages/Products'
 import Categories from '../admin/pages/Categories'
 import Orders from '../admin/pages/Orders'
+import ContactEnquiries from '../admin/pages/ContactEnquiries'
 import Customers from '../admin/pages/Customers'
 import ContentManagement from '../admin/pages/ContentManagement'
 import GoogleDrive from '../admin/pages/GoogleDrive'
@@ -86,6 +87,7 @@ export default function AppRoutes() {
       <Route path="/admin/products" element={adminElement(Products)} />
       <Route path="/admin/categories" element={adminElement(Categories)} />
       <Route path="/admin/orders" element={adminElement(Orders)} />
+      <Route path="/admin/contact" element={adminElement(ContactEnquiries)} />
       <Route path="/admin/customers" element={adminElement(Customers)} />
       <Route path="/admin/quotations" element={adminElement(Quotations)} />
       <Route path="/admin/quotations/create" element={adminElement(CreateQuotation)} />

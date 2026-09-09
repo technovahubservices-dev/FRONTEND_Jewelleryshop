@@ -7,7 +7,7 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
     <div className="space-y-2">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-emerald mb-1">Section Title</label>
+          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Section Title</label>
           <input
             type="text"
             value={settings?.videoSectionTitle || 'Watch & Shop'}

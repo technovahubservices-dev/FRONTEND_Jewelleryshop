@@ -12,5 +12,6 @@ export default defineConfig({
     setupFiles: './src/tests/setup.js',
     css: true,
     exclude: ['e2e'],
+    include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
   },
 })
