@@ -1033,13 +1033,7 @@ export default function Home() {
       {reels.length > 0 && (
       <section className="w-full bg-white py-8 md:py-12 border-t border-gray-100">
         <div className="text-center mb-8">
-          <h2 className="font-playfair text-3xl md:text-4xl text-[#2c2c2c] italic">
-            Watch{' '}
-            <span className="font-sans font-light">
-              &
-            </span>{' '}
-            Shop
-          </h2>
+          
           {homepageSettings?.videoSectionTitle && (
             <h3 className="font-headline-md text-headline-md text-deep-emerald mt-2">{homepageSettings.videoSectionTitle}</h3>
           )}
