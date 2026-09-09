@@ -3,6 +3,8 @@ import { productAPI, categoryAPI } from '../../services/api';
 
 const METALS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold'];
 const STATUS_OPTIONS = [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Disabled' }, { value: 'draft', label: 'Draft' }];
+const COLLECTIONS = ['Heritage', 'Eternal', 'Blossom', 'Celeste', 'Aura', 'Bridal', 'Wedding', 'Occasion'];
+const OCCASIONS = ['Bridal', 'Wedding', 'Engagement', 'Party', 'Festive', 'Everyday', 'Anniversary', 'Gift'];
 const MAX_FILES = 10;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
@@ -17,6 +19,10 @@ const initialFormState = {
   category: '',
   subcategory: '',
   metal: '',
+  collection: '',
+  occasion: '',
+  bridal: false,
+  wedding: false,
   status: 'active',
   isFeatured: false,
   isBestSeller: false,
@@ -38,6 +44,10 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           category: product.category || '',
           subcategory: product.subcategory || '',
           metal: product.metal || '',
+          collection: product.collection || '',
+          occasion: product.occasion || '',
+          bridal: product.bridal || false,
+          wedding: product.wedding || false,
           status: product.status || 'active',
           isFeatured: product.isFeatured || false,
           isBestSeller: product.isBestSeller || false,
@@ -630,20 +640,85 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Subcategory
-              </label>
-              <input
-                type="text"
-                name="subcategory"
-                value={formData.subcategory}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="e.g., Engagement Rings"
-              />
-            </div>
-          </div>
+           <div>
+             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+               Subcategory
+             </label>
+             <input
+               type="text"
+               name="subcategory"
+               value={formData.subcategory}
+               onChange={handleInputChange}
+               className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+               placeholder="e.g., Engagement Rings"
+             />
+           </div>
+
+           <div>
+             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+               Collection
+             </label>
+             <select
+               name="collection"
+               value={formData.collection}
+               onChange={handleInputChange}
+               className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
+             >
+               <option value="">Select Collection</option>
+               {COLLECTIONS.map((c) => (
+                 <option key={c} value={c}>
+                   {c}
+                 </option>
+               ))}
+             </select>
+           </div>
+         </div>
+
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div>
+               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                 Occasion
+               </label>
+               <select
+                 name="occasion"
+                 value={formData.occasion}
+                 onChange={handleInputChange}
+                 className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
+               >
+                 <option value="">Select Occasion</option>
+                 {OCCASIONS.map((o) => (
+                   <option key={o} value={o}>
+                     {o}
+                   </option>
+                 ))}
+               </select>
+             </div>
+
+             <div className="flex items-end">
+               <div className="flex flex-col gap-3 w-full">
+                 <label className="flex items-center gap-3 cursor-pointer">
+                   <input
+                     type="checkbox"
+                     name="bridal"
+                     checked={formData.bridal}
+                     onChange={() => toggleCheckbox('bridal')}
+                     className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
+                   />
+                   <span className="font-body-md text-on-surface">Bridal</span>
+                 </label>
+                 <label className="flex items-center gap-3 cursor-pointer">
+                   <input
+                     type="checkbox"
+                     name="wedding"
+                     checked={formData.wedding}
+                     onChange={() => toggleCheckbox('wedding')}
+                     className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
+                   />
+                   <span className="font-body-md text-on-surface">Wedding</span>
+                 </label>
+               </div>
+             </div>
+         </div>
 
           <div>
             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">

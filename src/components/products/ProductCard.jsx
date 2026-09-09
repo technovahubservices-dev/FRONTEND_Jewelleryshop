@@ -4,7 +4,7 @@ import { useWishlist } from '../../context/WishlistContext'
 import { resolveImageUrl } from '../../utils/apiUrl'
 
 export default function ProductCard({ product }) {
-  const { id, name, price, originalPrice, discount, image, images = [] } = product
+  const { id, name, price, originalPrice, discount, image, images = [], collection, occasion, isOnSale } = product
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [imgLoaded, setImgLoaded] = useState(false)
   const { isInWishlist, toggle } = useWishlist()
@@ -13,6 +13,7 @@ export default function ProductCard({ product }) {
 
   const allImages = images.length > 0 ? images : [image]
   const hasMultiple = allImages.length > 1
+  const showSaleBadge = isOnSale || (discount && originalPrice)
 
   const cardRef = useRef(null)
 
@@ -153,12 +154,22 @@ export default function ProductCard({ product }) {
           )}
 
           {/* Badges */}
-          {product.isNew && (
+          {showSaleBadge && discount && (
+            <span className="absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-label-caps bg-error text-surface-white">
+              {discount}
+            </span>
+          )}
+          {product.isNew && !showSaleBadge && (
             <span className="absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-label-caps bg-regal-gold text-surface-white">
               New
             </span>
           )}
-          {product.isBestSeller && (
+          {product.isBestSeller && !showSaleBadge && (
+            <span className="absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-label-caps bg-primary text-surface-white">
+              Best Seller
+            </span>
+          )}
+          {product.isBestSeller && showSaleBadge && (
             <span className="absolute top-3 left-3 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-label-caps bg-primary text-surface-white">
               Best Seller
             </span>

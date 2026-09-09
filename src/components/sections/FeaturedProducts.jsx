@@ -142,21 +142,31 @@ export default function FeaturedProducts({ title, description }) {
           ) : (
             displayProducts.map((product) => (
               <div key={product.id} className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden group">
-                <div className="relative aspect-square bg-surface-container-low flex items-center justify-center p-2">
-                  <img
-                    className="w-full h-full object-contain img-hover-zoom"
-                    alt={product.description}
-                    src={resolveImageUrl(product.image)}
-                    onError={(e) => {
-                      e.target.src = 'https://placehold.co/400x400?text=No+Image'
-                    }}
-                  />
-                </div>
+               <div className="relative aspect-square bg-surface-container-low flex items-center justify-center p-2">
+                   <img
+                     className="w-full h-full object-contain img-hover-zoom"
+                     alt={product.description}
+                     src={resolveImageUrl(product.image)}
+                     onError={(e) => {
+                       e.target.src = 'https://placehold.co/400x400?text=No+Image'
+                     }}
+                   />
 
-                
+                  {product.originalPrice && (
+                    <span className="absolute top-2 left-2 bg-error text-surface-white text-[10px] font-label-caps px-2 py-0.5 rounded-full">
+                      {product.discount}
+                    </span>
+                  )}
 
-                <div className="px-4 pb-4 flex flex-col text-center">
-                  <h3 className="font-body-md text-sm text-charcoal-text mb-2 truncate group-hover:text-deep-emerald transition-colors">
+                  {product.isNew && !product.originalPrice && (
+                    <span className="absolute top-2 left-2 bg-regal-gold text-surface-white text-[10px] font-label-caps px-2 py-0.5 rounded-full">
+                      New
+                    </span>
+                  )}
+                 </div>
+
+                 <div className="px-4 pb-4 flex flex-col text-center">
+                   <h3 className="font-body-md text-sm text-charcoal-text mb-2 truncate group-hover:text-deep-emerald transition-colors">
                     {product.name}
                   </h3>
 

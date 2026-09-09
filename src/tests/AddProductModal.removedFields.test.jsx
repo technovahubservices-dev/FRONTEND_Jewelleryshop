@@ -14,7 +14,6 @@ vi.mock('../services/api', () => ({
 }));
 
 const FORBIDDEN_LABELS = [
-  'Collection',
   'Purity',
   'Weight',
   'Stone Weight',
@@ -36,16 +35,14 @@ const REQUIRED_LABELS = [
   'Subcategory',
   'Description',
   'Product Images',
+  'Collection',
+  'Occasion',
 ];
 
-// A field label is "rendered" if a <label> element's trimmed textContent
-// starts with the label text (after stripping trailing "*" markers and
-// parenthetical hints like "(Editable)").
 const labelStartsWith = (text) => {
   const labels = Array.from(document.querySelectorAll('label'));
   return labels.some((l) => {
     const t = l.textContent.trim();
-    // Strip trailing " *" or " * (something)" markers from labels
     const stripped = t.replace(/\s*\*\s*(\([^)]*\))?$/, '').trim();
     return stripped === text || t.startsWith(text);
   });
@@ -60,7 +57,7 @@ describe('Add New Jewellery Product — removed fields', () => {
     vi.clearAllMocks();
   });
 
-  it('does NOT render any of the 8 removed fields in the Add modal', async () => {
+  it('does NOT render any of the 7 removed fields in the Add modal', async () => {
     renderModal();
     await waitFor(() => {
       expect(screen.getByText('Add New Jewellery Product')).toBeInTheDocument();
@@ -70,7 +67,7 @@ describe('Add New Jewellery Product — removed fields', () => {
     }
   });
 
-  it('does NOT render any of the 8 removed fields in the Edit modal', async () => {
+  it('does NOT render any of the 7 removed fields in the Edit modal', async () => {
     const product = {
       _id: 'p1',
       name: 'Test',
@@ -91,7 +88,7 @@ describe('Add New Jewellery Product — removed fields', () => {
     }
   });
 
-  it('KEEPS all required fields including Subcategory', async () => {
+  it('KEEPS all required fields including Subcategory, Collection, Occasion', async () => {
     renderModal();
     await waitFor(() => {
       expect(screen.getByText('Add New Jewellery Product')).toBeInTheDocument();
@@ -101,20 +98,12 @@ describe('Add New Jewellery Product — removed fields', () => {
     }
   });
 
-  it('API payload does not include any of the 8 removed field keys', async () => {
-    // The payload is built by iterating `Object.entries(formData)`. The
-    // AddProductModal module is what defines the formData shape, so the
-    // definitive proof that the payload excludes the removed fields is that
-    // those keys are not present on the modal's form-state object. We
-    // verify that here by reading the initial state shape of the modal
-    // through a fresh render and inspecting all rendered <input> and
-    // <select> elements.
+  it('API payload does not include any of the 7 removed field keys', async () => {
     renderModal();
     await waitFor(() => {
       expect(screen.getByText('Add New Jewellery Product')).toBeInTheDocument();
     });
 
-    // Collect every form control name attribute
     const inputs = Array.from(document.querySelectorAll('form input, form select, form textarea'));
     const inputNames = inputs.map((el) => el.getAttribute('name')).filter(Boolean);
 
@@ -123,7 +112,6 @@ describe('Add New Jewellery Product — removed fields', () => {
       'diamondWeight', 'diamondShape', 'diamondClarity', 'diamondColor',
       'tags',
       'stoneWeight', 'stoneShape', 'stoneClarity', 'stoneColor',
-      'collection',
     ];
     for (const key of forbiddenKeys) {
       expect(inputNames, `Modal must not contain input/select with name="${key}"`).not.toContain(key);

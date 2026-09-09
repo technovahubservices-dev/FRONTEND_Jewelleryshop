@@ -8,6 +8,7 @@ import { resolveImageUrl } from '../utils/apiUrl'
 import ProductGallery from '../components/products/ProductGallery'
 import ProductCard from '../components/products/ProductCard'
 import RecentlyViewed, { trackProductView } from '../components/products/RecentlyViewed'
+import JewelleryPolicy from '../components/sections/JewelleryPolicy'
 
 export default function ProductDetails() {
   const { id } = useParams()
@@ -155,22 +156,30 @@ export default function ProductDetails() {
             </div>
             <span className="text-sm font-body-md text-on-surface-variant">SKU: {product.SKU}</span>
           </div>
-          {/* Price */}
-          <div className="mb-8">
-            <div className="flex items-baseline gap-4">
-              <span className="text-3xl font-headline-md text-primary">₹ {product.price.toLocaleString('en-IN')}</span>
-              {product.originalPrice && (
-                <span className="text-lg text-on-surface-variant line-through">₹ {product.originalPrice.toLocaleString('en-IN')}</span>
-              )}
-              {product.discount && (
-                <span className="text-sm font-bold text-surface-tint bg-primary-fixed/30 px-2 py-1 rounded">{product.discount} OFF</span>
-              )}
-              {!product.originalPrice && (
-                <span className="text-sm font-bold text-surface-tint bg-primary-fixed/30 px-2 py-1 rounded">No Discount</span>
-              )}
-            </div>
-            <p className="text-xs text-on-surface-variant mt-1">Inclusive of all taxes</p>
-          </div>
+           {/* Price */}
+           <div className="mb-8">
+             <div className="flex items-baseline gap-4">
+               {product.originalPrice ? (
+                 <>
+                   <span className="text-3xl font-headline-md text-primary">₹ {product.price.toLocaleString('en-IN')}</span>
+                   <span className="text-lg text-on-surface-variant line-through">₹ {product.originalPrice.toLocaleString('en-IN')}</span>
+                   {product.discount && (
+                     <span className="text-sm font-bold text-surface-tint bg-error-container/20 text-error px-3 py-1 rounded-full">
+                       {product.discount}
+                     </span>
+                   )}
+                   {product.discountAmount > 0 && (
+                     <span className="text-xs text-on-surface-variant">
+                       Save ₹ {product.discountAmount.toLocaleString('en-IN')}
+                     </span>
+                   )}
+                 </>
+               ) : (
+                 <span className="text-3xl font-headline-md text-primary">₹ {product.price.toLocaleString('en-IN')}</span>
+               )}
+             </div>
+             <p className="text-xs text-on-surface-variant mt-1">Inclusive of all taxes</p>
+           </div>
           {/* Size Selector */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-3">
@@ -332,9 +341,13 @@ export default function ProductDetails() {
             </div>
           </div>
         </div>
-      </div>
-      {/* Recently Viewed */}
-      <RecentlyViewed currentProductId={product.id} />
+         </div>
+
+         {/* Jewellery Policy Section */}
+         <JewelleryPolicy />
+
+         {/* Recently Viewed */}
+         <RecentlyViewed currentProductId={product.id} />
 
       {/* Similar Products (Horizontal Scroll / Grid) */}
       <div>

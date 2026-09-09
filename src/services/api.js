@@ -62,12 +62,21 @@ export const productAPI = {
     id: p._id,
     name: p.name,
     category: p.category,
+    subcategory: p.subcategory || '',
     metal: p.metal || '',
+    collection: p.collection || '',
+    occasion: p.occasion || '',
+    bridal: p.bridal || false,
+    wedding: p.wedding || false,
     price: p.discountPrice > 0 ? p.discountPrice : p.price,
     originalPrice: p.price > 0 && p.discountPrice > 0 ? p.price : null,
     discount: p.discountPrice > 0 && p.price > 0
       ? `${Math.round(((p.price - p.discountPrice) / p.price) * 100)}% OFF`
       : null,
+    discountAmount: p.price > 0 && p.discountPrice > 0
+      ? Math.round(p.price - p.discountPrice)
+      : 0,
+    isOnSale: p.discountPrice > 0 && p.price > 0,
     image:
   typeof p.primaryImage === 'string'
     ? p.primaryImage

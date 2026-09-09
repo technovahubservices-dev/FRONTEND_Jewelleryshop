@@ -152,10 +152,15 @@
           'Product Name': product.name || '',
           SKU: product.sku || '',
           Category: product.category || '',
+          Subcategory: product.subcategory || '',
+          Collection: product.collection || '',
+          Occasion: product.occasion || '',
           Metal: product.metal || '',
           Price: Number(product.price || 0),
           'Discount Price': Number(product.discountPrice || 0),
           Stock: Number(product.stock || 0),
+          Bridal: product.bridal ? 'Yes' : 'No',
+          Wedding: product.wedding ? 'Yes' : 'No',
           Status: product.status || '',
         }))
 
@@ -412,6 +417,12 @@
                           Category
                         </th>
                         <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">
+                          Collection
+                        </th>
+                        <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">
+                          Occasion
+                        </th>
+                        <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">
                           Metal
                         </th>
                         <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase text-right">
@@ -476,6 +487,8 @@
                             {product.sku || '-'}
                           </td>
                           <td className="py-4 px-4">{product.category}</td>
+                          <td className="py-4 px-4">{product.collection || '-'}</td>
+                          <td className="py-4 px-4">{product.occasion || '-'}</td>
                           <td className="py-4 px-4">{product.metal || '-'}</td>
                           <td className="py-4 px-4 text-right font-semibold">
                             {formatCurrency(product.price, product.discountPrice)}

@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { productAPI } from '../services/api'
-import { resolveImageUrl } from '../utils/apiUrl'
+import ProductCard from '../components/products/ProductCard'
 
 export default function Search() {
   const navigate = useNavigate()
@@ -42,10 +42,6 @@ export default function Search() {
     const params = new URLSearchParams()
     if (term.trim()) params.set('q', term.trim())
     navigate(`/search?${params.toString()}`)
-  }
-
-  const handleQuickView = (product) => {
-    navigate(`/product/${product.id}`)
   }
 
   if (loading) {
@@ -104,48 +100,7 @@ export default function Search() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
-            <Link key={product.id} to={`/product/${product.id}`} className="group block">
-              <div className="bg-surface-white border border-outline-variant/30 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-                <div className="relative aspect-square w-full overflow-hidden bg-surface-container-low">
-                    <img
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
-                      alt={product.description}
-                      src={resolveImageUrl(product.image)}
-                      onError={(e) => {
-                        e.target.src = 'https://placehold.co/400x400?text=No+Image';
-                      }}
-                    />
-                 </div>
-                <div className="text-center px-4 py-2">
-                  <span className="font-label-caps text-label-caps text-[10px] text-on-surface-variant/70 uppercase tracking-wider">
-                    JKR
-                  </span>
-                </div>
-                <div className="px-4 pb-4 flex flex-col text-center">
-                  <h3 className="font-body-md text-sm text-charcoal-text mb-2 truncate group-hover:text-deep-emerald transition-colors">
-                    {product.name}
-                  </h3>
-                  <div className="mb-4">
-                    <span className="font-headline-md text-lg text-deep-emerald">
-                      ₹ {product.price}
-                    </span>
-                    {product.originalPrice && (
-                      <span className="ml-2 text-xs text-on-surface-variant line-through">
-                        ₹ {product.originalPrice.toLocaleString('en-IN')}
-                      </span>
-                    )}
-                  </div>
-                   <div className="flex flex-col gap-2">
-                     <button
-                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleQuickView(product); }}
-                       className="flex-1 border border-deep-emerald text-deep-emerald bg-transparent px-4 py-2.5 text-xs font-label-caps text-label-caps uppercase tracking-wider hover:bg-deep-emerald hover:text-surface-white transition-colors duration-200 rounded"
-                     >
-                       Quick View
-                     </button>
-                   </div>
-                </div>
-              </div>
-            </Link>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       )}
