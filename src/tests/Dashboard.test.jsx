@@ -92,9 +92,17 @@ describe('Admin Dashboard', () => {
       expect(screen.getByText('Total Orders')).toBeDefined();
       expect(screen.getByText('Total Customers')).toBeDefined();
       expect(screen.getByText('Total Products')).toBeDefined();
-      expect(screen.getByText('Inventory Value')).toBeDefined();
       expect(screen.getByText('Low Stock Items')).toBeDefined();
     });
+  });
+
+  it('does NOT render Inventory Value KPI on dashboard', async () => {
+    mockGetAnalytics.mockResolvedValue({ data: { success: true, data: mockAnalyticsData } });
+    render(<BrowserRouter><Dashboard /></BrowserRouter>);
+    await waitFor(() => {
+      expect(screen.getByText('Total Sales')).toBeDefined();
+    });
+    expect(document.body.textContent).not.toContain('Inventory Value');
   });
 
   it('renders secondary KPIs', async () => {
@@ -147,13 +155,62 @@ describe('Admin Dashboard', () => {
     });
   });
 
-  it('renders category-wise sales chart with backend data', async () => {
-    mockGetAnalytics.mockResolvedValue({ data: { success: true, data: mockAnalyticsData } });
-    render(<BrowserRouter><Dashboard /></BrowserRouter>);
-    await waitFor(() => {
-      expect(screen.getByText('Category-wise Sales')).toBeDefined();
-    });
-  });
+   it('renders category-wise sales chart with backend data', async () => {
+     mockGetAnalytics.mockResolvedValue({ data: { success: true, data: mockAnalyticsData } });
+     render(<BrowserRouter><Dashboard /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getByText('Category-wise Sales')).toBeDefined();
+     });
+     expect(screen.getAllByText('Rings').length).toBeGreaterThan(0);
+     expect(screen.getAllByText('Earrings').length).toBeGreaterThan(0);
+   });
+
+   it('category-wise sales pie chart displays backend category revenue totals and percentages', async () => {
+     mockGetAnalytics.mockResolvedValue({ data: { success: true, data: mockAnalyticsData } });
+     render(<BrowserRouter><Dashboard /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getByText('Category-wise Sales')).toBeDefined();
+     });
+     const percentages = Array.from(document.querySelectorAll('.text-on-surface-variant.font-medium'));
+     const pctText = percentages.map(el => el.textContent).join(' ');
+     expect(pctText).toContain('%');
+   });
+
+   it('refetches analytics when date filter changes', async () => {
+     mockGetAnalytics.mockResolvedValue({ data: { success: true, data: mockAnalyticsData } });
+     render(<BrowserRouter><Dashboard /></BrowserRouter>);
+     await waitFor(() => {
+       expect(mockGetAnalytics).toHaveBeenCalledWith(expect.objectContaining({ period: 'week' }));
+     });
+     const filter = screen.getByRole('combobox');
+     fireEvent.change(filter, { target: { value: 'month' } });
+     await waitFor(() => {
+       expect(mockGetAnalytics).toHaveBeenCalledWith(expect.objectContaining({ period: 'month' }));
+     });
+   });
+
+   it('shows empty state for category sales when no category data', async () => {
+     mockGetAnalytics.mockResolvedValue({
+       data: { success: true, data: { ...mockAnalyticsData, topCategories: [] } },
+     });
+     render(<BrowserRouter><Dashboard /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getByText('Category-wise Sales')).toBeDefined();
+     });
+     const chartSection = screen.getByText('Category-wise Sales').closest('.bg-surface-white');
+     expect(chartSection.textContent).toContain('No sales data available');
+   });
+
+   it('handles unknown/missing category names in pie chart safely', async () => {
+     mockGetAnalytics.mockResolvedValue({
+       data: { success: true, data: { ...mockAnalyticsData, topCategories: [{ name: undefined, slug: 'rings', revenue: 1000 }] } },
+     });
+     render(<BrowserRouter><Dashboard /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getByText('Category-wise Sales')).toBeDefined();
+     });
+     expect(document.body.textContent).toContain('rings');
+   });
 
   it('renders top selling jewellery with image, name, SKU, quantity, revenue', async () => {
     mockGetAnalytics.mockResolvedValue({ data: { success: true, data: mockAnalyticsData } });

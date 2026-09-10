@@ -163,26 +163,110 @@ describe('Orders Page', () => {
     });
   });
 
-  it('updates order status from detail modal', async () => {
-    mockGetOrders.mockResolvedValue(mockOrdersResponse);
-    mockUpdateStatus.mockResolvedValue({ data: { success: true, data: { ...mockOrder, status: 'confirmed' } } });
-    render(<BrowserRouter><Orders /></BrowserRouter>);
-    await waitFor(() => {
-      expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
-    });
-    const viewButtons = screen.getAllByTitle('View Details');
-    fireEvent.click(viewButtons[0]);
-    await waitFor(() => {
-      expect(screen.getByText('Update Order')).toBeDefined();
-    });
-    const statusSelect = screen.getByDisplayValue('New');
-    fireEvent.change(statusSelect, { target: { value: 'confirmed' } });
-    const saveButton = screen.getByText('Save Changes');
-    fireEvent.click(saveButton);
-    await waitFor(() => {
-      expect(mockUpdateStatus).toHaveBeenCalled();
-    });
-  });
+   it('updates order status from detail modal', async () => {
+     mockGetOrders.mockResolvedValue(mockOrdersResponse);
+     mockUpdateStatus.mockResolvedValue({ data: { success: true, data: { ...mockOrder, status: 'confirmed' } } });
+     render(<BrowserRouter><Orders /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
+     });
+     const viewButtons = screen.getAllByTitle('View Details');
+     fireEvent.click(viewButtons[0]);
+     await waitFor(() => {
+       expect(screen.getByText('Update Order')).toBeDefined();
+     });
+     const statusSelect = screen.getByDisplayValue('New');
+     fireEvent.change(statusSelect, { target: { value: 'confirmed' } });
+     const saveButton = screen.getByText('Save Changes');
+     fireEvent.click(saveButton);
+     await waitFor(() => {
+       expect(mockUpdateStatus).toHaveBeenCalled();
+     });
+   });
+
+   it('status dropdown only shows current and valid next statuses', async () => {
+     mockGetOrders.mockResolvedValue(mockOrdersResponse);
+     render(<BrowserRouter><Orders /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
+     });
+     fireEvent.click(screen.getAllByTitle('View Details')[0]);
+     await waitFor(() => {
+       expect(screen.getByText('Update Order')).toBeDefined();
+     });
+     const statusSelect = screen.getByDisplayValue('New');
+     const options = statusSelect.options;
+     expect(options.length).toBe(3);
+     const optionValues = Array.from(options).map(o => o.value);
+     expect(optionValues).toContain('new');
+     expect(optionValues).toContain('confirmed');
+     expect(optionValues).toContain('cancelled');
+     expect(optionValues).not.toContain('processing');
+     expect(optionValues).not.toContain('manufacturing');
+     expect(optionValues).not.toContain('delivered');
+   });
+
+   it('successful status update refreshes order list with new status', async () => {
+     mockGetOrders.mockResolvedValue(mockOrdersResponse);
+     mockUpdateStatus.mockResolvedValue({
+       data: { success: true, data: { ...mockOrder, status: 'confirmed' } },
+     });
+     render(<BrowserRouter><Orders /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
+     });
+     fireEvent.click(screen.getAllByTitle('View Details')[0]);
+     await waitFor(() => {
+       expect(screen.getByText('Update Order')).toBeDefined();
+     });
+     const statusSelect = screen.getByDisplayValue('New');
+     fireEvent.change(statusSelect, { target: { value: 'confirmed' } });
+     fireEvent.click(screen.getByText('Save Changes'));
+     await waitFor(() => {
+       expect(screen.getByText('Order updated successfully')).toBeDefined();
+     });
+   });
+
+   it('shows error when status update fails', async () => {
+     mockGetOrders.mockResolvedValue(mockOrdersResponse);
+     mockUpdateStatus.mockRejectedValue({
+       response: { data: { message: 'Invalid status transition' } },
+     });
+     render(<BrowserRouter><Orders /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
+     });
+     fireEvent.click(screen.getAllByTitle('View Details')[0]);
+     await waitFor(() => {
+       expect(screen.getByText('Update Order')).toBeDefined();
+     });
+     const statusSelect = screen.getByDisplayValue('New');
+     fireEvent.change(statusSelect, { target: { value: 'confirmed' } });
+     fireEvent.click(screen.getByText('Save Changes'));
+     await waitFor(() => {
+       expect(screen.getByText('Invalid status transition')).toBeDefined();
+     });
+   });
+
+   it('shows loading state during status update', async () => {
+     mockGetOrders.mockResolvedValue(mockOrdersResponse);
+     mockUpdateStatus.mockImplementation(() => new Promise(() => {}));
+     render(<BrowserRouter><Orders /></BrowserRouter>);
+     await waitFor(() => {
+       expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
+     });
+     fireEvent.click(screen.getAllByTitle('View Details')[0]);
+     await waitFor(() => {
+       expect(screen.getByText('Update Order')).toBeDefined();
+     });
+     const statusSelect = screen.getByDisplayValue('New');
+     fireEvent.change(statusSelect, { target: { value: 'confirmed' } });
+     fireEvent.click(screen.getByText('Save Changes'));
+     await waitFor(() => {
+       expect(document.body.textContent).toContain('Saving...');
+     });
+   });
+
 
   it('filters orders by status client-side', async () => {
     mockGetOrders.mockResolvedValue(mockOrdersResponse);

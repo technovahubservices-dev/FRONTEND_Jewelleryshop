@@ -695,7 +695,9 @@ export default function Orders() {
                       onChange={(e) => setUpdateForm({ ...updateForm, status: e.target.value })}
                       className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
                     >
-                      {ORDER_STATES.map((s) => (
+                      {ORDER_STATES.filter(s =>
+                        s.value === viewOrder.status || allowedNextStatuses.includes(s.value)
+                      ).map((s) => (
                         <option key={s.value} value={s.value}>{s.label}</option>
                       ))}
                     </select>

@@ -47,9 +47,13 @@ const MiniBarChart = ({ data, color = '#D4AF37' }) => {
 
 const DonutChart = ({ data, colors = CHART_LEGEND }) => {
   if (!data || data.length === 0) return null
-  const total = data.reduce((sum, d) => sum + d.value, 0) || 1
+  const safeData = data.map(d => ({
+    label: d.label || d.name || 'Unknown',
+    value: Number(d.value) || 0,
+  }))
+  const total = safeData.reduce((sum, d) => sum + d.value, 0)
   let cumulative = 0
-  const segments = data.map((d, i) => {
+  const segments = safeData.map((d, i) => {
     const start = cumulative
     cumulative += d.value
     return { ...d, start, end: cumulative, color: colors[i % colors.length] }
@@ -58,36 +62,51 @@ const DonutChart = ({ data, colors = CHART_LEGEND }) => {
   const radius = 40
   const circumference = 2 * Math.PI * radius
   const segmentsWithDash = segments.map((seg) => {
-    const dash = ((seg.end - seg.start) / total) * circumference
-    const offset = (seg.start / total) * circumference
+    const dash = total > 0 ? (seg.value / total) * circumference : 0
+    const offset = total > 0 ? (seg.start / total) * circumference : 0
     return { ...seg, dash, offset }
   })
 
   return (
     <div className="flex items-center gap-4 flex-wrap">
-      <svg width="120" height="120" viewBox="0 0 120 120" className="transform -rotate-90">
-        {segmentsWithDash.map((seg, i) => (
-          <circle
-            key={i}
-            cx="60"
-            cy="60"
-            r={radius}
-            fill="none"
-            stroke={seg.color}
-            strokeWidth="16"
-            strokeDasharray={`${seg.dash} ${circumference - seg.dash}`}
-            strokeDashoffset={-seg.offset}
-          />
-        ))}
-      </svg>
-      <div className="flex flex-col gap-1 text-xs">
-        {data.map((d, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
-            <span className="text-on-surface-variant truncate max-w-[100px]">{d.label}</span>
-            <span className="text-deep-emerald font-medium">{d.value}</span>
+      <div className="relative flex-shrink-0">
+        <svg width="120" height="120" viewBox="0 0 120 120" className="transform -rotate-90">
+          {segmentsWithDash.map((seg, i) => (
+            seg.value > 0 ? (
+              <circle
+                key={i}
+                cx="60"
+                cy="60"
+                r={radius}
+                fill="none"
+                stroke={seg.color}
+                strokeWidth="16"
+                strokeDasharray={`${seg.dash} ${circumference - seg.dash}`}
+                strokeDashoffset={-seg.offset}
+                title={`${seg.label}: ${formatCurrency(seg.value)} (${((seg.value / (total || 1)) * 100).toFixed(1)}%)`}
+              />
+            ) : null
+          ))}
+        </svg>
+        {total > 0 && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="font-label-caps text-[10px] text-on-surface-variant">Total</span>
+            <span className="font-headline-md text-deep-emerald">{formatCurrency(total)}</span>
           </div>
-        ))}
+        )}
+      </div>
+      <div className="flex flex-col gap-1 text-xs min-w-[140px]">
+        {safeData.map((d, i) => {
+          const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : '0.0'
+          return (
+            <div key={i} className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
+              <span className="text-on-surface-variant max-w-[140px] truncate" title={d.label}>{d.label}</span>
+              <span className="text-deep-emerald font-medium">{d.value}</span>
+              <span className="text-on-surface-variant font-medium">({pct}%)</span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )
@@ -196,7 +215,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchAnalytics()
-  }, [])
+  }, [dateFilter])
 
   const handleDateFilterChange = (value) => {
     setDateFilter(value)
@@ -233,9 +252,9 @@ export default function Dashboard() {
   }, [chartData])
 
   const categoryChartData = useMemo(() => {
-    return topCategories.map(c => ({
-      label: c.name,
-      value: c.revenue,
+    return (topCategories || []).map(c => ({
+      label: c.name || c.slug || 'Unknown',
+      value: Number(c.revenue) || 0,
     }))
   }, [topCategories])
 
@@ -286,7 +305,6 @@ export default function Dashboard() {
     { label: 'Total Orders', value: kpis?.totalOrders ?? 0 },
     { label: 'Total Customers', value: kpis?.totalCustomers ?? 0 },
     { label: 'Total Products', value: kpis?.totalProducts ?? 0 },
-    { label: 'Inventory Value', value: formatCurrency(kpis?.inventoryValue) },
     { label: 'Low Stock Items', value: kpis?.lowStockItems ?? 0 },
   ]
 
