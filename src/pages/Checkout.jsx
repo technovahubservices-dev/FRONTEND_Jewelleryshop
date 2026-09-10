@@ -33,6 +33,7 @@ export default function Checkout() {
 
   const [paymentMethod, setPaymentMethod] = useState('cod')
   const [error, setError] = useState('')
+  const [orderSubmissionSuccess, setOrderSubmissionSuccess] = useState(false)
 
   const TAX_RATE = 0.05
   const SHIPPING_FEE = 0
@@ -45,13 +46,13 @@ export default function Checkout() {
       return
     }
 
-    if (itemCount === 0) {
+    if (itemCount === 0 && !orderSubmissionSuccess) {
       navigate('/cart')
       return
     }
 
     fetchAddresses()
-  }, [isAuthenticated, itemCount, navigate])
+  }, [isAuthenticated, itemCount, navigate, orderSubmissionSuccess])
 
   const fetchAddresses = async () => {
     setAddressesLoading(true)
@@ -153,7 +154,8 @@ export default function Checkout() {
         const order = response.data.data
 
         if (paymentMethod === 'cod') {
-          clearCart()
+           clearCart()
+          setOrderSubmissionSuccess(true)
           navigate('/order-confirmation', {
             state: {
               orderId: order._id,
@@ -162,6 +164,7 @@ export default function Checkout() {
           })
         } else {
           clearCart()
+          setOrderSubmissionSuccess(true)
           navigate(`/payment?orderId=${order._id}&method=${paymentMethod}`)
         }
       } else {
