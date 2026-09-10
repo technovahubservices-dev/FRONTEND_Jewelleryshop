@@ -128,7 +128,7 @@ describe('Contact Enquiries Page', () => {
     });
   });
 
-  it('renders contact info, delivery info, and full message in modal', async () => {
+  it('renders contact info and full message in modal', async () => {
     mockGetEnquiries.mockResolvedValue(mockEnquiriesResponse);
     renderWithRouter();
     await waitFor(() => {
@@ -140,15 +140,12 @@ describe('Contact Enquiries Page', () => {
     });
     await waitFor(() => {
       expect(screen.getByText('Contact Information')).toBeDefined();
-      expect(screen.getByText('Delivery Information')).toBeDefined();
       expect(screen.getByText('Full Message')).toBeDefined();
-      expect(screen.getByRole('button', { name: 'Send Reply' })).toBeDefined();
     });
   });
 
-  it('calls updateStatus when status button is clicked in modal', async () => {
+  it('does NOT render Delivery Information in modal', async () => {
     mockGetEnquiries.mockResolvedValue(mockEnquiriesResponse);
-    mockUpdateStatus.mockResolvedValue({ data: { success: true, data: { ...mockEnquiry, status: 'read' } } });
     renderWithRouter();
     await waitFor(() => {
       expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
@@ -158,20 +155,12 @@ describe('Contact Enquiries Page', () => {
       fireEvent.click(viewButton);
     });
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Update Status' })).toBeDefined();
-    });
-    const readButton = screen.getByRole('button', { name: 'Read' });
-    await act(async () => {
-      fireEvent.click(readButton);
-    });
-    await waitFor(() => {
-      expect(mockUpdateStatus).toHaveBeenCalledWith('c1', { status: 'read' });
+      expect(screen.queryByText('Delivery Information')).toBeNull();
     });
   });
 
-  it('sends reply via backend API when reply button is clicked', async () => {
+  it('does NOT render Update Status section in modal', async () => {
     mockGetEnquiries.mockResolvedValue(mockEnquiriesResponse);
-    mockReply.mockResolvedValue({ data: { success: true, data: { ...mockEnquiry, status: 'replied' } } });
     renderWithRouter();
     await waitFor(() => {
       expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
@@ -181,21 +170,38 @@ describe('Contact Enquiries Page', () => {
       fireEvent.click(viewButton);
     });
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Send Reply' })).toBeDefined();
+      expect(screen.queryByRole('heading', { name: 'Update Status' })).toBeNull();
     });
-    const replyTextarea = screen.getByPlaceholderText('Type your reply message here...');
-    await act(async () => {
-      fireEvent.change(replyTextarea, { target: { value: 'Thank you for your inquiry.' } });
+  });
+
+  it('does NOT render Send Reply section in modal', async () => {
+    mockGetEnquiries.mockResolvedValue(mockEnquiriesResponse);
+    renderWithRouter();
+    await waitFor(() => {
+      expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
     });
-    const sendButton = screen.getByRole('button', { name: 'Send Reply' });
+    const viewButton = screen.getAllByTitle('View Details')[0];
     await act(async () => {
-      fireEvent.click(sendButton);
+      fireEvent.click(viewButton);
     });
     await waitFor(() => {
-      expect(mockReply).toHaveBeenCalledWith('c1', {
-        replyMessage: 'Thank you for your inquiry.',
-        subject: expect.stringContaining('Re:'),
-      });
+      expect(screen.queryByRole('button', { name: 'Send Reply' })).toBeNull();
+    });
+  });
+
+  it('does NOT render Update Status or Send Reply buttons (removed actions)', async () => {
+    mockGetEnquiries.mockResolvedValue(mockEnquiriesResponse);
+    renderWithRouter();
+    await waitFor(() => {
+      expect(screen.getAllByTitle('View Details').length).toBeGreaterThan(0);
+    });
+    const viewButton = screen.getAllByTitle('View Details')[0];
+    await act(async () => {
+      fireEvent.click(viewButton);
+    });
+    await waitFor(() => {
+      expect(screen.queryByText('Update Status')).toBeNull();
+      expect(screen.queryByText('Send Reply')).toBeNull();
     });
   });
 

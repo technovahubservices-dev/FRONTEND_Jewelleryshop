@@ -28,8 +28,6 @@ export default function ContactEnquiries() {
   const [stats, setStats] = useState({})
   const [statuses, setStatuses] = useState([])
   const [viewEnquiry, setViewEnquiry] = useState(null)
-  const [replyMessage, setReplyMessage] = useState('')
-  const [replying, setReplying] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
   const currentPage = Number(searchParams.get('page') || 1)
@@ -140,47 +138,6 @@ export default function ContactEnquiries() {
 
   const handleViewEnquiry = (enquiry) => {
     setViewEnquiry(enquiry)
-    setReplyMessage('')
-  }
-
-  const handleStatusUpdate = async (status) => {
-    if (!viewEnquiry) return
-    try {
-      const response = await contactAPI.updateStatus(viewEnquiry._id, { status })
-      if (response.data.success) {
-        setViewEnquiry(response.data.data)
-        setEnquiries(enquiries.map(e => e._id === viewEnquiry._id ? response.data.data : e))
-        setSuccessMessage('Status updated successfully')
-        setTimeout(() => setSuccessMessage(''), 3000)
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update status')
-    }
-  }
-
-  const handleReply = async () => {
-    if (!viewEnquiry || !replyMessage.trim()) return
-    setReplying(true)
-    setError('')
-    try {
-      const response = await contactAPI.reply(viewEnquiry._id, {
-        replyMessage,
-        subject: `Re: Your enquiry on ${(process.env.STORE_NAME || 'Jewellery Shop')}`,
-      })
-      if (response.data.success) {
-        setViewEnquiry(response.data.data)
-        setEnquiries(enquiries.map(e => e._id === viewEnquiry._id ? response.data.data : e))
-        setSuccessMessage('Reply sent successfully')
-        setTimeout(() => setSuccessMessage(''), 3000)
-        setReplyMessage('')
-      } else {
-        setError(response.data.message || 'Failed to send reply')
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to send reply')
-    } finally {
-      setReplying(false)
-    }
   }
 
   const getStatusBadge = (status) => {
@@ -317,9 +274,8 @@ export default function ContactEnquiries() {
                   <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Email</th>
                   <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Phone</th>
                   <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Message</th>
-                  <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Received</th>
-                  <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Delivery</th>
-                  <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Status</th>
+                   <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Received</th>
+                   <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Status</th>
                   <th className="py-4 px-6 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase text-right">Actions</th>
                 </tr>
               </thead>
@@ -339,15 +295,10 @@ export default function ContactEnquiries() {
                     <td className="py-4 px-4 text-on-surface-variant max-w-[200px] truncate" title={enquiry.message}>
                       {enquiry.message || '-'}
                     </td>
-                    <td className="py-4 px-4 text-on-surface-variant whitespace-nowrap">
-                      {formatDateTime(enquiry.createdAt)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-label-caps ${enquiry.delivered ? 'bg-primary-fixed/20 text-on-primary-fixed-variant' : 'bg-error-container/20 text-error'}`}>
-                        {enquiry.delivered ? 'Delivered' : 'Failed'}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4">{getStatusBadge(enquiry.status)}</td>
+                     <td className="py-4 px-4 text-on-surface-variant whitespace-nowrap">
+                       {formatDateTime(enquiry.createdAt)}
+                     </td>
+                     <td className="py-4 px-4">{getStatusBadge(enquiry.status)}</td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -441,115 +392,35 @@ export default function ContactEnquiries() {
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-surface-white border border-outline-variant rounded-lg p-4">
-                  <h3 className="font-label-caps text-xs text-on-surface-variant mb-3 uppercase tracking-wider">Contact Information</h3>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <p className="text-xs text-on-surface-variant">Name</p>
-                      <p className="font-medium text-deep-emerald">{viewEnquiry.name || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-on-surface-variant">Email</p>
-                      <p className="font-medium text-deep-emerald">{viewEnquiry.email || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-on-surface-variant">Phone</p>
-                      <p className="font-medium text-deep-emerald">{viewEnquiry.phone || 'N/A'}</p>
-                    </div>
-                  </div>
-                </div>
+               <div className="bg-surface-white border border-outline-variant rounded-lg p-4">
+                 <h3 className="font-label-caps text-xs text-on-surface-variant mb-3 uppercase tracking-wider">Contact Information</h3>
+                 <div className="space-y-2 text-sm">
+                   <div>
+                     <p className="text-xs text-on-surface-variant">Name</p>
+                     <p className="font-medium text-deep-emerald">{viewEnquiry.name || '-'}</p>
+                   </div>
+                   <div>
+                     <p className="text-xs text-on-surface-variant">Email</p>
+                     <p className="font-medium text-deep-emerald">{viewEnquiry.email || '-'}</p>
+                   </div>
+                   <div>
+                     <p className="text-xs text-on-surface-variant">Phone</p>
+                     <p className="font-medium text-deep-emerald">{viewEnquiry.phone || 'N/A'}</p>
+                   </div>
+                 </div>
+               </div>
 
-                <div className="bg-surface-white border border-outline-variant rounded-lg p-4">
-                  <h3 className="font-label-caps text-xs text-on-surface-variant mb-3 uppercase tracking-wider">Delivery Information</h3>
-                  <div className="space-y-2 text-sm">
-                    <div>
-                      <p className="text-xs text-on-surface-variant">Status</p>
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-label-caps ${viewEnquiry.delivered ? 'bg-primary-fixed/20 text-on-primary-fixed-variant' : 'bg-error-container/20 text-error'}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${viewEnquiry.delivered ? 'bg-deep-emerald' : 'bg-error'}`}></span>
-                        {viewEnquiry.delivered ? 'Delivered' : 'Failed'}
-                      </span>
-                    </div>
-                    {viewEnquiry.deliveryError && (
-                      <div>
-                        <p className="text-xs text-on-surface-variant">Error</p>
-                        <p className="font-medium text-error text-xs break-words">{viewEnquiry.deliveryError}</p>
-                      </div>
-                    )}
-                    {viewEnquiry.routedTo && (
-                      <div>
-                        <p className="text-xs text-on-surface-variant">Routed To</p>
-                        <p className="font-medium text-deep-emerald">{viewEnquiry.routedTo}</p>
-                      </div>
-                    )}
-                  </div>
+               <div className="bg-surface-white border border-outline-variant rounded-lg p-4">
+                 <h3 className="font-label-caps text-xs text-on-surface-variant mb-3 uppercase tracking-wider">Full Message</h3>
+                 <p className="font-body-md text-body-md text-on-surface whitespace-pre-wrap break-words">
+                   {viewEnquiry.message || 'No message content'}
+                 </p>
                 </div>
-              </div>
-
-              <div className="bg-surface-white border border-outline-variant rounded-lg p-4">
-                <h3 className="font-label-caps text-xs text-on-surface-variant mb-3 uppercase tracking-wider">Full Message</h3>
-                <p className="font-body-md text-body-md text-on-surface whitespace-pre-wrap break-words">
-                  {viewEnquiry.message || 'No message content'}
-                </p>
-              </div>
-
-              {viewEnquiry.adminNote && (
-                <div className="bg-surface-white border border-outline-variant rounded-lg p-4">
-                  <h3 className="font-label-caps text-xs text-on-surface-variant mb-3 uppercase tracking-wider">Admin Note</h3>
-                  <p className="font-body-md text-body-md text-on-surface whitespace-pre-wrap">
-                    {viewEnquiry.adminNote}
-                  </p>
-                </div>
-              )}
-
-              <div className="bg-surface-white border border-outline-variant rounded-lg p-4">
-                <h3 className="font-label-caps text-xs text-on-surface-variant mb-3 uppercase tracking-wider">Update Status</h3>
-                <div className="flex flex-wrap items-center gap-3">
-                  {CONTACT_STATUSES.map((s) => (
-                    <button
-                      key={s.value}
-                      onClick={() => handleStatusUpdate(s.value)}
-                      className={`px-3 py-1.5 text-xs font-label-caps rounded transition-colors ${
-                        viewEnquiry.status === s.value
-                          ? 'bg-deep-emerald text-surface-white'
-                          : 'bg-surface-container-low text-on-surface-variant hover:text-deep-emerald'
-                      }`}
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-surface-white border border-outline-variant rounded-lg p-4">
-                <h3 className="font-label-caps text-xs text-on-surface-variant mb-3 uppercase tracking-wider">Send Reply</h3>
-                <textarea
-                  className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md text-on-surface resize-none"
-                  rows="4"
-                  placeholder="Type your reply message here..."
-                  value={replyMessage}
-                  onChange={(e) => setReplyMessage(e.target.value)}
-                />
-                <div className="mt-3 flex justify-end">
-                  <button
-                    onClick={handleReply}
-                    disabled={replying || !replyMessage.trim()}
-                    className="px-6 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-xs rounded hover:bg-deep-emerald/90 transition-colors disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {replying ? (
-                      <>
-                        <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-                        Sending...
-                      </>
-                    ) : (
-                      'Send Reply'
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+             </div>
+           </div>
+         </div>
+         </div>
+       )}
     </div>
   )
 }

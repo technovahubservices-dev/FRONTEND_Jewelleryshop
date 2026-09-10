@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { contactAPI } from '../services/api'
 
 export default function Contact() {
   const [form, setForm] = useState({
@@ -8,12 +9,35 @@ export default function Contact() {
     message: '',
   })
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (!form.name.trim() || !form.email.trim() || !form.message.trim()) return
-    setSubmitted(true)
-    setForm({ name: '', email: '', message: '' })
+
+    setSubmitting(true)
+    setSubmitError('')
+
+    try {
+      const response = await contactAPI.create({
+        name: form.name,
+        email: form.email,
+        message: form.message,
+      })
+
+      if (response.data?.success) {
+        setSubmitted(true)
+        setForm({ name: '', email: '', message: '' })
+      } else {
+        setSubmitError(response.data?.message || 'Failed to send your message. Please try again.')
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.message || err.message || 'Failed to send your message. Please try again.'
+      setSubmitError(errMsg)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -89,6 +113,11 @@ export default function Contact() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
+              {submitError && (
+                <div className="p-4 bg-error-container/10 border border-error-container/20 text-error rounded-lg text-sm">
+                  {submitError}
+                </div>
+              )}
               <div>
                 <label htmlFor="name" className="block font-label-caps text-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider mb-2">
                   Customer Name
@@ -101,6 +130,7 @@ export default function Contact() {
                   onChange={(e) => setForm(prev => ({ ...prev, name: e.target.value }))}
                   className="w-full bg-surface border border-outline-variant rounded-none px-4 py-3 font-body-md text-body-md text-charcoal-text placeholder:text-outline-variant focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors"
                   placeholder="Your full name"
+                  disabled={submitting}
                 />
               </div>
 
@@ -116,6 +146,7 @@ export default function Contact() {
                   onChange={(e) => setForm(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full bg-surface border border-outline-variant rounded-none px-4 py-3 font-body-md text-body-md text-charcoal-text placeholder:text-outline-variant focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors"
                   placeholder="you@example.com"
+                  disabled={submitting}
                 />
               </div>
 
@@ -131,14 +162,23 @@ export default function Contact() {
                   onChange={(e) => setForm(prev => ({ ...prev, message: e.target.value }))}
                   className="w-full bg-surface border border-outline-variant rounded-none px-4 py-3 font-body-md text-body-md text-charcoal-text placeholder:text-outline-variant focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors resize-y"
                   placeholder="Tell us how we can help..."
+                  disabled={submitting}
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-deep-emerald text-surface-white py-3.5 rounded font-label-caps text-label-caps uppercase tracking-widest hover:bg-regal-gold transition-colors shadow-sm"
+                disabled={submitting}
+                className="w-full bg-deep-emerald text-surface-white py-3.5 rounded font-label-caps text-label-caps uppercase tracking-widest hover:bg-regal-gold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Send Message
+                {submitting ? (
+                  <>
+                    <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                    Sending...
+                  </>
+                ) : (
+                  'Send Message'
+                )}
               </button>
             </form>
           )}

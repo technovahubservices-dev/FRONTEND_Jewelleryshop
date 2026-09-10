@@ -150,6 +150,7 @@ export const dashboardAPI = {
 
 // Contact Enquiries API
 export const contactAPI = {
+  create: (data) => api.post('/contact', data),
   getAll: (params) => api.get('/contact/admin', { params }),
   getById: (id) => api.get(`/contact/admin/${id}`),
   updateStatus: (id, data) => api.put(`/contact/admin/${id}/status`, data),
