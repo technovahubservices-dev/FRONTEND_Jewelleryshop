@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-export default function QuotationItemTable({ items, products, onAddItem, onRemoveItem, onUpdateItem }) {
+export default function QuotationItemTable({ items, products, skuErrors, onAddItem, onRemoveItem, onUpdateItem, onSkuLookup }) {
   const [localProducts, setLocalProducts] = useState(products)
 
   useEffect(() => {
@@ -25,10 +25,16 @@ export default function QuotationItemTable({ items, products, onAddItem, onRemov
     const trimmed = String(value || '').trim()
     if (trimmed) {
       const matched = localProducts.find((p) => (p.SKU || p.sku || '').toLowerCase() === trimmed.toLowerCase())
-      if (matched && matched._id && matched._id !== items[index]?.productId) {
+      if (matched && (matched._id || matched.id) && (matched._id || matched.id) !== items[index]?.productId) {
         onUpdateItem(index, 'productId', matched._id || matched.id || '')
         fillFromProduct(index, matched)
       }
+    }
+  }
+
+  const handleSkuBlur = (index, value) => {
+    if (onSkuLookup) {
+      onSkuLookup(index, value)
     }
   }
 
@@ -81,7 +87,17 @@ export default function QuotationItemTable({ items, products, onAddItem, onRemov
                 </div>
                 <div>
                   <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2 text-[11px]">SKU</label>
-                  <input type="text" value={item.sku} onChange={(e) => handleSkuChange(index, e.target.value)} className="w-full bg-surface border border-outline-variant rounded-none px-3 py-2.5 text-sm font-body-md text-charcoal-text focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors" placeholder="Auto-filled" />
+                  <input
+                    type="text"
+                    value={item.sku}
+                    onChange={(e) => handleSkuChange(index, e.target.value)}
+                    onBlur={(e) => handleSkuBlur(index, e.target.value)}
+                    className="w-full bg-surface border border-outline-variant rounded-none px-3 py-2.5 text-sm font-body-md text-charcoal-text focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald transition-colors"
+                    placeholder="Auto-filled"
+                  />
+                  {skuErrors[index] && (
+                    <p className="mt-1 text-xs text-error">{skuErrors[index]}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2 text-[11px]">Qty</label>

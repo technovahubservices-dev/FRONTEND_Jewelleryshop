@@ -79,6 +79,7 @@ export default function CreateQuotation() {
   const [items, setItems] = useState(initialItems)
   const [notes, setNotes] = useState(initialNotes)
   const [status, setStatus] = useState(initialStatus)
+  const [skuErrors, setSkuErrors] = useState({})
 
   const [excelPreview, setExcelPreview] = useState([])
   const [excelError, setExcelError] = useState('')
@@ -154,40 +155,106 @@ export default function CreateQuotation() {
   }
 
   const updateItem = (index, field, value) => {
-    const updated = [...items]
-    updated[index] = { ...updated[index], [field]: value }
+    setItems((prev) => {
+      const updated = [...prev]
+      updated[index] = { ...updated[index], [field]: value }
 
-    if (field === 'productId') {
-      const selected = products.find((p) => (p._id || p.id) === value)
-      if (selected) {
-        updated[index].productName = selected.name || ''
-        updated[index].sku = selected.SKU || selected.sku || ''
-        updated[index].price = Number(selected.price) || 0
-        updated[index].discount = 0
-        updated[index].gst = DEFAULT_GST
-      }
-    }
-
-    if (field === 'sku') {
-      const trimmed = String(value || '').trim()
-      if (trimmed) {
-        const matched = products.find((p) => (p.SKU || p.sku || '').toLowerCase() === trimmed.toLowerCase())
-        if (matched && matched._id && matched._id !== updated[index].productId) {
-          updated[index].productId = matched._id || matched.id || ''
-          updated[index].productName = matched.name || ''
-          updated[index].price = Number(matched.price) || 0
+      if (field === 'productId') {
+        const selected = products.find((p) => (p._id || p.id) === value)
+        if (selected) {
+          updated[index].productName = selected.name || ''
+          updated[index].sku = selected.SKU || selected.sku || ''
+          updated[index].price = Number(selected.price) || 0
           updated[index].discount = 0
           updated[index].gst = DEFAULT_GST
         }
       }
+
+      if (field === 'sku') {
+        const trimmed = String(value || '').trim()
+        if (trimmed) {
+          const matched = products.find((p) => (p.SKU || p.sku || '').toLowerCase() === trimmed.toLowerCase())
+          if (matched && (matched._id || matched.id) && (matched._id || matched.id) !== updated[index].productId) {
+            updated[index].productId = matched._id || matched.id || ''
+            updated[index].productName = matched.name || ''
+            updated[index].price = Number(matched.price) || 0
+            updated[index].discount = 0
+            updated[index].gst = DEFAULT_GST
+          }
+        }
+      }
+
+      const numericFields = ['qty', 'price', 'gst', 'discount']
+      if (numericFields.includes(field)) {
+        updated[index][field] = Number(value) || 0
+      }
+
+      return updated
+    })
+  }
+
+  const handleSkuLookup = async (index, sku) => {
+    const trimmed = String(sku || '').trim()
+    if (!trimmed) {
+      setSkuErrors((prev) => {
+        const copy = { ...prev }
+        delete copy[index]
+        return copy
+      })
+      return
     }
 
-    const numericFields = ['qty', 'price', 'gst', 'discount']
-    if (numericFields.includes(field)) {
-      updated[index][field] = Number(value) || 0
+    const matchedLocal = products.find(
+      (p) => (p.SKU || p.sku || '').toLowerCase() === trimmed.toLowerCase()
+    )
+    if (matchedLocal) {
+      setSkuErrors((prev) => {
+        const copy = { ...prev }
+        delete copy[index]
+        return copy
+      })
+      return
     }
 
-    setItems(updated)
+    try {
+      const response = await productAPI.getBySku(trimmed)
+      if (response.data?.success && response.data?.data) {
+        const product = productAPI.transform(response.data.data)
+        setItems((prev) => {
+          const updated = [...prev]
+          updated[index] = {
+            ...updated[index],
+            productId: product.id || '',
+            productName: product.name || '',
+            sku: product.SKU || product.sku || '',
+            price: Number(product.price) || 0,
+            discount: 0,
+            gst: DEFAULT_GST,
+          }
+          return updated
+        })
+        setSkuErrors((prev) => {
+          const copy = { ...prev }
+          delete copy[index]
+          return copy
+        })
+      } else {
+        throw new Error('Product not found')
+      }
+    } catch (err) {
+      setItems((prev) => {
+        const updated = [...prev]
+        updated[index] = {
+          ...updated[index],
+          productId: '',
+          productName: '',
+          sku: trimmed,
+          price: 0,
+        }
+        return updated
+      })
+      setSkuErrors((prev) => ({ ...prev, [index]: 'SKU not found. Please check the SKU and try again.' }))
+    }
   }
 
   const handleExcelUpload = async (file) => {
@@ -464,9 +531,11 @@ export default function CreateQuotation() {
           <QuotationItemTable
             items={items}
             products={products}
+            skuErrors={skuErrors}
             onAddItem={addItem}
             onRemoveItem={removeItem}
             onUpdateItem={updateItem}
+            onSkuLookup={handleSkuLookup}
           />
         </div>
 

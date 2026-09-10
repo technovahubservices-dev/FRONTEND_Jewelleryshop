@@ -57,6 +57,8 @@ export const productAPI = {
     api.put(`/products/${id}`, formData),
   checkSku: (sku) =>
     api.get('/products/check-sku', { params: { sku } }),
+  getBySku: (sku) =>
+    api.get(`/products/sku/${encodeURIComponent(sku)}`),
   delete: (id) => api.delete(`/products/${id}`),
   transform: (p) => ({
     id: p._id,
