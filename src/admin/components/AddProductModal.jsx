@@ -95,6 +95,50 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     };
   }, []);
 
+  useEffect(() => {
+    if (isOpen && isEdit && product) {
+      setFormData({
+        name: product.name || '',
+        sku: product.sku || '',
+        description: product.description || '',
+        price: product.price || '',
+        discountPrice: product.discountPrice || '',
+        stock: product.stock || '',
+        category: product.category || '',
+        subcategory: product.subcategory || '',
+        metal: product.metal || '',
+        collection: product.collection || '',
+        occasion: product.occasion || '',
+        bridal: product.bridal || false,
+        wedding: product.wedding || false,
+        status: product.status || 'active',
+        isFeatured: product.isFeatured || false,
+        isBestSeller: product.isBestSeller || false,
+        isNewArrival: product.isNewArrival || false,
+      });
+      setImageState({
+        files: [],
+        existingImages: [...(product.images || [])],
+        previews: [],
+        primaryIndex: 0,
+      });
+      setErrors({});
+      setApiError('');
+      setSkuError('');
+    } else if (isOpen && !isEdit) {
+      setFormData({ ...initialFormState });
+      setImageState({
+        files: [],
+        existingImages: [],
+        previews: [],
+        primaryIndex: 0,
+      });
+      setErrors({});
+      setApiError('');
+      setSkuError('');
+    }
+  }, [product, isOpen, isEdit]);
+
   const generateSkuPrefix = useCallback((name, category, metal) => {
     const metalMap = {
       Gold: 'GOLD',

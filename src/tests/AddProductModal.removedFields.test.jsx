@@ -9,7 +9,10 @@ vi.mock('../services/api', () => ({
     update: vi.fn(() => Promise.resolve({ data: { success: true, data: { _id: 'x' } } })),
   },
   categoryAPI: {
-    getAll: vi.fn(() => Promise.resolve({ data: { success: true, data: [] } })),
+    getAll: vi.fn(() => Promise.resolve({ data: { success: true, data: [
+      { _id: 'cat1', name: 'Rings', slug: 'rings', isActive: true },
+      { _id: 'cat2', name: 'Necklaces', slug: 'necklaces', isActive: true },
+    ] } })),
   },
 }));
 
@@ -98,23 +101,152 @@ describe('Add New Jewellery Product — removed fields', () => {
     }
   });
 
-  it('API payload does not include any of the 7 removed field keys', async () => {
-    renderModal();
-    await waitFor(() => {
-      expect(screen.getByText('Add New Jewellery Product')).toBeInTheDocument();
+   it('API payload does not include any of the 7 removed field keys', async () => {
+     renderModal();
+     await waitFor(() => {
+       expect(screen.getByText('Add New Jewellery Product')).toBeInTheDocument();
+     });
+
+     const inputs = Array.from(document.querySelectorAll('form input, form select, form textarea'));
+     const inputNames = inputs.map((el) => el.getAttribute('name')).filter(Boolean);
+
+     const forbiddenKeys = [
+       'jewelleryCollection', 'purity', 'weight',
+       'diamondWeight', 'diamondShape', 'diamondClarity', 'diamondColor',
+       'tags',
+       'stoneWeight', 'stoneShape', 'stoneClarity', 'stoneColor',
+     ];
+     for (const key of forbiddenKeys) {
+       expect(inputNames, `Modal must not contain input/select with name="${key}"`).not.toContain(key);
+     }
+   });
+ });
+
+ describe('AddProductModal — Edit Product sync', () => {
+   beforeEach(() => {
+     vi.clearAllMocks();
+   });
+
+   it('populates form fields with product details when editing', async () => {
+     const product = {
+       _id: 'p1',
+       name: 'Diamond Ring',
+       sku: 'RING-001',
+       description: 'A beautiful ring',
+       price: 5000,
+       discountPrice: 4500,
+       stock: 10,
+       category: 'Rings',
+       subcategory: 'Engagement Rings',
+       metal: 'Gold',
+       collection: 'Heritage',
+       occasion: 'Bridal',
+       bridal: true,
+       wedding: false,
+       status: 'active',
+       isFeatured: true,
+       isBestSeller: false,
+       isNewArrival: true,
+       images: ['https://example.com/ring1.jpg', 'https://example.com/ring2.jpg'],
+     };
+     renderModal({ product });
+     await waitFor(() => {
+       expect(screen.getByText('Edit Product')).toBeInTheDocument();
+     });
+
+     expect(screen.getByDisplayValue('Diamond Ring')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('RING-001')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('5000')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('4500')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('10')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('Engagement Rings')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('A beautiful ring')).toBeInTheDocument();
+
+     const categorySelect = screen.getByDisplayValue('Rings');
+     expect(categorySelect).toBeInTheDocument();
+
+     const metalSelect = screen.getByDisplayValue('Gold');
+     expect(metalSelect).toBeInTheDocument();
+
+     const collectionSelect = screen.getByDisplayValue('Heritage');
+     expect(collectionSelect).toBeInTheDocument();
+
+     const occasionSelect = screen.getByDisplayValue('Bridal');
+     expect(occasionSelect).toBeInTheDocument();
+
+      const statusSelect = document.querySelector('select[name="status"]');
+      expect(statusSelect).toBeInTheDocument();
+      expect(statusSelect.value).toBe('active');
+
+      const bridalCheckbox = document.querySelector('input[name="bridal"]');
+     expect(bridalCheckbox).toBeChecked();
+
+     const weddingCheckbox = document.querySelector('input[name="wedding"]');
+     expect(weddingCheckbox).not.toBeChecked();
+
+     const featuredCheckbox = document.querySelector('input[name="isFeatured"]');
+     expect(featuredCheckbox).toBeChecked();
+
+     const bestSellerCheckbox = document.querySelector('input[name="isBestSeller"]');
+     expect(bestSellerCheckbox).not.toBeChecked();
+
+     const newArrivalCheckbox = document.querySelector('input[name="isNewArrival"]');
+     expect(newArrivalCheckbox).toBeChecked();
+
+     const images = document.querySelectorAll('img[alt^="Product"]');
+     expect(images.length).toBe(2);
+   });
+
+   it('updates form fields when switching to a different product while modal is open', async () => {
+     const productA = {
+       _id: 'p1',
+       name: 'Ring A',
+       sku: 'RING-A',
+       price: 1000,
+       stock: 5,
+       category: 'Rings',
+       metal: 'Gold',
+       collection: 'Heritage',
+       occasion: 'Bridal',
+       status: 'active',
+       images: ['https://example.com/ringA.jpg'],
+     };
+     const { rerender } = render(
+       <AddProductModal isOpen onClose={() => {}} onSaved={() => {}} product={productA} />
+     );
+     await waitFor(() => {
+       expect(screen.getByText('Edit Product')).toBeInTheDocument();
+     });
+     expect(screen.getByDisplayValue('Ring A')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('RING-A')).toBeInTheDocument();
+
+     const productB = {
+       _id: 'p2',
+       name: 'Necklace B',
+       sku: 'NECK-B',
+       price: 3000,
+       stock: 20,
+       category: 'Necklaces',
+       metal: 'Silver',
+       collection: 'Eternal',
+       occasion: 'Festive',
+       status: 'inactive',
+       images: ['https://example.com/neckB.jpg'],
+     };
+     rerender(<AddProductModal isOpen onClose={() => {}} onSaved={() => {}} product={productB} />);
+     await waitFor(() => {
+       expect(screen.getByDisplayValue('Necklace B')).toBeInTheDocument();
+     });
+
+     expect(screen.getByDisplayValue('NECK-B')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('3000')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('20')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('Necklaces')).toBeInTheDocument();
+     expect(screen.getByDisplayValue('Silver')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Eternal')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('Festive')).toBeInTheDocument();
+
+      const statusSelect = document.querySelector('select[name="status"]');
+      expect(statusSelect.value).toBe('inactive');
     });
-
-    const inputs = Array.from(document.querySelectorAll('form input, form select, form textarea'));
-    const inputNames = inputs.map((el) => el.getAttribute('name')).filter(Boolean);
-
-    const forbiddenKeys = [
-      'jewelleryCollection', 'purity', 'weight',
-      'diamondWeight', 'diamondShape', 'diamondClarity', 'diamondColor',
-      'tags',
-      'stoneWeight', 'stoneShape', 'stoneClarity', 'stoneColor',
-    ];
-    for (const key of forbiddenKeys) {
-      expect(inputNames, `Modal must not contain input/select with name="${key}"`).not.toContain(key);
-    }
-  });
-});
+ });
