@@ -208,6 +208,19 @@ export default function CreateQuotation() {
       (p) => (p.SKU || p.sku || '').toLowerCase() === trimmed.toLowerCase()
     )
     if (matchedLocal) {
+      setItems((prev) => {
+        const updated = [...prev]
+        updated[index] = {
+          ...updated[index],
+          productId: matchedLocal.id || '',
+          productName: matchedLocal.name || '',
+          sku: matchedLocal.SKU || matchedLocal.sku || '',
+          price: Number(matchedLocal.price) || 0,
+          discount: 0,
+          gst: DEFAULT_GST,
+        }
+        return updated
+      })
       setSkuErrors((prev) => {
         const copy = { ...prev }
         delete copy[index]

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { productAPI, categoryAPI } from '../../services/api';
+import { resolveImageUrl } from '../../utils/apiUrl';
 
 const METALS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold'];
 const STATUS_OPTIONS = [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Disabled' }, { value: 'draft', label: 'Draft' }];
@@ -58,7 +59,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
 
   const [imageState, setImageState] = useState({
     files: [],
-    existingImages: product ? [...(product.images || [])] : [],
+    existingImages: product ? (product.images || []).map((img) => (typeof img === 'string' ? img : (img?.url || img))).filter(Boolean) : [],
     previews: [],
     primaryIndex: 0,
   });
@@ -67,7 +68,6 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
-  const [skuLoading, setSkuLoading] = useState(false);
   const [skuCheckLoading, setSkuCheckLoading] = useState(false);
   const [skuError, setSkuError] = useState('');
   const skuDebounceRef = useRef(null);
@@ -118,7 +118,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
       });
       setImageState({
         files: [],
-        existingImages: [...(product.images || [])],
+        existingImages: (product.images || []).map((img) => (typeof img === 'string' ? img : (img?.url || img))).filter(Boolean),
         previews: [],
         primaryIndex: 0,
       });
@@ -138,71 +138,6 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
       setSkuError('');
     }
   }, [product, isOpen, isEdit]);
-
-  const generateSkuPrefix = useCallback((name, category, metal) => {
-    const metalMap = {
-      Gold: 'GOLD',
-      Silver: 'SILV',
-      Platinum: 'PLAT',
-      'Rose Gold': 'RPG',
-      'White Gold': 'WGLD',
-    };
-
-    const categoryMap = {
-      Rings: 'RNG',
-      Necklaces: 'NEC',
-      Earrings: 'ERG',
-      Bracelets: 'BRC',
-      Bangles: 'BNG',
-      Chains: 'CHN',
-      Sets: 'SET',
-    };
-
-    const metalCode = metalMap[metal] || 'PRD';
-    const categoryCode = categoryMap[category] || 'PRD';
-
-    return `${metalCode}-${categoryCode}`;
-  }, []);
-
-  const autoGenerateSku = useCallback(async (name, category, metal) => {
-    if (isEdit) return;
-    if (!name || !category) return;
-
-    setSkuLoading(true);
-    const prefix = generateSkuPrefix(name, category, metal);
-    try {
-      const existing = await productAPI.getAll({ search: prefix });
-      let num = 1;
-      const items = existing.data.data || [];
-      const regex = new RegExp(`^${prefix}-(\\d{3})$`);
-      const skus = items
-        .map((p) => p.sku)
-        .filter((s) => s && regex.test(s))
-        .map((s) => parseInt(s.match(regex)[1], 10));
-      if (skus.length > 0) {
-        num = Math.max(...skus) + 1;
-      }
-      const nextSku = `${prefix}-${num.toString().padStart(3, '0')}`;
-      setFormData((prev) => ({
-        ...prev,
-        sku: nextSku,
-      }));
-    } catch (err) {
-      setFormData((prev) => ({
-        ...prev,
-        sku: `${prefix}-001`,
-      }));
-    } finally {
-      setSkuLoading(false);
-    }
-  }, [isEdit, generateSkuPrefix]);
-
-  useEffect(() => {
-    if (!isEdit && formData.name && formData.category && formData.metal) {
-      autoGenerateSku(formData.name, formData.category, formData.metal);
-    }
-   }, [formData.name, formData.category, formData.metal, isEdit, autoGenerateSku]);
-
   /* =========================================================
      SKU AVAILABILITY CHECK
      ========================================================= */
@@ -548,16 +483,9 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                   <span className="animate-spin w-3 h-3 border-2 border-on-surface-variant border-t-transparent rounded-full"></span>
                   Checking SKU availability...
                 </p>
-              )}
-              {!isEdit && formData.category && formData.metal ? (
-                <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
-                  {skuLoading ? 'Generating...' : `Auto-generated: ${formData.sku}`}
-                </p>
-              ) : (
-                <p className="text-xs text-on-surface-variant mt-1">
-                  SKU auto-generates when name, category, and metal are filled
-                </p>
-              )}
+              )}              <p className="text-xs text-on-surface-variant mt-1">
+                SKU is generated automatically by the backend when left blank
+              </p>
             </div>
           </div>
 
@@ -884,7 +812,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                       }`}
                     >
                       <img
-                        src={img}
+                        src={typeof img === 'string' ? (img.startsWith('blob:') ? img : resolveImageUrl(img)) : resolveImageUrl(img?.url || '')}
                         alt={`Product ${idx + 1}`}
                         className="w-full h-24 object-cover"
                         onError={(e) => {
@@ -952,3 +880,6 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     </div>
   );
 }
+
+
+

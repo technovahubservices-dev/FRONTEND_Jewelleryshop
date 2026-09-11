@@ -22,14 +22,6 @@ export default function QuotationItemTable({ items, products, skuErrors, onAddIt
 
   const handleSkuChange = (index, value) => {
     onUpdateItem(index, 'sku', value)
-    const trimmed = String(value || '').trim()
-    if (trimmed) {
-      const matched = localProducts.find((p) => (p.SKU || p.sku || '').toLowerCase() === trimmed.toLowerCase())
-      if (matched && (matched._id || matched.id) && (matched._id || matched.id) !== items[index]?.productId) {
-        onUpdateItem(index, 'productId', matched._id || matched.id || '')
-        fillFromProduct(index, matched)
-      }
-    }
   }
 
   const handleSkuBlur = (index, value) => {

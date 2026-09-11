@@ -2,7 +2,7 @@
 import { formatCurrency, formatDate, calculateLineItem } from '../../utils/formatters'
 import { resolveImageUrl, getBackendOrigin } from '../../utils/apiUrl'
 import { storeAPI, orderAPI } from '../../services/api'
-import logo from '../../../assets/icons/logo.jpeg'
+import logo from '../../assets/icons/logo.jpeg'
 
 const printStyles = `
   @media print {
