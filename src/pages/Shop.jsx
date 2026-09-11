@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+﻿import { useState, useMemo, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { productAPI, categoryAPI, contentAPI } from '../services/api'
 import { resolveImageUrl } from '../utils/apiUrl'
@@ -16,8 +16,6 @@ const OCCASION_OPTIONS = [
 
 const METAL_OPTIONS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold']
 
-const PURITY_OPTIONS = ['22K', '18K', '14K', '10K', '24K', 'Sterling Silver', 'Platinum']
-
 export default function Shop() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -30,13 +28,20 @@ export default function Shop() {
   const [currentPage, setCurrentPage] = useState(1)
   const productsPerPage = 12
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false)
+  const [sortBy, setSortBy] = useState('recommended')
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalProducts, setTotalProducts] = useState(0)
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const params = {}
+        const params = {
+          sort: sortBy,
+          page: currentPage,
+          limit: productsPerPage,
+        }
         searchParams.forEach((value, key) => {
-          if (key === 'category' || key === 'collection' || key === 'occasion' || key === 'metal' || key === 'purity') {
+          if (key === 'category' || key === 'collection' || key === 'occasion' || key === 'metal') {
             params[key] = value
           } else if (key === 'bridal' || key === 'wedding' || key === 'sale') {
             params[key] = value === 'true'
@@ -46,6 +51,13 @@ export default function Shop() {
         if (response.data.success) {
           const transformed = response.data.data.map(productAPI.transform)
           setProducts(transformed)
+          if (response.data.pagination) {
+            setTotalPages(response.data.pagination.totalPages || 1)
+            setTotalProducts(response.data.pagination.total || transformed.length)
+          } else {
+            setTotalPages(Math.max(1, Math.ceil(transformed.length / productsPerPage)))
+            setTotalProducts(transformed.length)
+          }
         }
       } catch (err) {
         console.error('Failed to fetch products:', err)
@@ -82,11 +94,15 @@ export default function Shop() {
     fetchProducts()
     fetchCategories()
     fetchCollections()
-  }, [searchParams])
+  }, [searchParams, sortBy, currentPage])
 
   useEffect(() => {
     setCurrentPage(1)
   }, [searchParams])
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [sortBy])
 
   const filters = useMemo(() => {
     return {
@@ -94,7 +110,6 @@ export default function Shop() {
       collection: searchParams.getAll('collection'),
       occasion: searchParams.getAll('occasion'),
       metal: searchParams.getAll('metal'),
-      purity: searchParams.getAll('purity'),
       bridal: searchParams.get('bridal') === 'true',
       wedding: searchParams.get('wedding') === 'true',
       sale: searchParams.get('sale') === 'true',
@@ -110,11 +125,6 @@ export default function Shop() {
       .map(p => (p.metal || '').split(',')[0].trim())
       .filter(Boolean)
     return [...new Set(metals)]
-  }, [products])
-
-  const availablePurities = useMemo(() => {
-    const purities = products.map(p => p.purity).filter(Boolean)
-    return [...new Set(purities)]
   }, [products])
 
   const availableCollections = useMemo(() => {
@@ -137,17 +147,16 @@ export default function Shop() {
 
     const params = new URLSearchParams()
 
-    if (type === 'category' || type === 'collection' || type === 'occasion' || type === 'metal' || type === 'purity') {
+    if (type === 'category' || type === 'collection' || type === 'occasion' || type === 'metal') {
       updated.forEach(v => params.append(type, v))
     }
 
     const otherTypes = {
-      category: ['collection', 'occasion', 'metal', 'purity'],
-      collection: ['category', 'occasion', 'metal', 'purity'],
-      occasion: ['category', 'collection', 'metal', 'purity'],
-      metal: ['category', 'collection', 'occasion', 'purity'],
-      purity: ['category', 'collection', 'occasion', 'metal'],
-    }[type] || ['category', 'collection', 'occasion', 'metal', 'purity']
+      category: ['collection', 'occasion', 'metal'],
+      collection: ['category', 'occasion', 'metal'],
+      occasion: ['category', 'collection', 'metal'],
+      metal: ['category', 'collection', 'occasion'],
+    }[type] || ['category', 'collection', 'occasion', 'metal']
 
     otherTypes.forEach(t => {
       const vals = Array.isArray(filters[t]) ? filters[t] : []
@@ -166,7 +175,7 @@ export default function Shop() {
   const toggleBooleanFilter = (key) => {
     const params = new URLSearchParams()
 
-    ;['category', 'collection', 'occasion', 'metal', 'purity'].forEach(t => {
+    ;['category', 'collection', 'occasion', 'metal'].forEach(t => {
       const vals = Array.isArray(filters[t]) ? filters[t] : []
       vals.forEach(v => params.append(t, v))
     })
@@ -186,7 +195,7 @@ export default function Shop() {
   const setPriceRange = (min, max) => {
     const params = new URLSearchParams()
 
-    ;['category', 'collection', 'occasion', 'metal', 'purity'].forEach(t => {
+    ;['category', 'collection', 'occasion', 'metal'].forEach(t => {
       const vals = Array.isArray(filters[t]) ? filters[t] : []
       vals.forEach(v => params.append(t, v))
     })
@@ -210,34 +219,11 @@ export default function Shop() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const categoryMatch = filters.category.length === 0 || filters.category.some(c => product.category === c || product.subcategory === c)
-      const collectionMatch = filters.collection.length === 0 || filters.collection.some(c => product.collection === c)
-      const occasionMatch = filters.occasion.length === 0 || filters.occasion.includes(product.occasion)
-      const metalMatch = filters.metal.length === 0 || filters.metal.some(m => product.metal.includes(m))
-      const purityMatch = filters.purity.length === 0 || filters.purity.includes(product.purity)
-      const priceMatch = product.price >= filters.priceRange[0] && product.price <= filters.priceRange[1]
-      const bridalMatch = !filters.bridal || product.bridal === true
-      const weddingMatch = !filters.wedding || product.wedding === true
-      const saleMatch = !filters.sale || product.isOnSale
-
-      return (
-        categoryMatch && collectionMatch && occasionMatch &&
-        metalMatch && purityMatch && priceMatch &&
-        bridalMatch && weddingMatch && saleMatch
-      )
-    })
-  }, [products, filters])
-
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / productsPerPage))
-  const startIndex = (currentPage - 1) * productsPerPage
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + productsPerPage)
+  const filteredProducts = products
 
   const activeFilterCount =
     filters.category.length + filters.collection.length + filters.occasion.length +
-    filters.metal.length + filters.purity.length +
-    (filters.bridal ? 1 : 0) + (filters.wedding ? 1 : 0) + (filters.sale ? 1 : 0) +
+    filters.metal.length +
     (filters.priceRange[0] > 0 ? 1 : 0) + (filters.priceRange[1] < 10000 ? 1 : 0)
 
   const handleCollectionClick = (collectionName) => {
@@ -271,13 +257,17 @@ export default function Shop() {
                 <p className="text-on-surface-variant mt-2 max-w-2xl">Discover our exquisite range of handcrafted pieces, designed to celebrate every moment with timeless elegance.</p>
               </div>
               <div className="flex items-center space-x-4">
-                <span className="text-on-surface-variant">Showing 1-{filteredProducts.length} of {products.length} Items</span>
+                <span className="text-on-surface-variant">Showing {Math.min(filteredProducts.length, (currentPage - 1) * productsPerPage + 1)}-{Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts} Items</span>
                 <div className="relative">
-                  <select className="appearance-none bg-transparent border border-outline-variant rounded-none py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald cursor-pointer">
-                    <option>Sort by: Recommended</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                    <option>New Arrivals</option>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="appearance-none bg-transparent border border-outline-variant rounded-none py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald cursor-pointer"
+                  >
+                    <option value="recommended">Sort by: Recommended</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="new_arrival">New Arrivals</option>
                   </select>
                   <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
                 </div>
@@ -466,26 +456,6 @@ export default function Shop() {
                   </div>
                 </div>
 
-                {/* Purity Filter */}
-                <div>
-                  <h3 className="font-headline-md text-sm font-semibold text-charcoal-text uppercase tracking-widest mb-4 border-b border-outline-variant pb-2 flex justify-between items-center cursor-pointer">
-                    Purity <span className="material-symbols-outlined text-[18px]">remove</span>
-                  </h3>
-                  <div className="space-y-3">
-                    {availablePurities.map((purity) => (
-                      <label key={purity} className="flex items-center space-x-3 cursor-pointer group">
-                        <input
-                          checked={filters.purity.includes(purity)}
-                          onChange={() => toggleCheckboxFilter('purity', purity)}
-                          className="form-checkbox h-4 w-4 text-deep-emerald border-outline-variant rounded-none focus:ring-deep-emerald"
-                          type="checkbox"
-                        />
-                        <span className="text-on-surface-variant group-hover:text-charcoal-text transition-colors">{purity}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Price Filter */}
                 <div>
                   <h3 className="font-headline-md text-sm font-semibold text-charcoal-text uppercase tracking-widest mb-4 border-b border-outline-variant pb-2 flex justify-between items-center cursor-pointer">
@@ -501,8 +471,8 @@ export default function Shop() {
                       className="w-full h-2 bg-outline-variant rounded-full accent-deep-emerald cursor-pointer"
                     />
                     <div className="flex justify-between text-xs text-on-surface-variant mt-2">
-                      <span>₹{filters.priceRange[0]}</span>
-                      <span>₹{filters.priceRange[1]}</span>
+                      <span>â‚¹{filters.priceRange[0]}</span>
+                      <span>â‚¹{filters.priceRange[1]}</span>
                     </div>
                   </div>
                 </div>
@@ -536,7 +506,7 @@ export default function Shop() {
               ) : (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {paginatedProducts.map((product) => (
+                    {filteredProducts.map((product) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
                   </div>
@@ -546,15 +516,23 @@ export default function Shop() {
                     <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="w-10 h-10 border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-deep-emerald hover:border-deep-emerald transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       <span className="material-symbols-outlined text-[18px]">chevron_left</span>
                     </button>
-                    {[1, 2, 3].map((page) => (
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      if (totalPages <= 5) return i + 1
+                      const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+                      return start + i
+                    }).map((page) => (
                       <button key={page} onClick={() => goToPage(page)} className={`w-10 h-10 border flex items-center justify-center text-sm transition-colors ${currentPage === page ? 'border-deep-emerald bg-deep-emerald text-surface-white' : 'border-outline-variant text-charcoal-text hover:text-deep-emerald hover:border-deep-emerald'}`}>
                         {page}
                       </button>
                     ))}
-                    <span className="px-2 text-on-surface-variant">...</span>
-                    <button onClick={() => goToPage(totalPages)} className={`w-10 h-10 border flex items-center justify-center text-sm transition-colors ${currentPage === totalPages ? 'border-deep-emerald bg-deep-emerald text-surface-white' : 'border-outline-variant text-charcoal-text hover:text-deep-emerald hover:border-deep-emerald'}`}>
-                      {totalPages}
-                    </button>
+                    {totalPages > 6 && (
+                      <>
+                        <span className="px-2 text-on-surface-variant">...</span>
+                        <button onClick={() => goToPage(totalPages)} className={`w-10 h-10 border flex items-center justify-center text-sm transition-colors ${currentPage === totalPages ? 'border-deep-emerald bg-deep-emerald text-surface-white' : 'border-outline-variant text-charcoal-text hover:text-deep-emerald hover:border-deep-emerald'}`}>
+                          {totalPages}
+                        </button>
+                      </>
+                    )}
                     <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="w-10 h-10 border border-outline-variant flex items-center justify-center text-on-surface-variant hover:text-deep-emerald hover:border-deep-emerald transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       <span className="material-symbols-outlined text-[18px]">chevron_right</span>
                     </button>
@@ -568,3 +546,11 @@ export default function Shop() {
     </main>
   )
 }
+
+
+
+
+
+
+
+

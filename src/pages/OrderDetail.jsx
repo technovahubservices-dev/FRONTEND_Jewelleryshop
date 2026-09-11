@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { orderAPI } from '../services/api'
 import { formatDate, formatCurrency } from '../utils/formatters'
 import { resolveImageUrl } from '../utils/apiUrl'
+import InvoicePreview from '../components/invoice/InvoicePreview'
 
 const ORDER_STEPS = [
   { value: 'new', label: 'Order Placed' },
@@ -58,6 +59,7 @@ export default function OrderDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [downloadingInvoice, setDownloadingInvoice] = useState(false)
+  const [showInvoicePreview, setShowInvoicePreview] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -116,17 +118,9 @@ export default function OrderDetail() {
     }
   }
 
-  const handleViewInvoice = async () => {
+  const handleViewInvoice = () => {
     if (!order) return
-    try {
-      const response = await orderAPI.downloadInvoice(orderId)
-      const blob = new Blob([response.data], { type: 'application/pdf' })
-      const url = window.URL.createObjectURL(blob)
-      window.open(url, '_blank')
-      setTimeout(() => window.URL.revokeObjectURL(url), 300000)
-    } catch (err) {
-      setError('Failed to open invoice')
-    }
+    setShowInvoicePreview(true)
   }
 
   const getCurrentStepIndex = (status) => {
@@ -462,7 +456,7 @@ export default function OrderDetail() {
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="font-body-md text-body-md text-primary">
-                          {formatCurrency(item.price)} × {item.quantity}
+                          {formatCurrency(item.price)} Ã— {item.quantity}
                         </p>
                         <p className="font-semibold text-deep-emerald">
                           {formatCurrency((item.price * item.quantity))}
@@ -508,6 +502,14 @@ export default function OrderDetail() {
             </div>
           </div>
         </div>
+      )}
+      {order && (
+        <InvoicePreview
+          open={showInvoicePreview}
+          onClose={() => setShowInvoicePreview(false)}
+          orderId={orderId}
+          order={order}
+        />
       )}
     </main>
   )

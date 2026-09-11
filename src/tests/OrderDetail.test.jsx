@@ -60,6 +60,10 @@ vi.mock('../utils/apiUrl', () => ({
   resolveImageUrl: vi.fn((url) => url || ''),
 }));
 
+vi.mock('../components/invoice/InvoicePreview', () => ({
+  default: () => <div data-testid="invoice-preview" />,
+}));
+
 vi.mock('../components/products/ProductCard', () => ({
   default: ({ product }) => <div data-testid="product-card">{product.name}</div>,
 }));

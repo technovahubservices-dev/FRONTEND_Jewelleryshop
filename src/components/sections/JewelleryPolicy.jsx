@@ -49,6 +49,7 @@ const DEFAULT_POLICY_SECTIONS = [
 export default function JewelleryPolicy() {
   const [policyContent, setPolicyContent] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [expandedId, setExpandedId] = useState(null)
 
   useEffect(() => {
     const fetchPolicy = async () => {
@@ -70,6 +71,10 @@ export default function JewelleryPolicy() {
   const sectionTitle = policyContent?.title || 'Our Jewellery Policy'
   const sectionDescription = policyContent?.description || 'Your satisfaction and trust are our priority. We stand behind the quality and craftsmanship of every piece we create.'
 
+  const toggleSection = (id) => {
+    setExpandedId(expandedId === id ? null : id)
+  }
+
   return (
     <section className="mb-24">
       <div className="text-center mb-12">
@@ -83,23 +88,41 @@ export default function JewelleryPolicy() {
 
       <div className="bg-surface-white border border-outline-variant/30 rounded-2xl shadow-sm p-6 md:p-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-          {sections.map((section) => (
-            <div key={section.id} className="flex gap-4">
-              <div className="flex-shrink-0">
-                <span className="material-symbols-outlined text-3xl text-regal-gold">
-                  {section.icon || 'check_circle'}
-                </span>
+          {sections.map((section) => {
+            const isOpen = expandedId === section.id
+            return (
+              <div key={section.id} className="flex gap-4">
+                <div className="flex-shrink-0">
+                  <span className="material-symbols-outlined text-3xl text-regal-gold">
+                    {section.icon || 'check_circle'}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <button
+                    type="button"
+                    onClick={() => toggleSection(section.id)}
+                    className="flex items-center justify-between w-full text-left"
+                  >
+                    <h3 className="font-headline-md text-lg text-deep-emerald mb-2">
+                      {section.title}
+                    </h3>
+                    <span className="material-symbols-outlined text-on-surface-variant transition-transform">
+                      {isOpen ? 'expand_less' : 'expand_more'}
+                    </span>
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ${
+                      isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed pt-2">
+                      {section.content}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="font-headline-md text-lg text-deep-emerald mb-2">
-                  {section.title}
-                </h3>
-                <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
-                  {section.content}
-                </p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>

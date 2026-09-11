@@ -215,4 +215,9 @@ export const adminSettingsAPI = {
   changePassword: (data) => api.put('/admin/settings/password', data),
 };
 
+// Public Store API
+export const storeAPI = {
+  getSettings: () => api.get('/store/settings'),
+};
+
 export default api;
