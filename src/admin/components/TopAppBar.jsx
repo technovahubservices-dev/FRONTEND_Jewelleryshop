@@ -62,9 +62,7 @@ export default function TopAppBar({ onMenuClick }) {
               }`}
             ></span>
 
-            <span className="text-gray-600">
-              Google Drive
-            </span>
+           
 
             <span
               className={`font-medium ${
