@@ -485,7 +485,7 @@ export default function Quotations() {
             <table className="w-full text-left border-collapse min-w-[1200px]">
               <thead>
                 <tr className="bg-surface-container-low border-b border-outline-variant">
-                  <th className="py-4 pl-6 pr-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Quotation Number</th>
+                  <th className="py-4 pl-6 pr-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">S.No</th><th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Quotation No</th>
                   <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Customer Name</th>
                   <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Date</th>
                   <th className="py-4 px-4 font-label-caps text-[11px] text-on-surface-variant tracking-wider uppercase">Valid Until</th>
@@ -495,7 +495,7 @@ export default function Quotations() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/50 font-body-md text-sm">
-                {filteredQuotations.map((quotation) => (
+                {filteredQuotations.map((quotation, index) => (
                   <tr key={quotation._id} className="table-row-hover bg-surface-white group">
                     <td className="py-4 pl-6 pr-4 font-medium text-deep-emerald">
                       {quotation.quotationNumber}
@@ -503,9 +503,9 @@ export default function Quotations() {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-xs font-bold text-deep-emerald">
-                          {quotation.customerName?.charAt(0) || '?'}
+                          {quotation.customer?.name?.charAt(0) || '?'}
                         </div>
-                        <span className="truncate max-w-[180px]">{quotation.customerName}</span>
+                        <span className="truncate max-w-[180px]">{quotation.customer?.name || '-'}</span>
                       </div>
                     </td>
                     <td className="py-4 px-4 text-on-surface text-xs whitespace-nowrap">{formatDate(quotation.date)}</td>
@@ -616,7 +616,7 @@ export default function Quotations() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Customer Name</p>
-                    <p className="text-sm font-body-md text-charcoal-text">{viewQuotation.customerName}</p>
+                    <p className="text-sm font-body-md text-charcoal-text">{viewquotation.customer?.name || '}</p>
                   </div>
                   <div>
                     <p className="text-xs font-label-caps text-on-surface-variant uppercase tracking-wider mb-1">Email</p>
@@ -686,3 +686,4 @@ export default function Quotations() {
     </div>
   )
 }
+
