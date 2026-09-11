@@ -6,15 +6,60 @@ export default function SideNavBar({ isOpen, onClose }) {
   const { logout } = useAuth()
 
   const navItems = [
-    { name: 'Dashboard', icon: 'fa-solid fa-gauge-high', path: '/admin' },
-    { name: 'Products', icon: 'fa-regular fa-gem', path: '/admin/products' },
-    { name: 'Categories', icon: 'fa-solid fa-layer-group', path: '/admin/categories' },
-    { name: 'Orders', icon: 'fa-solid fa-file-invoice-dollar', path: '/admin/orders' },
-    { name: 'Contact Us', icon: 'fa-solid fa-envelope', path: '/admin/contact' },
-    { name: 'Quotations', icon: 'fa-solid fa-file-invoice', path: '/admin/quotations' },
-    { name: 'Content Management', icon: 'fa-regular fa-file-lines', path: '/admin/content' },
-    { name: 'Company Settings', icon: 'fa-solid fa-gear', path: '/admin/settings' },
+    {
+      name: 'Dashboard',
+      icon: 'fa-solid fa-gauge-high',
+      path: '/admin',
+    },
+    {
+      name: 'Products',
+      icon: 'fa-regular fa-gem',
+      path: '/admin/products',
+    },
+    {
+      name: 'Categories',
+      icon: 'fa-solid fa-layer-group',
+      path: '/admin/categories',
+    },
+    {
+      name: 'Orders',
+      icon: 'fa-solid fa-file-invoice-dollar',
+      path: '/admin/orders',
+    },
+    {
+      name: 'Contact Us',
+      icon: 'fa-solid fa-envelope',
+      path: '/admin/contact',
+    },
+    {
+      name: 'Quotations',
+      icon: 'fa-solid fa-file-invoice',
+      path: '/admin/quotations',
+    },
+    {
+      name: 'Content Management',
+      icon: 'fa-regular fa-file-lines',
+      path: '/admin/content',
+    },
+    {
+      name: 'Company Settings',
+      icon: 'fa-solid fa-gear',
+      path: '/admin/settings',
+    },
   ]
+
+  const handleReconnect = () => {
+    const token = localStorage.getItem('token')
+
+    if (!token) {
+      console.log('No token found')
+      return
+    }
+
+    console.log('Reconnecting Google Drive...')
+
+    // Add your Google Drive reconnect logic here
+  }
 
   return (
     <aside
@@ -22,8 +67,10 @@ export default function SideNavBar({ isOpen, onClose }) {
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } md:translate-x-0 w-64`}
     >
+      {/* Logo Section */}
       <div className="h-20 flex items-center px-6 border-b border-gray-100 bg-white">
         <div className="flex items-center gap-3">
+
           <div className="w-8 h-8 rounded-full bg-deep-emerald flex items-center justify-center text-white">
             <i className="fa-solid fa-gem text-xs"></i>
           </div>
@@ -32,14 +79,18 @@ export default function SideNavBar({ isOpen, onClose }) {
             <span className="font-playfair font-bold text-deep-emerald text-xl leading-none">
               Admin
             </span>
+
             <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold mt-1">
               Management Portal
             </span>
           </div>
+
         </div>
       </div>
 
+      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-4 flex flex-col gap-1 px-3">
+
         {navItems.map((item) => {
           const isActive = location.pathname === item.path
 
@@ -62,12 +113,17 @@ export default function SideNavBar({ isOpen, onClose }) {
                 }`}
               ></i>
 
-              <span className="text-sm font-medium">{item.name}</span>
+              <span className="text-sm font-medium">
+                {item.name}
+              </span>
+
             </Link>
           )
         })}
+
       </nav>
 
+      {/* Bottom Actions */}
       <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
 
         {/* Google Drive Reconnect */}
@@ -75,26 +131,27 @@ export default function SideNavBar({ isOpen, onClose }) {
           type="button"
           title="Reconnect Google Drive"
           aria-label="Reconnect Google Drive"
-          onClick={() => {
-            const token = localStorage.getItem('token')
-
-            if (!token) {
-              return
-            }
-          }}
-          className="flex items-center justify-center w-full h-9 rounded-md text-gray-500 hover:text-deep-emerald hover:bg-emerald-50 transition-colors"
+          onClick={handleReconnect}
+          className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-gray-500 hover:text-deep-emerald hover:bg-emerald-50"
         >
-          <i className="fa-solid fa-rotate text-sm"></i>
+          <i className="fa-solid fa-rotate w-5 text-center text-sm"></i>
+
+          <span className="text-sm font-medium">
+            Reconnect
+          </span>
         </button>
 
         {/* Sign Out */}
         <button
           type="button"
           onClick={logout}
-          className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-gray-500 hover:text-deep-emerald"
+          className="flex items-center gap-3 px-3 py-2 rounded-md transition-colors w-full text-gray-500 hover:text-deep-emerald hover:bg-emerald-50"
         >
           <i className="fa-solid fa-arrow-right-from-bracket w-5 text-center text-sm"></i>
-          <span className="text-sm font-medium">Sign Out</span>
+
+          <span className="text-sm font-medium">
+            Sign Out
+          </span>
         </button>
 
       </div>
