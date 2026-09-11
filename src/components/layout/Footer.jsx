@@ -17,12 +17,10 @@ export default function Footer() {
   return (
     <>
       <footer className="bg-soft-cream w-full py-20 px-margin-desktop border-t border-outline-variant mt-auto">
-
         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-container-max mx-auto">
 
           {/* Company Information */}
           <div className="md:col-span-4 mb-10 md:mb-0">
-
             <div className="text-headline-lg font-headline-lg text-deep-emerald mb-6">
               JKR
             </div>
@@ -33,7 +31,6 @@ export default function Footer() {
             </p>
 
             <div className="flex space-x-4 text-deep-emerald opacity-80 hover:opacity-100 transition-opacity">
-
               <Link aria-label="Instagram" to="/shop">
                 <span className="material-symbols-outlined">
                   photo_camera
@@ -51,19 +48,16 @@ export default function Footer() {
                   alternate_email
                 </span>
               </Link>
-
             </div>
           </div>
 
           {/* Explore */}
           <div className="md:col-span-2 md:col-start-6">
-
             <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-deep-emerald mb-6">
               Explore
             </h3>
 
             <ul className="space-y-4 font-body-md text-body-md text-on-surface-variant">
-
               <li>
                 <Link
                   className="hover:text-primary transition-colors"
@@ -99,19 +93,16 @@ export default function Footer() {
                   Store Finder
                 </Link>
               </li>
-
             </ul>
           </div>
 
           {/* Customer Care */}
           <div className="md:col-span-2">
-
             <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-deep-emerald mb-6">
               Customer Care
             </h3>
 
             <ul className="space-y-4 font-body-md text-body-md text-on-surface-variant">
-
               <li>
                 <Link
                   className="hover:text-primary transition-colors"
@@ -147,20 +138,17 @@ export default function Footer() {
                   Track Order
                 </Link>
               </li>
-
             </ul>
           </div>
 
           {/* Newsletter */}
           <div className="md:col-span-3">
-
             <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-deep-emerald mb-6">
               Newsletter
             </h3>
 
             <p className="font-body-md text-body-md text-on-surface-variant mb-4">
-              Subscribe to receive updates, access to exclusive deals,
-              and more.
+              Subscribe to receive updates, access to exclusive deals, and more.
             </p>
 
             {subscribed ? (
@@ -189,20 +177,14 @@ export default function Footer() {
                 </button>
               </form>
             )}
-
           </div>
-
         </div>
 
         {/* Footer Bottom */}
         <div className="max-w-container-max mx-auto mt-16 pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center text-sm text-on-surface-variant">
-
-          <p>
-            &copy; 2024 JKR. All Rights Reserved.
-          </p>
+          <p>&copy; 2024 JKR. All Rights Reserved.</p>
 
           <div className="flex space-x-6 mt-4 md:mt-0">
-
             <Link
               className="hover:text-deep-emerald"
               to="/account"
@@ -216,14 +198,11 @@ export default function Footer() {
             >
               Terms of Service
             </Link>
-
           </div>
-
         </div>
-
       </footer>
 
-      {/* Floating WhatsApp Button */}
+      {/* Fixed WhatsApp Button */}
       <WhatsAppButton />
     </>
   )

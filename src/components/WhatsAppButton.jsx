@@ -3,10 +3,9 @@ import { storeAPI } from '../services/api'
 
 export default function WhatsAppButton() {
   const [phoneNumber, setPhoneNumber] = useState('')
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchStoreSettings = async () => {
+    const fetchPhoneNumber = async () => {
       try {
         const response = await storeAPI.getSettings()
 
@@ -14,26 +13,21 @@ export default function WhatsAppButton() {
 
         const phone = String(data.phone || '')
 
-        // Remove spaces, +, -, brackets, etc.
+        // Remove +, spaces, -, brackets
         const formattedPhone = phone.replace(/\D/g, '')
 
         setPhoneNumber(formattedPhone)
       } catch (error) {
-        console.error(
-          'Failed to fetch WhatsApp phone number:',
-          error
-        )
-      } finally {
-        setLoading(false)
+        console.error('Failed to load WhatsApp number:', error)
       }
     }
 
-    fetchStoreSettings()
+    fetchPhoneNumber()
   }, [])
 
   const handleWhatsAppClick = () => {
     if (!phoneNumber) {
-      console.error('WhatsApp phone number is not available')
+      alert('WhatsApp number is not available')
       return
     }
 
@@ -43,13 +37,9 @@ export default function WhatsAppButton() {
 
     window.open(
       `https://wa.me/${phoneNumber}?text=${message}`,
-      '_blank'
+      '_blank',
+      'noopener,noreferrer'
     )
-  }
-
-  // Don't display the button until the phone number is loaded
-  if (loading || !phoneNumber) {
-    return null
   }
 
   return (
@@ -62,27 +52,23 @@ export default function WhatsAppButton() {
         fixed
         bottom-6
         right-6
-        z-50
-        flex
-        items-center
-        gap-3
+        z-[9999]
+        w-14
+        h-14
+        rounded-full
         bg-[#25D366]
         text-white
-        px-4
-        py-3
-        rounded-full
-        shadow-lg
-        transition-all
+        shadow-xl
+        flex
+        items-center
+        justify-center
+        transition-transform
         duration-300
-        hover:scale-105
-        hover:shadow-xl
+        hover:scale-110
+        cursor-pointer
       "
     >
-      <i className="fa-brands fa-whatsapp text-2xl"></i>
-
-      <span className="text-sm font-semibold">
-        Chat with us
-      </span>
+      <i className="fa-brands fa-whatsapp text-3xl"></i>
     </button>
   )
 }
