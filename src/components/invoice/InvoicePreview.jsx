@@ -1,4 +1,5 @@
-﻿import { useEffect, useState } from 'react'
+﻿
+import { useEffect, useState } from 'react'
 import {
   formatCurrency,
   formatDate,
@@ -57,10 +58,16 @@ export default function InvoicePreview({
   orderId,
   orderProp,
 }) {
-  const [order, setOrder] = useState(orderProp || null)
+  const [order, setOrder] = useState(
+    orderProp || null
+  )
+
   const [store, setStore] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  // ============================================================
+  // LOAD ORDER + STORE DATA FROM API
+  // ============================================================
   useEffect(() => {
     if (!open) return
 
@@ -70,8 +77,12 @@ export default function InvoicePreview({
 
         let currentOrder = orderProp
 
+        // ------------------------------------------------------
+        // LOAD ORDER FROM API
+        // ------------------------------------------------------
         if (!currentOrder && orderId) {
-          const response = await orderAPI.getById(orderId)
+          const response =
+            await orderAPI.getById(orderId)
 
           currentOrder =
             response?.data?.order ||
@@ -82,8 +93,12 @@ export default function InvoicePreview({
 
         setOrder(currentOrder || null)
 
+        // ------------------------------------------------------
+        // LOAD STORE SETTINGS FROM API
+        // ------------------------------------------------------
         try {
-          const storeResponse = await storeAPI.getSettings()
+          const storeResponse =
+            await storeAPI.getSettings()
 
           setStore(
             storeResponse?.data?.store ||
@@ -93,10 +108,18 @@ export default function InvoicePreview({
               null
           )
         } catch (storeError) {
-          console.warn('Unable to load store settings:', storeError)
+          console.warn(
+            'Unable to load store settings:',
+            storeError
+          )
         }
       } catch (error) {
-        console.error('Unable to load invoice:', error)
+        console.error(
+          'Unable to load invoice:',
+          error
+        )
+
+        setOrder(null)
       } finally {
         setLoading(false)
       }
@@ -105,8 +128,14 @@ export default function InvoicePreview({
     loadData()
   }, [open, orderId, orderProp])
 
+  // ============================================================
+  // CLOSE WHEN NOT OPEN
+  // ============================================================
   if (!open) return null
 
+  // ============================================================
+  // ORDER DATA
+  // ============================================================
   const items =
     order?.items ||
     order?.orderItems ||
@@ -119,6 +148,9 @@ export default function InvoicePreview({
     order?.user ||
     {}
 
+  // ============================================================
+  // INVOICE INFORMATION
+  // ============================================================
   const invoiceNumber =
     order?.invoiceNumber ||
     order?.orderNumber ||
@@ -131,6 +163,15 @@ export default function InvoicePreview({
     order?.date ||
     null
 
+  const orderDate =
+    order?.orderDate ||
+    order?.createdAt ||
+    order?.date ||
+    null
+
+  // ============================================================
+  // CUSTOMER INFORMATION
+  // ============================================================
   const customerName =
     customer?.name ||
     customer?.fullName ||
@@ -143,12 +184,14 @@ export default function InvoicePreview({
     customer?.mobile ||
     customer?.phoneNumber ||
     order?.phone ||
+    order?.customerPhone ||
     '-'
 
   const customerEmail =
     customer?.email ||
     order?.email ||
-    '-'
+    order?.customerEmail ||
+    'N/A'
 
   const customerAddress =
     customer?.address ||
@@ -157,54 +200,135 @@ export default function InvoicePreview({
     order?.shippingAddress?.address ||
     ''
 
-  const showDiscount = hasAnyDiscount(items)
-
+  // ============================================================
+  // CALCULATE ITEMS
+  // ============================================================
   const calculatedItems = items.map((item) =>
     calculateLineItem(item)
   )
 
-  const totalQuantity = calculatedItems.reduce(
-    (sum, item) => sum + Number(item.qty || 0),
-    0
-  )
+  // ============================================================
+  // TOTAL QUANTITY
+  // ============================================================
+  const totalQuantity =
+    calculatedItems.reduce(
+      (sum, item) =>
+        sum + Number(item.qty || 0),
+      0
+    )
 
-  const totalGrossAmount = calculatedItems.reduce(
-    (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
-    0
-  )
+  // ============================================================
+  // SUBTOTAL
+  // ============================================================
+  const subtotal =
+    calculatedItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.price || 0) *
+          Number(item.qty || 0),
+      0
+    )
 
-  const totalDiscount = calculatedItems.reduce(
-    (sum, item) => sum + Number(item.discountAmount || 0),
-    0
-  )
+  // ============================================================
+  // DISCOUNT
+  // ============================================================
+  const totalDiscount =
+    calculatedItems.reduce(
+      (sum, item) =>
+        sum +
+        Number(item.discountAmount || 0),
+      0
+    )
 
-  const totalGst = calculatedItems.reduce(
-    (sum, item) => {
-      const gross =
-        Number(item.price || 0) * Number(item.qty || 0)
+  // ============================================================
+  // GST
+  // ============================================================
+  const totalGst =
+    calculatedItems.reduce(
+      (sum, item) => {
+        const gross =
+          Number(item.price || 0) *
+          Number(item.qty || 0)
 
-      const taxableAmount =
-        gross - Number(item.discountAmount || 0)
+        const discount =
+          Number(
+            item.discountAmount || 0
+          )
 
-      const gstAmount =
-        taxableAmount * (Number(item.gstPercent || 0) / 100)
+        const taxableAmount =
+          gross - discount
 
-      return sum + gstAmount
-    },
-    0
-  )
+        const gstAmount =
+          taxableAmount *
+          (Number(
+            item.gstPercent || 0
+          ) / 100)
 
-  const grandTotal = calculatedItems.reduce(
-    (sum, item) => sum + Number(item.lineTotal || 0),
-    0
-  )
+        return sum + gstAmount
+      },
+      0
+    )
 
+  // ============================================================
+  // SHIPPING
+  // ============================================================
+  const shipping =
+    Number(
+      order?.shipping ||
+        order?.shippingCharge ||
+        order?.deliveryCharge ||
+        0
+    )
+
+  // ============================================================
+  // GRAND TOTAL
+  // ============================================================
+  const calculatedGrandTotal =
+    subtotal -
+    totalDiscount +
+    totalGst +
+    shipping
+
+  /*
+   * Prefer backend total when available.
+   * This prevents frontend calculation from
+   * conflicting with the actual order total.
+   */
+  const backendGrandTotal =
+    order?.grandTotal ??
+    order?.totalAmount ??
+    order?.total ??
+    order?.finalAmount ??
+    null
+
+  const grandTotal =
+    backendGrandTotal !== null &&
+    backendGrandTotal !== undefined &&
+    !Number.isNaN(
+      Number(backendGrandTotal)
+    )
+      ? Number(backendGrandTotal)
+      : calculatedGrandTotal
+
+  // ============================================================
+  // DISCOUNT VISIBILITY
+  // ============================================================
+  const showDiscount =
+    hasAnyDiscount(items) ||
+    totalDiscount > 0
+
+  // ============================================================
+  // NOTES
+  // ============================================================
   const notes =
     order?.notes ||
     order?.customerNotes ||
     order?.remarks ||
     ''
 
+  // ============================================================
+  // STORE DATA
+  // ============================================================
   const storeName =
     store?.storeName ||
     store?.name ||
@@ -214,196 +338,348 @@ export default function InvoicePreview({
     store?.tagline ||
     'Crafting timeless elegance since 2017'
 
+  // ============================================================
+  // DOWNLOAD PDF
+  // ============================================================
   const handleDownloadPDF = async () => {
-  try {
-    const element = document.getElementById('invoice-preview')
+    try {
+      const element =
+        document.getElementById(
+          'invoice-preview'
+        )
 
-    if (!element) {
-      console.error('Invoice preview element not found')
-      return
-    }
+      if (!element) {
+        console.error(
+          'Invoice preview element not found'
+        )
+        return
+      }
 
-    const html2canvasModule = await import('html2canvas')
-    const jsPDFModule = await import('jspdf')
+      // --------------------------------------------------------
+      // LOAD PDF LIBRARIES
+      // --------------------------------------------------------
+      const html2canvasModule =
+        await import('html2canvas')
 
-    const html2canvas =
-      html2canvasModule.default || html2canvasModule
+      const jsPDFModule =
+        await import('jspdf')
 
-    const jsPDF =
-      jsPDFModule.jsPDF || jsPDFModule.default
+      const html2canvas =
+        html2canvasModule.default ||
+        html2canvasModule
 
-    // Wait for all images
-    const images = Array.from(element.querySelectorAll('img'))
+      const jsPDF =
+        jsPDFModule.jsPDF ||
+        jsPDFModule.default
 
-    await Promise.all(
-      images.map(
-        (img) =>
-          new Promise((resolve) => {
-            if (img.complete && img.naturalWidth > 0) {
-              resolve()
-            } else {
+      // --------------------------------------------------------
+      // WAIT FOR IMAGES
+      // --------------------------------------------------------
+      const images = Array.from(
+        element.querySelectorAll('img')
+      )
+
+      await Promise.all(
+        images.map(
+          (img) =>
+            new Promise((resolve) => {
+              if (
+                img.complete &&
+                img.naturalWidth > 0
+              ) {
+                resolve()
+                return
+              }
+
               img.onload = resolve
               img.onerror = resolve
-            }
-          })
+            })
+        )
       )
-    )
 
-    // Temporarily force exact A4 dimensions
-    const originalWidth = element.style.width
-    const originalMinHeight = element.style.minHeight
-    const originalMaxWidth = element.style.maxWidth
-    const originalPadding = element.style.padding
-    const originalBoxSizing = element.style.boxSizing
+      // --------------------------------------------------------
+      // SAVE ORIGINAL STYLES
+      // --------------------------------------------------------
+      const originalWidth =
+        element.style.width
 
-    element.style.width = '210mm'
-    element.style.minHeight = '297mm'
-    element.style.maxWidth = '210mm'
-    element.style.padding = '10mm'
-    element.style.boxSizing = 'border-box'
+      const originalMinHeight =
+        element.style.minHeight
 
-    // Give browser one frame to recalculate layout
-    await new Promise((resolve) =>
-      requestAnimationFrame(() => resolve())
-    )
+      const originalMaxWidth =
+        element.style.maxWidth
 
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: false,
-      backgroundColor: '#ffffff',
-      logging: false,
-      imageTimeout: 15000,
-      width: element.offsetWidth,
-      height: element.offsetHeight,
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
-    })
+      const originalPadding =
+        element.style.padding
 
-    // Restore original styles
-    element.style.width = originalWidth
-    element.style.minHeight = originalMinHeight
-    element.style.maxWidth = originalMaxWidth
-    element.style.padding = originalPadding
-    element.style.boxSizing = originalBoxSizing
+      const originalBoxSizing =
+        element.style.boxSizing
 
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-      compress: true,
-    })
+      // --------------------------------------------------------
+      // FORCE EXACT A4 SIZE
+      // --------------------------------------------------------
+      element.style.width = '210mm'
+      element.style.minHeight = '297mm'
+      element.style.maxWidth = '210mm'
+      element.style.padding = '10mm'
+      element.style.boxSizing =
+        'border-box'
 
-    const pageWidth = 210
-    const pageHeight = 297
-
-    const canvasWidth = canvas.width
-    const canvasHeight = canvas.height
-
-    const ratio = pageWidth / canvasWidth
-
-    const renderedHeight = canvasHeight * ratio
-
-    const imageData = canvas.toDataURL(
-      'image/jpeg',
-      0.95
-    )
-
-    // Single A4 page when content fits
-    if (renderedHeight <= pageHeight) {
-      pdf.addImage(
-        imageData,
-        'JPEG',
-        0,
-        0,
-        pageWidth,
-        renderedHeight
+      // --------------------------------------------------------
+      // WAIT FOR BROWSER LAYOUT
+      // --------------------------------------------------------
+      await new Promise((resolve) =>
+        requestAnimationFrame(() =>
+          resolve()
+        )
       )
-    } else {
-      // Multi-page handling
-      let remainingHeight = renderedHeight
-      let sourceY = 0
 
-      while (remainingHeight > 0) {
-        const pageCanvas = document.createElement('canvas')
+      // --------------------------------------------------------
+      // CREATE CANVAS
+      // --------------------------------------------------------
+      const canvas =
+        await html2canvas(element, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          logging: false,
+          imageTimeout: 15000,
 
-        const pagePixelHeight = Math.min(
-          canvasHeight - sourceY,
-          Math.floor(pageHeight / ratio)
-        )
+          width: element.offsetWidth,
+          height: element.offsetHeight,
 
-        pageCanvas.width = canvasWidth
-        pageCanvas.height = pagePixelHeight
+          windowWidth:
+            element.scrollWidth,
 
-        const context = pageCanvas.getContext('2d')
+          windowHeight:
+            element.scrollHeight,
+        })
 
-        context.fillStyle = '#ffffff'
-        context.fillRect(
-          0,
-          0,
-          pageCanvas.width,
-          pageCanvas.height
-        )
+      // --------------------------------------------------------
+      // RESTORE ORIGINAL STYLES
+      // --------------------------------------------------------
+      element.style.width =
+        originalWidth
 
-        context.drawImage(
-          canvas,
-          0,
-          sourceY,
-          canvasWidth,
-          pagePixelHeight,
-          0,
-          0,
-          canvasWidth,
-          pagePixelHeight
-        )
+      element.style.minHeight =
+        originalMinHeight
 
-        const pageImage = pageCanvas.toDataURL(
-          'image/jpeg',
-          0.95
-        )
+      element.style.maxWidth =
+        originalMaxWidth
 
-        const pageRenderedHeight =
-          pagePixelHeight * ratio
+      element.style.padding =
+        originalPadding
 
-        if (sourceY > 0) {
-          pdf.addPage()
-        }
+      element.style.boxSizing =
+        originalBoxSizing
+
+      // --------------------------------------------------------
+      // CREATE A4 PDF
+      // --------------------------------------------------------
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true,
+      })
+
+      const pageWidth = 210
+      const pageHeight = 297
+
+      const canvasWidth =
+        canvas.width
+
+      const canvasHeight =
+        canvas.height
+
+      const ratio =
+        pageWidth / canvasWidth
+
+      const renderedHeight =
+        canvasHeight * ratio
+
+      // --------------------------------------------------------
+      // SINGLE PAGE
+      // --------------------------------------------------------
+      if (
+        renderedHeight <=
+        pageHeight
+      ) {
+        const imageData =
+          canvas.toDataURL(
+            'image/jpeg',
+            0.95
+          )
 
         pdf.addImage(
-          pageImage,
+          imageData,
           'JPEG',
           0,
           0,
           pageWidth,
-          pageRenderedHeight
+          renderedHeight
         )
+      } else {
+        // ------------------------------------------------------
+        // MULTI PAGE
+        // ------------------------------------------------------
+        let sourceY = 0
+        let firstPage = true
 
-        sourceY += pagePixelHeight
-        remainingHeight -= pageHeight
+        while (
+          sourceY < canvasHeight
+        ) {
+          const pagePixelHeight =
+            Math.min(
+              canvasHeight -
+                sourceY,
+              Math.floor(
+                pageHeight / ratio
+              )
+            )
+
+          const pageCanvas =
+            document.createElement(
+              'canvas'
+            )
+
+          pageCanvas.width =
+            canvasWidth
+
+          pageCanvas.height =
+            pagePixelHeight
+
+          const context =
+            pageCanvas.getContext(
+              '2d'
+            )
+
+          context.fillStyle =
+            '#ffffff'
+
+          context.fillRect(
+            0,
+            0,
+            pageCanvas.width,
+            pageCanvas.height
+          )
+
+          context.drawImage(
+            canvas,
+            0,
+            sourceY,
+            canvasWidth,
+            pagePixelHeight,
+            0,
+            0,
+            canvasWidth,
+            pagePixelHeight
+          )
+
+          const pageImage =
+            pageCanvas.toDataURL(
+              'image/jpeg',
+              0.95
+            )
+
+          const pageRenderedHeight =
+            pagePixelHeight *
+            ratio
+
+          if (!firstPage) {
+            pdf.addPage()
+          }
+
+          pdf.addImage(
+            pageImage,
+            'JPEG',
+            0,
+            0,
+            pageWidth,
+            pageRenderedHeight
+          )
+
+          firstPage = false
+
+          sourceY +=
+            pagePixelHeight
+        }
       }
-    }
 
-    pdf.save(`invoice-${invoiceNumber}.pdf`)
-  } catch (error) {
-    console.error(
-      'Invoice PDF generation failed:',
-      error
+      // --------------------------------------------------------
+      // SAVE
+      // --------------------------------------------------------
+      pdf.save(
+        `invoice-${invoiceNumber}.pdf`
+      )
+    } catch (error) {
+      console.error(
+        'Invoice PDF generation failed:',
+        error
+      )
+    }
+  }
+
+  // ============================================================
+  // PRINT
+  // ============================================================
+  const handlePrint = () => {
+    window.print()
+  }
+
+  // ============================================================
+  // LOADING
+  // ============================================================
+  if (loading && !order) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-white px-8 py-6 shadow-xl">
+          <p className="text-sm text-gray-600">
+            Loading invoice...
+          </p>
+        </div>
+      </div>
     )
   }
-}
+
+  // ============================================================
+  // UI
+  // ============================================================
   return (
     <>
-      <style>{printStyles}</style>
+      <style>
+        {printStyles}
+      </style>
 
       <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 md:p-8">
+
         <div className="my-8 w-full max-w-[210mm] bg-white shadow-2xl">
+
+          {/* ==================================================
+              INVOICE A4
+          ================================================== */}
           <div
             id="invoice-preview"
             className="min-h-[297mm] w-[210mm] max-w-full bg-white p-[10mm] text-gray-900"
+            style={{
+              boxSizing: 'border-box',
+            }}
           >
-            {/* HEADER */}
-            <div className="mb-8 flex items-start justify-between border-b-2 border-deep-emerald pb-6">
+
+            {/* ==================================================
+                HEADER
+            ================================================== */}
+            <div
+              className="mb-8 flex items-start justify-between border-b-2 pb-6"
+              style={{
+                borderColor:
+                  '#0F5132',
+              }}
+            >
+
               <div className="flex items-center gap-4">
+
                 <div className="flex h-16 w-16 shrink-0 items-center justify-center">
                   <img
                     src="/assets/icons/logo.jpeg"
@@ -413,122 +689,186 @@ export default function InvoicePreview({
                 </div>
 
                 <div>
-                  <h1 className="font-playfair text-2xl font-bold text-deep-emerald">
+
+                  <h1
+                    className="text-2xl font-bold"
+                    style={{
+                      color:
+                        '#0F5132',
+                    }}
+                  >
                     {storeName}
                   </h1>
 
                   <p className="mt-1 text-xs text-gray-500">
                     {storeTagline}
                   </p>
+
                 </div>
+
               </div>
 
               <div className="text-right">
-                <h2 className="text-xl font-bold text-deep-emerald">
+
+                <h2
+                  className="text-xl font-bold"
+                  style={{
+                    color:
+                      '#0F5132',
+                  }}
+                >
                   INVOICE
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-600">
-                  {invoiceNumber}
+                  Invoice #: {invoiceNumber}
                 </p>
+
               </div>
+
             </div>
 
-            {/* META INFORMATION */}
-            <div className="mb-8 grid grid-cols-2 gap-8">
+            {/* ==================================================
+                DETAILS
+            ================================================== */}
+            <div className="mb-8 grid grid-cols-2 gap-10">
+
+              {/* INVOICE DETAILS */}
               <div>
+
                 <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
                   Invoice Details
                 </h3>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between gap-4 text-sm">
+
+                  <div className="grid grid-cols-[110px_1fr] gap-2 text-sm">
+
                     <span className="text-gray-500">
-                      Invoice Number:
+                      Invoice #:
                     </span>
 
                     <span className="font-medium text-gray-900">
                       {invoiceNumber}
                     </span>
+
                   </div>
 
-                  <div className="flex justify-between gap-4 text-sm">
+                  <div className="grid grid-cols-[110px_1fr] gap-2 text-sm">
+
                     <span className="text-gray-500">
-                      Date:
+                      Order #:
+                    </span>
+
+                    <span className="font-medium text-gray-900">
+                      {order?.orderNumber ||
+                        '-'}
+                    </span>
+
+                  </div>
+
+                  <div className="grid grid-cols-[110px_1fr] gap-2 text-sm">
+
+                    <span className="text-gray-500">
+                      Invoice Date:
                     </span>
 
                     <span className="font-medium text-gray-900">
                       {invoiceDate
-                        ? formatDate(invoiceDate)
+                        ? formatDate(
+                            invoiceDate
+                          )
                         : '-'}
                     </span>
+
                   </div>
-                </div>
-              </div>
 
-              <div>
-                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
-                  Customer Details
-                </h3>
+                  <div className="grid grid-cols-[110px_1fr] gap-2 text-sm">
 
-                <div className="space-y-2">
-                  <div className="flex justify-between gap-4 text-sm">
                     <span className="text-gray-500">
-                      Name:
+                      Order Date:
                     </span>
 
                     <span className="font-medium text-gray-900">
-                      {customerName}
+                      {orderDate
+                        ? formatDate(
+                            orderDate
+                          )
+                        : '-'}
                     </span>
+
                   </div>
 
-                  <div className="flex justify-between gap-4 text-sm">
+                </div>
+
+              </div>
+
+              {/* CUSTOMER DETAILS */}
+              <div>
+
+                <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">
+                  Bill To
+                </h3>
+
+                <div className="space-y-2 text-sm">
+
+                  <div className="font-semibold text-gray-900">
+                    {customerName}
+                  </div>
+
+                  {customerAddress && (
+                    <div className="leading-5 text-gray-700">
+
+                      {typeof customerAddress ===
+                      'string'
+                        ? customerAddress
+                        : [
+                            customerAddress?.address,
+                            customerAddress?.city,
+                            customerAddress?.state,
+                            customerAddress?.pincode,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
+
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-[55px_1fr] gap-2">
+
                     <span className="text-gray-500">
                       Phone:
                     </span>
 
-                    <span className="font-medium text-gray-900">
+                    <span className="text-gray-900">
                       {customerPhone}
                     </span>
+
                   </div>
 
-                  <div className="flex justify-between gap-4 text-sm">
+                  <div className="grid grid-cols-[55px_1fr] gap-2">
+
                     <span className="text-gray-500">
                       Email:
                     </span>
 
-                    <span className="font-medium text-gray-900">
+                    <span className="break-all text-gray-900">
                       {customerEmail}
                     </span>
+
                   </div>
+
                 </div>
+
               </div>
+
             </div>
 
-            {/* ADDRESS */}
-            {customerAddress && (
-              <div className="mb-8">
-                <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
-                  Address
-                </h3>
-
-                <p className="whitespace-pre-wrap text-sm text-gray-700">
-                  {typeof customerAddress === 'string'
-                    ? customerAddress
-                    : [
-                        customerAddress?.address,
-                        customerAddress?.city,
-                        customerAddress?.state,
-                        customerAddress?.pincode,
-                      ]
-                        .filter(Boolean)
-                        .join(', ')}
-                </p>
-              </div>
-            )}
-
-            {/* PRODUCTS */}
+            {/* ==================================================
+                PRODUCTS TABLE
+            ================================================== */}
             <div className="mb-8">
+
               <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-gray-400">
                 Products
               </h3>
@@ -536,203 +876,299 @@ export default function InvoicePreview({
               <table
                 className="w-full border-collapse"
                 style={{
-                  tableLayout: 'fixed',
+                  tableLayout:
+                    'fixed',
                   width: '100%',
                 }}
               >
+
                 <colgroup>
+
                   <col
                     style={{
-                      width: showDiscount ? '28%' : '32%',
+                      width: '27%',
                     }}
                   />
 
                   <col
                     style={{
-                      width: showDiscount ? '15%' : '17%',
+                      width: '17%',
                     }}
                   />
-
-                  <col style={{ width: '8%' }} />
 
                   <col
                     style={{
-                      width: showDiscount ? '14%' : '16%',
+                      width: '8%',
                     }}
                   />
-
-                  {showDiscount && (
-                    <col style={{ width: '13%' }} />
-                  )}
-
-                  <col style={{ width: '9%' }} />
 
                   <col
                     style={{
-                      width: showDiscount ? '13%' : '18%',
+                      width: '15%',
                     }}
                   />
+
+                  <col
+                    style={{
+                      width: '12%',
+                    }}
+                  />
+
+                  <col
+                    style={{
+                      width: '8%',
+                    }}
+                  />
+
+                  <col
+                    style={{
+                      width: '13%',
+                    }}
+                  />
+
                 </colgroup>
 
                 <thead>
-                  <tr className="bg-deep-emerald text-white">
-                    <th className="px-2 py-2.5 text-left text-xs font-bold uppercase tracking-wider">
+
+                  <tr
+                    style={{
+                      backgroundColor:
+                        '#0F5132',
+                    }}
+                  >
+
+                    <th className="px-2 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-white">
                       Product
                     </th>
 
-                    <th className="px-2 py-2.5 text-left text-xs font-bold uppercase tracking-wider">
+                    <th className="px-2 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-white">
                       SKU
                     </th>
 
-                    <th className="px-2 py-2.5 text-right text-xs font-bold uppercase tracking-wider">
+                    <th className="px-2 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-white">
                       Qty
                     </th>
 
-                    <th className="px-2 py-2.5 text-right text-xs font-bold uppercase tracking-wider">
-                      Price
+                    <th className="px-2 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-white">
+                      Unit Price
                     </th>
 
-                    {showDiscount && (
-                      <th className="px-2 py-2.5 text-right text-xs font-bold uppercase tracking-wider">
-                        Discount
-                      </th>
-                    )}
+                    <th className="px-2 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-white">
+                      Discount
+                    </th>
 
-                    <th className="px-2 py-2.5 text-right text-xs font-bold uppercase tracking-wider">
+                    <th className="px-2 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-white">
                       GST
                     </th>
 
-                    <th className="px-2 py-2.5 text-right text-xs font-bold uppercase tracking-wider">
+                    <th className="px-2 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-white">
                       Total
                     </th>
+
                   </tr>
+
                 </thead>
 
                 <tbody>
-                  {items.map((item, index) => {
-                    const {
-                      qty,
-                      price,
-                      discountAmount,
-                      gstPercent,
-                      lineTotal,
-                    } = calculateLineItem(item)
 
-                    return (
+                  {calculatedItems.map(
+                    (item, index) => (
                       <tr
-                        key={`${
-                          item.sku ||
-                          item.productName ||
-                          'item'
-                        }-${index}`}
+                        key={`${item.sku || item.productName || 'item'}-${index}`}
                         className={
                           index % 2 === 0
                             ? 'bg-gray-50'
                             : 'bg-white'
                         }
                       >
-                        <td className="break-words px-2 py-3 text-sm font-medium text-gray-900">
+
+                        <td className="break-words px-2 py-3 text-left text-sm font-medium text-gray-900">
                           {item.productName ||
                             item.name ||
+                            items[index]
+                              ?.productName ||
+                            items[index]
+                              ?.name ||
                             '-'}
                         </td>
 
-                        <td className="break-words px-2 py-3 text-sm text-gray-600">
-                          {item.sku || '-'}
+                        <td className="break-words px-2 py-3 text-left text-sm text-gray-600">
+                          {item.sku ||
+                            items[index]
+                              ?.sku ||
+                            '-'}
                         </td>
 
-                        <td className="px-2 py-3 text-right text-sm text-gray-600">
-                          {qty}
+                        <td className="px-2 py-3 text-center text-sm text-gray-600">
+                          {item.qty || 0}
                         </td>
 
                         <td className="whitespace-nowrap px-2 py-3 text-right text-sm text-gray-600">
-                          {formatCurrency(price)}
+                          {formatCurrency(
+                            item.price || 0
+                          )}
                         </td>
 
-                        {showDiscount && (
-                          <td className="whitespace-nowrap px-2 py-3 text-right text-sm text-gray-600">
-                            {formatCurrency(
-                              discountAmount
-                            )}
-                          </td>
-                        )}
-
-                        <td className="px-2 py-3 text-right text-sm text-gray-600">
-                          {gstPercent}%
+                        <td className="whitespace-nowrap px-2 py-3 text-right text-sm text-gray-600">
+                          {formatCurrency(
+                            item.discountAmount ||
+                              0
+                          )}
                         </td>
 
-                        <td className="whitespace-nowrap px-2 py-3 text-right text-sm font-semibold text-deep-emerald">
-                          {formatCurrency(lineTotal)}
+                        <td className="whitespace-nowrap px-2 py-3 text-right text-sm text-gray-600">
+                          {item.gstPercent ||
+                            0}
+                          %
                         </td>
+
+                        <td
+                          className="whitespace-nowrap px-2 py-3 text-right text-sm font-semibold"
+                          style={{
+                            color:
+                              '#0F5132',
+                          }}
+                        >
+                          {formatCurrency(
+                            item.lineTotal ||
+                              0
+                          )}
+                        </td>
+
                       </tr>
                     )
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* TOTALS */}
-            <div className="mb-8 flex justify-end">
-              <div className="w-72 max-w-full">
-                <div className="space-y-2">
-                  <div className="flex justify-between gap-4 text-sm">
-                    <span className="text-gray-500">
-                      Total Items
-                    </span>
-
-                    <span className="font-medium text-gray-900">
-                      {totalQuantity}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between gap-4 text-sm">
-                    <span className="text-gray-500">
-                      Gross Amount
-                    </span>
-
-                    <span className="font-medium text-gray-900">
-                      {formatCurrency(totalGrossAmount)}
-                    </span>
-                  </div>
-
-                  {showDiscount && (
-                    <div className="flex justify-between gap-4 text-sm">
-                      <span className="text-gray-500">
-                        Total Discount
-                      </span>
-
-                      <span className="font-medium text-gray-900">
-                        - {formatCurrency(totalDiscount)}
-                      </span>
-                    </div>
                   )}
 
-                  <div className="flex justify-between gap-4 text-sm">
-                    <span className="text-gray-500">
-                      Total GST
-                    </span>
+                </tbody>
 
-                    <span className="font-medium text-gray-900">
-                      {formatCurrency(totalGst)}
-                    </span>
-                  </div>
+              </table>
 
-                  <div className="flex items-center justify-between gap-4 border-t-2 border-deep-emerald pt-2">
-                    <span className="text-base font-bold text-gray-900">
-                      Grand Total
-                    </span>
-
-                    <span className="text-xl font-bold text-deep-emerald">
-                      {formatCurrency(grandTotal)}
-                    </span>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            {/* NOTES */}
+            {/* ==================================================
+                TOTALS
+            ================================================== */}
+            <div className="mb-8 flex justify-end">
+
+              <div
+                className="w-[82mm]"
+                style={{
+                  minWidth:
+                    '82mm',
+                  maxWidth:
+                    '82mm',
+                }}
+              >
+
+                <div className="space-y-2">
+
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
+
+                    <span className="text-right text-gray-500">
+                      Total Items:
+                    </span>
+
+                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
+                      {totalQuantity}
+                    </span>
+
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
+
+                    <span className="text-right text-gray-500">
+                      Subtotal:
+                    </span>
+
+                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
+                      {formatCurrency(
+                        subtotal
+                      )}
+                    </span>
+
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
+
+                    <span className="text-right text-gray-500">
+                      Discount:
+                    </span>
+
+                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
+                      -{' '}
+                      {formatCurrency(
+                        totalDiscount
+                      )}
+                    </span>
+
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
+
+                    <span className="text-right text-gray-500">
+                      GST:
+                    </span>
+
+                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
+                      {formatCurrency(
+                        totalGst
+                      )}
+                    </span>
+
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
+
+                    <span className="text-right text-gray-500">
+                      Shipping:
+                    </span>
+
+                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
+                      {formatCurrency(
+                        shipping
+                      )}
+                    </span>
+
+                  </div>
+
+                  <div
+                    className="mt-3 grid grid-cols-[1fr_auto] items-center gap-6 border-t-2 pt-3"
+                    style={{
+                      borderColor:
+                        '#0F5132',
+                    }}
+                  >
+
+                    <span className="text-right text-base font-bold text-gray-900">
+                      Grand Total:
+                    </span>
+
+                    <span
+                      className="min-w-[30mm] text-right text-xl font-bold"
+                      style={{
+                        color:
+                          '#0F5132',
+                      }}
+                    >
+                      {formatCurrency(
+                        grandTotal
+                      )}
+                    </span>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* ==================================================
+                NOTES
+            ================================================== */}
             {notes && (
               <div className="mb-8">
+
                 <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
                   Notes
                 </h3>
@@ -740,64 +1176,89 @@ export default function InvoicePreview({
                 <p className="whitespace-pre-wrap text-sm text-gray-700">
                   {notes}
                 </p>
+
               </div>
             )}
 
-            {/* TERMS */}
-            <div className="mb-12">
+            {/* ==================================================
+                TERMS
+            ================================================== */}
+            <div className="mb-10">
+
               <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">
                 Terms & Conditions
               </h3>
 
-              <ul className="list-inside list-disc space-y-1 text-xs text-gray-600">
+              <ul className="list-inside list-disc space-y-1 text-xs leading-5 text-gray-600">
+
                 <li>
-                  This invoice is issued against the confirmed
+                  This invoice is issued
+                  against the confirmed
                   jewellery order.
                 </li>
 
                 <li>
-                  Prices are per piece and inclusive of applicable
-                  discounts unless otherwise stated.
+                  Prices are per piece and
+                  inclusive of applicable
+                  discounts unless
+                  otherwise stated.
                 </li>
 
                 <li>
-                  GST is calculated as per current applicable rates
+                  GST is calculated as per
+                  current applicable rates
                   on the taxable value.
                 </li>
 
                 <li>
-                  Designs, colors, and plating may vary slightly
+                  Designs, colors, and
+                  plating may vary slightly
                   from the displayed images.
                 </li>
 
                 <li>
-                  Payment must be made in full before dispatch.
+                  Payment must be made in
+                  full before dispatch.
                 </li>
+
               </ul>
+
             </div>
 
-            {/* SIGNATURE */}
+            {/* ==================================================
+                SIGNATURE
+            ================================================== */}
             <div className="mt-8 flex items-end justify-between border-t border-gray-200 pt-8">
-              <div className="text-center">
-                <div className="mb-2 w-48 border-b border-gray-400" />
+
+              <div className="w-48 text-center">
+
+                <div className="mb-2 border-b border-gray-400" />
 
                 <p className="text-xs text-gray-500">
                   Authorized Signature
                 </p>
+
               </div>
 
-              <div className="text-center">
-                <div className="mb-2 w-48 border-b border-gray-400" />
+              <div className="w-48 text-center">
+
+                <div className="mb-2 border-b border-gray-400" />
 
                 <p className="text-xs text-gray-500">
                   Customer Signature
                 </p>
+
               </div>
+
             </div>
+
           </div>
 
-          {/* ACTION BUTTONS */}
+          {/* ==================================================
+              ACTION BUTTONS
+          ================================================== */}
           <div className="print-hide sticky bottom-0 flex justify-end gap-3 border-t border-gray-200 bg-gray-100 p-4">
+
             <button
               onClick={onClose}
               className="px-6 py-2.5 text-sm font-semibold text-charcoal-text transition-colors hover:bg-surface-variant"
@@ -807,7 +1268,11 @@ export default function InvoicePreview({
 
             <button
               onClick={handleDownloadPDF}
-              className="flex items-center gap-2 bg-deep-emerald px-6 py-2.5 text-sm font-semibold text-surface-white shadow-sm transition-colors hover:bg-regal-gold"
+              className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors"
+              style={{
+                backgroundColor:
+                  '#0F5132',
+              }}
             >
               <span className="material-symbols-outlined text-[16px]">
                 download
@@ -826,8 +1291,11 @@ export default function InvoicePreview({
 
               Print
             </button>
+
           </div>
+
         </div>
+
       </div>
     </>
   )
