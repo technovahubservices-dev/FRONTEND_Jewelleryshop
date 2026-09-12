@@ -8,7 +8,7 @@ const printStyles = `
   @media print {
     @page {
       size: A4;
-      margin: 10mm;
+  margin: 0;
     }
     body * {
       visibility: hidden !important;
@@ -17,19 +17,18 @@ const printStyles = `
       visibility: visible !important;
     }
     #invoice-preview {
-      position: absolute !important;
-      left: 0 !important;
-      top: 0 !important;
-      width: 100% !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      background: #ffffff !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-    .print-hide {
-      display: none !important;
-    }
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 210mm !important;
+  min-height: 297mm !important;
+  box-sizing: border-box !important;
+  padding: 10mm !important;
+  margin: 0 !important;
+  background: #ffffff !important;
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
   }
 `
 
@@ -98,47 +97,92 @@ export default function InvoicePreview({ open, onClose, orderId, order: orderPro
   )
 
   const handleDownloadPDF = async () => {
-    const { jsPDF } = await import('jspdf')
-    const html2canvas = (await import('html2canvas')).default
+  const element = document.getElementById('invoice-preview')
 
-    const element = document.getElementById('invoice-preview')
-    if (!element) return
-
-    try {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-      })
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.95)
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const pageWidth = pdf.internal.pageSize.getWidth()
-      const pageHeight = pdf.internal.pageSize.getHeight()
-      const margin = 10
-      const imgWidth = pageWidth - margin * 2
-      const imgHeight = (canvas.height * imgWidth) / canvas.width
-
-      let heightLeft = imgHeight
-      let position = margin
-
-      pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight)
-      heightLeft -= pageHeight - margin * 2
-
-      while (heightLeft > margin) {
-        position = heightLeft - margin
-        pdf.addPage()
-        pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight)
-        heightLeft -= pageHeight
-      }
-
-      const filename = `invoice-${order?.invoiceNumber || order?.orderNumber || orderId}.pdf`
-      pdf.save(filename)
-    } catch (err) {
-      console.error('Failed to generate PDF:', err)
-    }
+  if (!element) {
+    console.error('Invoice preview not found')
+    return
   }
+
+  try {
+    // Wait for all invoice images to finish loading
+    const images = Array.from(element.querySelectorAll('img'))
+
+    await Promise.all(
+      images.map((img) => {
+        if (img.complete) {
+          return Promise.resolve()
+        }
+
+        return new Promise((resolve) => {
+          img.onload = resolve
+          img.onerror = resolve
+        })
+      })
+    )
+
+    const html2canvas = (
+      await import('html2canvas')
+    ).default
+
+    const { jsPDF } = await import('jspdf')
+
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+      backgroundColor: '#ffffff',
+      width: element.scrollWidth,
+      height: element.scrollHeight,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
+    })
+
+    const imgData = canvas.toDataURL('image/png')
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    })
+
+    // Exact A4 dimensions
+    const pageWidth = 210
+    const pageHeight = 297
+
+    // The invoice-preview itself is the complete A4 content.
+    // Therefore place it directly from 0,0 without extra PDF margins.
+    pdf.addImage(
+      imgData,
+      'PNG',
+      0,
+      0,
+      pageWidth,
+      pageHeight,
+      undefined,
+      'FAST'
+    )
+
+    const filename =
+      order?.invoiceNumber ||
+      order?.orderNumber ||
+      orderId ||
+      'invoice'
+
+    pdf.save(`invoice-${filename}.pdf`)
+  } catch (err) {
+    console.error(
+      'Failed to generate invoice PDF:',
+      err
+    )
+
+    alert(
+      'Failed to generate invoice PDF. Please try again.'
+    )
+  }
+}
 
   const handlePrint = () => {
     window.print()
@@ -151,8 +195,11 @@ export default function InvoicePreview({ open, onClose, orderId, order: orderPro
     <>
       <style>{printStyles}</style>
       <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center overflow-y-auto p-4 md:p-8">
-        <div className="bg-white w-full max-w-[210mm] min-h-[297mm] shadow-2xl my-8">
-          <div className="p-8 md:p-12" id="invoice-preview">
+        <div className="bg-white w-[210mm] min-h-[297mm] shadow-2xl my-8">
+  <div
+    id="invoice-preview"
+    className="w-[210mm] min-h-[297mm] box-border p-[10mm] bg-white"
+  >
             {loading ? (
               <div className="text-center py-20">
                 <p className="font-body-md text-body-md text-on-surface-variant">Loading invoice...</p>
@@ -166,7 +213,7 @@ export default function InvoicePreview({ open, onClose, orderId, order: orderPro
                 {/* Header */}
                 <div className="flex items-start justify-between border-b-2 border-deep-emerald pb-6 mb-8">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 flex items-center justify-center">
+                    <div className="w-[22mm] h-[22mm] shrink-0 flex items-center justify-center">
                       <img src={resolveImageUrl(logoSrc)} alt={storeInfo?.storeName || 'JKR'} className="w-full h-full object-contain" />
                     </div>
                     <div>
@@ -233,13 +280,12 @@ export default function InvoicePreview({ open, onClose, orderId, order: orderPro
                   <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Products</h3>
                   <table className="w-full border-collapse" style={{ tableLayout: 'fixed', width: '100%' }}>
                     <colgroup>
-                      <col style={{ width: '40%' }} />
-                      <col style={{ width: '15%' }} />
-                      <col style={{ width: '10%' }} />
-                      <col style={{ width: '12%' }} />
-                      <col style={{ width: '8%' }} />
-                      <col style={{ width: '15%' }} />
-                    </colgroup>
+  <col style={{ width: '42%' }} />
+  <col style={{ width: '10%' }} />
+  <col style={{ width: '18%' }} />
+  <col style={{ width: '12%' }} />
+  <col style={{ width: '18%' }} />
+</colgroup>
                     <thead>
                       <tr className="bg-deep-emerald text-white">
                         <th className="py-2.5 px-3 text-left text-xs font-bold uppercase tracking-wider">Product</th>
@@ -261,9 +307,9 @@ export default function InvoicePreview({ open, onClose, orderId, order: orderPro
                           <tr key={index} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
                             <td className="py-3 px-3 text-sm text-gray-900 font-medium break-words">{item.name || 'Product'}</td>
                             <td className="py-3 px-3 text-sm text-gray-600 text-right">{qty}</td>
-                            <td className="py-3 px-3 text-sm text-gray-600 text-right whitespace-nowrap">â‚¹ {price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                            <td className="py-3 px-3 text-sm text-gray-600 text-right whitespace-nowrap">₹ {price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                             <td className="py-3 px-3 text-sm text-gray-600 text-right">{gstPercent}%</td>
-                            <td className="py-3 px-3 text-sm text-deep-emerald font-semibold text-right whitespace-nowrap">â‚¹ {lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                            <td className="py-3 px-3 text-sm text-deep-emerald font-semibold text-right whitespace-nowrap">₹ {lineTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                           </tr>
                         )
                       })}
@@ -281,21 +327,21 @@ export default function InvoicePreview({ open, onClose, orderId, order: orderPro
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Subtotal</span>
-                        <span className="text-gray-900 font-medium">â‚¹ {calculations.totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        <span className="text-gray-900 font-medium">₹ {calculations.totalGrossAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                       {calculations.totalDiscount > 0 && (
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-500">Discount</span>
-                          <span className="text-gray-900 font-medium">- â‚¹ {calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                          <span className="text-gray-900 font-medium">- ₹ {calculations.totalDiscount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                         </div>
                       )}
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500">Tax (GST)</span>
-                        <span className="text-gray-900 font-medium">â‚¹ {calculations.totalGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        <span className="text-gray-900 font-medium">₹ {calculations.totalGst.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                       <div className="border-t-2 border-deep-emerald pt-2 flex justify-between items-center">
                         <span className="text-base font-bold text-gray-900">Grand Total</span>
-                        <span className="text-xl font-bold text-deep-emerald">â‚¹ {calculations.grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        <span className="text-xl font-bold text-deep-emerald">₹ {calculations.grandTotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       </div>
                     </div>
                   </div>
