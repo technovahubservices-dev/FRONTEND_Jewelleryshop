@@ -480,7 +480,7 @@ export const adminSettingsAPI = {
 
 export const storeAPI = {
   getSettings: () =>
-    api.get('/store/settings'),
+    api.get('/store/public'),
 }
 
 export default api
