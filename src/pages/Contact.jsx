@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { contactAPI } from '../services/api'
+import { contactAPI, storeAPI } from '../services/api'
 
 export default function Contact() {
   const [form, setForm] = useState({
@@ -11,6 +11,9 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [storeEmail, setStoreEmail] = useState('')
+  const [storePhone, setStorePhone] = useState('')
+  const [loadingSettings, setLoadingSettings] = useState(true)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -38,6 +41,29 @@ export default function Contact() {
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const fetchStoreSettings = async () => {
+    try {
+      const response = await storeAPI.getSettings()
+      const data = response.data?.data || response.data || {}
+      setStoreEmail(String(data.email || ''))
+      setStorePhone(String(data.phone || ''))
+    } catch (error) {
+      console.error('Failed to load store settings:', error)
+    } finally {
+      setLoadingSettings(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchStoreSettings()
+  }, [])
+
+  const getWhatsAppLink = () => {
+    const formattedPhone = storePhone.replace(/\D/g, '')
+    const message = encodeURIComponent('Hi, I would like to know more about your products.')
+    return `https://wa.me/${formattedPhone}?text=${message}`
   }
 
   return (
@@ -71,9 +97,30 @@ export default function Contact() {
                 <span className="material-symbols-outlined text-regal-gold text-[28px] mt-0.5">mail</span>
                 <div>
                   <p className="font-body-md text-body-md text-charcoal-text font-medium">Email Us</p>
-                  <Link to="mailto:hello@jkrjewellery.com" className="font-body-md text-body-md text-deep-emerald hover:text-regal-gold transition-colors mt-1 inline-block">
-                    hello@jkrjewellery.com
+                  <Link to={`mailto:${storeEmail}`} className="font-body-md text-body-md text-deep-emerald hover:text-regal-gold transition-colors mt-1 inline-block">
+                    {loadingSettings ? 'Loading...' : storeEmail || '—'}
                   </Link>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <span className="material-symbols-outlined text-regal-gold text-[28px] mt-0.5">call</span>
+                <div>
+                  <p className="font-body-md text-body-md text-charcoal-text font-medium">WhatsApp</p>
+                  {storePhone ? (
+                    <Link
+                      to={getWhatsAppLink()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-body-md text-body-md text-deep-emerald hover:text-regal-gold transition-colors mt-1 inline-flex items-center gap-2"
+                    >
+                      {storePhone}
+                    </Link>
+                  ) : (
+                    <span className="font-body-md text-body-md text-on-surface-variant mt-1">
+                      {loadingSettings ? 'Loading...' : '—'}
+                    </span>
+                  )}
                 </div>
               </div>
 
