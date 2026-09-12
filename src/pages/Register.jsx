@@ -4,10 +4,11 @@ import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
   const navigate = useNavigate()
   const { register } = useAuth()
 
@@ -15,10 +16,28 @@ export default function Register() {
     e.preventDefault()
     setError('')
     setLoading(true)
+
     try {
-      const normalizedEmail = email.trim().toLowerCase()
+      const normalizedIdentifier = identifier.trim()
       const trimmedPassword = password.trim()
-      await register(name, normalizedEmail, trimmedPassword)
+
+      const isEmail = normalizedIdentifier.includes('@')
+
+      const email = isEmail
+        ? normalizedIdentifier.toLowerCase()
+        : ''
+
+      const phone = isEmail
+        ? ''
+        : normalizedIdentifier
+
+      await register(
+        name.trim(),
+        email,
+        phone,
+        trimmedPassword
+      )
+
       navigate('/account', { replace: true })
     } catch (err) {
       setError(err.message)
@@ -28,94 +47,107 @@ export default function Register() {
   }
 
   return (
-    <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 md:py-[120px]">
-      <div className="max-w-md mx-auto">
-        <div className="bg-surface-white border border-outline-variant rounded-lg shadow-sm p-8 md:p-12">
-          <div className="text-center mb-8">
-            <h1 className="font-display-lg text-display-lg text-deep-emerald">
-              Create Your Account
-            </h1>
-            <p className="font-body-md text-body-md text-on-surface-variant mt-3">
-              Join JKR to enjoy exclusive collections, seamless checkout, and personalized service.
-            </p>
-          </div>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+          <h1 className="text-2xl font-semibold text-center mb-2">
+            Create Your Account
+          </h1>
+
+          <p className="text-sm text-gray-500 text-center mb-8">
+            Create an account to continue
+          </p>
 
           {error && (
-            <div className="bg-error-container/10 border border-error/30 text-error px-4 py-3 rounded mb-6 text-sm">
+            <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="name">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Full Name
               </label>
+
               <input
-                autoComplete="name"
-                className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors"
                 id="name"
                 name="name"
-                placeholder="Jane Doe"
                 type="text"
+                placeholder="Enter your full name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
                 required
+                className="w-full rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-gray-500"
               />
             </div>
 
             <div>
-              <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="email">
-                Email Address
+              <label
+                htmlFor="identifier"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email or Phone Number
               </label>
+
               <input
-                autoComplete="email"
-                className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors"
-                id="email"
-                name="email"
-                placeholder="you@example.com"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="identifier"
+                name="identifier"
+                type="text"
+                placeholder="Enter email or phone number"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                autoComplete="username"
                 required
+                className="w-full rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-gray-500"
               />
             </div>
 
             <div>
-              <label className="block font-label-caps text-label-caps text-on-surface-variant mb-2" htmlFor="password">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Password
               </label>
+
               <input
-                autoComplete="new-password"
-                className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors"
                 id="password"
                 name="password"
-                placeholder="Create a strong password"
                 type="password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
                 required
-                minLength="6"
+                className="w-full rounded-md border border-gray-300 px-4 py-3 outline-none focus:border-gray-500"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-deep-emerald text-white px-8 py-4 font-label-caps text-label-caps rounded hover:bg-surface-tint transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full rounded-md bg-black text-white py-3 font-medium disabled:opacity-50"
             >
-              {loading ? 'Creating Account...' : 'CREATE ACCOUNT'}
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-on-surface-variant mt-6">
+          <p className="text-sm text-center text-gray-600 mt-6">
             Already have an account?{' '}
-            <Link to="/login" className="text-deep-emerald hover:text-regal-gold transition-colors font-medium">
-              Sign In
+            <Link
+              to="/login"
+              className="font-medium text-black hover:underline"
+            >
+              Login
             </Link>
           </p>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

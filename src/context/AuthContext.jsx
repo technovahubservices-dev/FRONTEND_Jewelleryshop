@@ -13,9 +13,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('token')
       const storedUser = localStorage.getItem('user')
+
       if (token && storedUser) {
         const parsed = JSON.parse(storedUser)
-        if (parsed && typeof parsed === 'object' && parsed._id && parsed.email) {
+
+        if (
+          parsed &&
+          typeof parsed === 'object' &&
+          parsed._id &&
+          (parsed.email || parsed.phone)
+        ) {
           setUser(parsed)
         } else {
           localStorage.removeItem('token')
@@ -42,14 +49,26 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, phone, password) => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email: email.toLowerCase().trim(), password: password.trim() }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: name.trim(),
+        email: email ? email.toLowerCase().trim() : '',
+        phone: phone ? phone.trim() : '',
+        password: password.trim(),
+      }),
     })
+
     const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Registration failed')
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Registration failed')
+    }
+
     login(data)
     return data
   }
@@ -57,11 +76,21 @@ export const AuthProvider = ({ children }) => {
   const loginUser = async (identifier, password) => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, password }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        identifier: identifier.trim(),
+        password: password.trim(),
+      }),
     })
+
     const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Login failed')
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Login failed')
+    }
+
     login(data)
     return data
   }
@@ -75,11 +104,18 @@ export const AuthProvider = ({ children }) => {
       },
       body: JSON.stringify(profileData),
     })
+
     const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Failed to update profile')
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to update profile')
+    }
+
     const updatedUser = { ...user, ...data.data }
+
     localStorage.setItem('user', JSON.stringify(updatedUser))
     setUser(updatedUser)
+
     return data
   }
 
@@ -90,10 +126,18 @@ export const AuthProvider = ({ children }) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
-      body: JSON.stringify({ currentPassword, newPassword }),
+      body: JSON.stringify({
+        currentPassword,
+        newPassword,
+      }),
     })
+
     const data = await response.json()
-    if (!response.ok) throw new Error(data.message || 'Failed to change password')
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to change password')
+    }
+
     return data
   }
 
@@ -109,11 +153,19 @@ export const AuthProvider = ({ children }) => {
     isAdmin: user?.isAdmin || false,
   }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within AuthProvider')
+
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider')
+  }
+
   return context
 }
