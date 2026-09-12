@@ -2,18 +2,7 @@ import { Link } from 'react-router-dom'
 import WhatsAppButton from '../WhatsAppButton'
 
 export default function Footer() {
-  const [email, setEmail] = useState('')
-  const [subscribed, setSubscribed] = useState(false)
-
-  const handleSubscribe = (e) => {
-    e.preventDefault()
-
-    if (!email.trim()) return
-
-    setSubscribed(true)
-  }
-
-  return (
+return (
     <>
       <footer className="bg-soft-cream w-full py-20 px-margin-desktop border-t border-outline-variant mt-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-container-max mx-auto">
@@ -168,4 +157,5 @@ export default function Footer() {
     </>
   )
 }
+
 
