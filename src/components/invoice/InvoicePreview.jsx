@@ -289,26 +289,10 @@ export default function InvoicePreview({
     totalGst +
     shipping
 
-  /*
-   * Prefer backend total when available.
-   * This prevents frontend calculation from
-   * conflicting with the actual order total.
-   */
-  const backendGrandTotal =
-    order?.grandTotal ??
-    order?.totalAmount ??
-    order?.total ??
-    order?.finalAmount ??
-    null
-
-  const grandTotal =
-    backendGrandTotal !== null &&
-    backendGrandTotal !== undefined &&
-    !Number.isNaN(
-      Number(backendGrandTotal)
-    )
-      ? Number(backendGrandTotal)
-      : calculatedGrandTotal
+  // Use the same calculation shown in the totals section.
+  // This prevents a backend total from disagreeing with
+  // Subtotal - Discount + GST + Shipping.
+  const grandTotal = calculatedGrandTotal
 
   // ============================================================
   // DISCOUNT VISIBILITY
@@ -661,9 +645,12 @@ export default function InvoicePreview({
           ================================================== */}
           <div
             id="invoice-preview"
-            className="min-h-[297mm] w-[210mm] max-w-full bg-white p-[10mm] text-gray-900"
+            className="min-h-[297mm] w-[210mm] max-w-full overflow-hidden bg-white p-[10mm] text-gray-900"
             style={{
               boxSizing: 'border-box',
+              width: '210mm',
+              maxWidth: '100%',
+              overflowX: 'hidden',
             }}
           >
 
@@ -1045,305 +1032,238 @@ export default function InvoicePreview({
 
             </div>
 
-            {/* ==================================================
+            {/* ============================================================
                 TOTALS
-            ================================================== */}
+                Fixed two-column table layout.
+                The amount column is always fixed to 32mm and the
+                label column gets the remaining space, preventing
+                overlap in browser preview and html2canvas.
+            ============================================================ */}
 
-                        {/* ==================================================
-   {/* ============================================================
-    TOTALS
-============================================================ */}
+            <div
+              className="mb-8"
+              style={{
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                boxSizing: 'border-box',
+              }}
+            >
+              <table
+                style={{
+                  width: '82mm',
+                  minWidth: '82mm',
+                  maxWidth: '82mm',
+                  borderCollapse: 'collapse',
+                  tableLayout: 'fixed',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <colgroup>
+                  <col style={{ width: '50mm' }} />
+                  <col style={{ width: '32mm' }} />
+                </colgroup>
 
-<div
-  className="mb-8"
-  style={{
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    boxSizing: 'border-box',
-  }}
->
-  <div
-    style={{
-      width: '82mm',
-      minWidth: '82mm',
-      maxWidth: '82mm',
-      boxSizing: 'border-box',
-    }}
-  >
-    <div
-      style={{
-        width: '100%',
-        boxSizing: 'border-box',
-      }}
-    >
+                <tbody>
+                  <tr>
+                    <td
+                      style={{
+                        padding: '3px 4mm 3px 0',
+                        textAlign: 'right',
+                        color: '#6B7280',
+                        fontSize: '14px',
+                        lineHeight: '20px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      Total Items:
+                    </td>
+                    <td
+                      style={{
+                        padding: '3px 0',
+                        textAlign: 'right',
+                        color: '#111827',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        lineHeight: '20px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {totalQuantity}
+                    </td>
+                  </tr>
 
-      {/* Total Items */}
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          minHeight: '22px',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          boxSizing: 'border-box',
-        }}
-      >
-        <div
-          style={{
-            width: 'calc(100% - 30mm - 6mm)',
-            paddingRight: '6mm',
-            textAlign: 'right',
-            color: '#6B7280',
-            fontSize: '14px',
-            lineHeight: '20px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          Total Items:
-        </div>
+                  <tr>
+                    <td
+                      style={{
+                        padding: '3px 4mm 3px 0',
+                        textAlign: 'right',
+                        color: '#6B7280',
+                        fontSize: '14px',
+                        lineHeight: '20px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      Subtotal:
+                    </td>
+                    <td
+                      style={{
+                        padding: '3px 0',
+                        textAlign: 'right',
+                        color: '#111827',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        lineHeight: '20px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {formatCurrency(subtotal)}
+                    </td>
+                  </tr>
 
-        <div
-          style={{
-            width: '30mm',
-            minWidth: '30mm',
-            textAlign: 'right',
-            color: '#111827',
-            fontSize: '14px',
-            fontWeight: 500,
-            lineHeight: '20px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          {totalQuantity}
-        </div>
-      </div>
+                  {showDiscount && (
+                    <tr>
+                      <td
+                        style={{
+                          padding: '3px 4mm 3px 0',
+                          textAlign: 'right',
+                          color: '#6B7280',
+                          fontSize: '14px',
+                          lineHeight: '20px',
+                          whiteSpace: 'nowrap',
+                          verticalAlign: 'middle',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        Discount:
+                      </td>
+                      <td
+                        style={{
+                          padding: '3px 0',
+                          textAlign: 'right',
+                          color: '#111827',
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          lineHeight: '20px',
+                          whiteSpace: 'nowrap',
+                          verticalAlign: 'middle',
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        - {formatCurrency(totalDiscount)}
+                      </td>
+                    </tr>
+                  )}
 
-      {/* Subtotal */}
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          minHeight: '22px',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          boxSizing: 'border-box',
-        }}
-      >
-        <div
-          style={{
-            width: 'calc(100% - 30mm - 6mm)',
-            paddingRight: '6mm',
-            textAlign: 'right',
-            color: '#6B7280',
-            fontSize: '14px',
-            lineHeight: '20px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          Subtotal:
-        </div>
+                  <tr>
+                    <td
+                      style={{
+                        padding: '3px 4mm 3px 0',
+                        textAlign: 'right',
+                        color: '#6B7280',
+                        fontSize: '14px',
+                        lineHeight: '20px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      GST:
+                    </td>
+                    <td
+                      style={{
+                        padding: '3px 0',
+                        textAlign: 'right',
+                        color: '#111827',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        lineHeight: '20px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {formatCurrency(totalGst)}
+                    </td>
+                  </tr>
 
-        <div
-          style={{
-            width: '30mm',
-            minWidth: '30mm',
-            textAlign: 'right',
-            color: '#111827',
-            fontSize: '14px',
-            fontWeight: 500,
-            lineHeight: '20px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          {formatCurrency(subtotal)}
-        </div>
-      </div>
+                  <tr>
+                    <td
+                      style={{
+                        padding: '3px 4mm 3px 0',
+                        textAlign: 'right',
+                        color: '#6B7280',
+                        fontSize: '14px',
+                        lineHeight: '20px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      Shipping:
+                    </td>
+                    <td
+                      style={{
+                        padding: '3px 0',
+                        textAlign: 'right',
+                        color: '#111827',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        lineHeight: '20px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {formatCurrency(shipping)}
+                    </td>
+                  </tr>
 
-      {/* Discount */}
-      {showDiscount && (
-        <div
-          style={{
-            display: 'flex',
-            width: '100%',
-            minHeight: '22px',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            boxSizing: 'border-box',
-          }}
-        >
-          <div
-            style={{
-              width: 'calc(100% - 30mm - 6mm)',
-              paddingRight: '6mm',
-              textAlign: 'right',
-              color: '#6B7280',
-              fontSize: '14px',
-              lineHeight: '20px',
-              whiteSpace: 'nowrap',
-              boxSizing: 'border-box',
-            }}
-          >
-            Discount:
-          </div>
-
-          <div
-            style={{
-              width: '30mm',
-              minWidth: '30mm',
-              textAlign: 'right',
-              color: '#111827',
-              fontSize: '14px',
-              fontWeight: 500,
-              lineHeight: '20px',
-              whiteSpace: 'nowrap',
-              boxSizing: 'border-box',
-            }}
-          >
-            - {formatCurrency(totalDiscount)}
-          </div>
-        </div>
-      )}
-
-      {/* GST */}
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          minHeight: '22px',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          boxSizing: 'border-box',
-        }}
-      >
-        <div
-          style={{
-            width: 'calc(100% - 30mm - 6mm)',
-            paddingRight: '6mm',
-            textAlign: 'right',
-            color: '#6B7280',
-            fontSize: '14px',
-            lineHeight: '20px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          GST:
-        </div>
-
-        <div
-          style={{
-            width: '30mm',
-            minWidth: '30mm',
-            textAlign: 'right',
-            color: '#111827',
-            fontSize: '14px',
-            fontWeight: 500,
-            lineHeight: '20px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          {formatCurrency(totalGst)}
-        </div>
-      </div>
-
-      {/* Shipping */}
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          minHeight: '22px',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          boxSizing: 'border-box',
-        }}
-      >
-        <div
-          style={{
-            width: 'calc(100% - 30mm - 6mm)',
-            paddingRight: '6mm',
-            textAlign: 'right',
-            color: '#6B7280',
-            fontSize: '14px',
-            lineHeight: '20px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          Shipping:
-        </div>
-
-        <div
-          style={{
-            width: '30mm',
-            minWidth: '30mm',
-            textAlign: 'right',
-            color: '#111827',
-            fontSize: '14px',
-            fontWeight: 500,
-            lineHeight: '20px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          {formatCurrency(shipping)}
-        </div>
-      </div>
-
-      {/* Grand Total */}
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          marginTop: '8px',
-          paddingTop: '10px',
-          borderTop: '2px solid #0F5132',
-          alignItems: 'center',
-          justifyContent: 'flex-end',
-          boxSizing: 'border-box',
-        }}
-      >
-        <div
-          style={{
-            width: 'calc(100% - 30mm - 6mm)',
-            paddingRight: '6mm',
-            textAlign: 'right',
-            color: '#111827',
-            fontSize: '16px',
-            fontWeight: 700,
-            lineHeight: '24px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          Grand Total:
-        </div>
-
-        <div
-          style={{
-            width: '30mm',
-            minWidth: '30mm',
-            textAlign: 'right',
-            color: '#0F5132',
-            fontSize: '20px',
-            fontWeight: 700,
-            lineHeight: '24px',
-            whiteSpace: 'nowrap',
-            boxSizing: 'border-box',
-          }}
-        >
-          {formatCurrency(grandTotal)}
-        </div>
-      </div>
-
-    </div>
-  </div>
-</div>
+                  <tr>
+                    <td
+                      style={{
+                        borderTop: '2px solid #0F5132',
+                        padding: '10px 4mm 0 0',
+                        textAlign: 'right',
+                        color: '#111827',
+                        fontSize: '16px',
+                        fontWeight: 700,
+                        lineHeight: '24px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      Grand Total:
+                    </td>
+                    <td
+                      style={{
+                        borderTop: '2px solid #0F5132',
+                        padding: '10px 0 0',
+                        textAlign: 'right',
+                        color: '#0F5132',
+                        fontSize: '20px',
+                        fontWeight: 700,
+                        lineHeight: '24px',
+                        whiteSpace: 'nowrap',
+                        verticalAlign: 'middle',
+                        boxSizing: 'border-box',
+                      }}
+                    >
+                      {formatCurrency(grandTotal)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
             {/* ==================================================
                 NOTES
