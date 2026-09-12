@@ -22,7 +22,7 @@ export default function App() {
       <WishlistProvider>
         <div className="font-body-md text-on-background min-h-screen flex flex-col antialiased">
         {!isAdminRoute && <Header />}
-        {pathname !== '/' -and -not  && (<div className="max-w-container-max mx-auto w-full px-margin-desktop pt-4"><BackButton /></div>)}
+        {pathname !== '/' && !isAdminRoute && (<div className="max-w-container-max mx-auto w-full px-margin-desktop pt-4"><BackButton /></div>)}
         <AppRoutes />
         {!isAdminRoute && <Footer />}
       </div>
@@ -31,4 +31,6 @@ export default function App() {
   </AuthProvider>
   )
 }
+
+
 
