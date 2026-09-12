@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext'
 export default function Login() {
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -86,17 +87,29 @@ export default function Login() {
                 Password
               </label>
 
-              <input
-                autoComplete="current-password"
-                className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 px-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors"
-                id="password"
-                name="password"
-                placeholder="Enter your password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <input
+                  autoComplete="current-password"
+                  className="block w-full border-0 border-b border-outline-variant bg-transparent py-2 pr-10 pl-0 text-on-background focus:ring-0 focus:border-deep-emerald sm:text-sm transition-colors"
+                  name="password"
+                  placeholder="Enter your password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-deep-emerald"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <span className="material-symbols-outlined text-[20px]">
+                    {showPassword ? 'visibility_off' : 'visibility'}
+                  </span>
+                </button>
+              </div>
             </div>
 
             <button
