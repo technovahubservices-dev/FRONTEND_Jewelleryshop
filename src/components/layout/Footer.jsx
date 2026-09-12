@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import WhatsAppButton from '../WhatsAppButton'
 
@@ -140,44 +139,6 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-
-          {/* Newsletter */}
-          <div className="md:col-span-3">
-            <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-deep-emerald mb-6">
-              Newsletter
-            </h3>
-
-            <p className="font-body-md text-body-md text-on-surface-variant mb-4">
-              Subscribe to receive updates, access to exclusive deals, and more.
-            </p>
-
-            {subscribed ? (
-              <div className="text-deep-emerald text-sm font-medium">
-                Thank you for subscribing!
-              </div>
-            ) : (
-              <form
-                onSubmit={handleSubscribe}
-                className="flex border-b border-deep-emerald pb-2"
-              >
-                <input
-                  className="bg-transparent border-none focus:ring-0 w-full font-body-md px-0 py-1 placeholder:text-outline-variant"
-                  placeholder="Enter your email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-
-                <button
-                  type="submit"
-                  className="text-deep-emerald hover:text-regal-gold transition-colors font-label-caps uppercase tracking-widest text-xs"
-                >
-                  Subscribe
-                </button>
-              </form>
-            )}
-          </div>
         </div>
 
         {/* Footer Bottom */}
@@ -207,3 +168,4 @@ export default function Footer() {
     </>
   )
 }
+
