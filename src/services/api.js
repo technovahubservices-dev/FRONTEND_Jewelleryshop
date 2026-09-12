@@ -1,4 +1,3 @@
-
 import axios from 'axios'
 import { getApiBaseUrl } from '../utils/apiUrl'
 
@@ -52,8 +51,8 @@ api.interceptors.response.use(
 ========================= */
 
 export const authAPI = {
-  login: (email, password) =>
-    api.post('/auth/login', { email, password }),
+  login: (identifier, password) =>
+    api.post('/auth/login', { identifier, password }),
 
   register: (name, email, password) =>
     api.post('/auth/register', { name, email, password }),
@@ -484,4 +483,3 @@ export const storeAPI = {
 }
 
 export default api
-
