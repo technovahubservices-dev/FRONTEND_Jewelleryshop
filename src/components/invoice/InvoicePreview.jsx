@@ -215,114 +215,182 @@ export default function InvoicePreview({
     'Crafting timeless elegance since 2017'
 
   const handleDownloadPDF = async () => {
-    try {
-      const element = document.getElementById('invoice-preview')
+  try {
+    const element = document.getElementById('invoice-preview')
 
-      if (!element) {
-        console.error('Invoice preview element not found')
-        return
-      }
+    if (!element) {
+      console.error('Invoice preview element not found')
+      return
+    }
 
-      const html2canvasModule = await import('html2canvas')
-      const jsPDFModule = await import('jspdf')
+    const html2canvasModule = await import('html2canvas')
+    const jsPDFModule = await import('jspdf')
 
-      const html2canvas =
-        html2canvasModule.default || html2canvasModule
+    const html2canvas =
+      html2canvasModule.default || html2canvasModule
 
-      const jsPDF =
-        jsPDFModule.jsPDF || jsPDFModule.default
+    const jsPDF =
+      jsPDFModule.jsPDF || jsPDFModule.default
 
-      const images = Array.from(
-        element.querySelectorAll('img')
+    // Wait for all images
+    const images = Array.from(element.querySelectorAll('img'))
+
+    await Promise.all(
+      images.map(
+        (img) =>
+          new Promise((resolve) => {
+            if (img.complete && img.naturalWidth > 0) {
+              resolve()
+            } else {
+              img.onload = resolve
+              img.onerror = resolve
+            }
+          })
       )
+    )
 
-      await Promise.all(
-        images.map(
-          (img) =>
-            new Promise((resolve) => {
-              if (img.complete) {
-                resolve()
-              } else {
-                img.onload = resolve
-                img.onerror = resolve
-              }
-            })
-        )
-      )
+    // Temporarily force exact A4 dimensions
+    const originalWidth = element.style.width
+    const originalMinHeight = element.style.minHeight
+    const originalMaxWidth = element.style.maxWidth
+    const originalPadding = element.style.padding
+    const originalBoxSizing = element.style.boxSizing
 
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-      })
+    element.style.width = '210mm'
+    element.style.minHeight = '297mm'
+    element.style.maxWidth = '210mm'
+    element.style.padding = '10mm'
+    element.style.boxSizing = 'border-box'
 
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      })
+    // Give browser one frame to recalculate layout
+    await new Promise((resolve) =>
+      requestAnimationFrame(() => resolve())
+    )
 
-      const pageWidth = 210
-      const pageHeight = 297
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      logging: false,
+      imageTimeout: 15000,
+      width: element.offsetWidth,
+      height: element.offsetHeight,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight,
+    })
 
-      const imageWidth = pageWidth
-      const imageHeight =
-        (canvas.height * imageWidth) / canvas.width
+    // Restore original styles
+    element.style.width = originalWidth
+    element.style.minHeight = originalMinHeight
+    element.style.maxWidth = originalMaxWidth
+    element.style.padding = originalPadding
+    element.style.boxSizing = originalBoxSizing
 
-      let heightLeft = imageHeight
-      let position = 0
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4',
+      compress: true,
+    })
 
+    const pageWidth = 210
+    const pageHeight = 297
+
+    const canvasWidth = canvas.width
+    const canvasHeight = canvas.height
+
+    const ratio = pageWidth / canvasWidth
+
+    const renderedHeight = canvasHeight * ratio
+
+    const imageData = canvas.toDataURL(
+      'image/jpeg',
+      0.95
+    )
+
+    // Single A4 page when content fits
+    if (renderedHeight <= pageHeight) {
       pdf.addImage(
-        canvas.toDataURL('image/png'),
-        'PNG',
+        imageData,
+        'JPEG',
         0,
-        position,
-        imageWidth,
-        imageHeight
+        0,
+        pageWidth,
+        renderedHeight
       )
+    } else {
+      // Multi-page handling
+      let remainingHeight = renderedHeight
+      let sourceY = 0
 
-      heightLeft -= pageHeight
+      while (remainingHeight > 0) {
+        const pageCanvas = document.createElement('canvas')
 
-      while (heightLeft > 0) {
-        position = heightLeft - imageHeight
+        const pagePixelHeight = Math.min(
+          canvasHeight - sourceY,
+          Math.floor(pageHeight / ratio)
+        )
 
-        pdf.addPage()
+        pageCanvas.width = canvasWidth
+        pageCanvas.height = pagePixelHeight
+
+        const context = pageCanvas.getContext('2d')
+
+        context.fillStyle = '#ffffff'
+        context.fillRect(
+          0,
+          0,
+          pageCanvas.width,
+          pageCanvas.height
+        )
+
+        context.drawImage(
+          canvas,
+          0,
+          sourceY,
+          canvasWidth,
+          pagePixelHeight,
+          0,
+          0,
+          canvasWidth,
+          pagePixelHeight
+        )
+
+        const pageImage = pageCanvas.toDataURL(
+          'image/jpeg',
+          0.95
+        )
+
+        const pageRenderedHeight =
+          pagePixelHeight * ratio
+
+        if (sourceY > 0) {
+          pdf.addPage()
+        }
 
         pdf.addImage(
-          canvas.toDataURL('image/png'),
-          'PNG',
+          pageImage,
+          'JPEG',
           0,
-          position,
-          imageWidth,
-          imageHeight
+          0,
+          pageWidth,
+          pageRenderedHeight
         )
 
-        heightLeft -= pageHeight
+        sourceY += pagePixelHeight
+        remainingHeight -= pageHeight
       }
-
-      pdf.save(`invoice-${invoiceNumber}.pdf`)
-    } catch (error) {
-      console.error('Invoice PDF generation failed:', error)
     }
-  }
 
-  const handlePrint = () => {
-    window.print()
-  }
-
-  if (loading && !order) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-white px-8 py-6 shadow-xl">
-          <p className="text-sm text-gray-600">
-            Loading invoice...
-          </p>
-        </div>
-      </div>
+    pdf.save(`invoice-${invoiceNumber}.pdf`)
+  } catch (error) {
+    console.error(
+      'Invoice PDF generation failed:',
+      error
     )
   }
-
+}
   return (
     <>
       <style>{printStyles}</style>
