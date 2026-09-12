@@ -1,5 +1,6 @@
 export const formatDate = (dateString) => {
   if (!dateString) return '-'
+
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -9,6 +10,7 @@ export const formatDate = (dateString) => {
 
 export const formatDateTime = (dateString) => {
   if (!dateString) return '-'
+
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -20,6 +22,7 @@ export const formatDateTime = (dateString) => {
 
 export const formatDateLong = (dateString) => {
   if (!dateString) return ''
+
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -28,32 +31,62 @@ export const formatDateLong = (dateString) => {
 }
 
 export const formatCurrency = (amount) => {
-  if (!amount && amount !== 0) return '-'
-  return `₹ ${Number(amount).toLocaleString('en-IN')}`
+  if (amount === null || amount === undefined || amount === '') {
+    return '-'
+  }
+
+  const number = Number(amount)
+
+  if (!Number.isFinite(number)) {
+    return '-'
+  }
+
+  return `₹ ${number.toLocaleString('en-IN', {
+    maximumFractionDigits: 2,
+  })}`
 }
 
 export const parseNumber = (value) => {
-  if (typeof value === 'number') return value
-  if (typeof value !== 'string') return 0
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : 0
+  }
+
+  if (typeof value !== 'string') {
+    return 0
+  }
+
   const cleaned = value.replace(/[^0-9.\-]/g, '')
-  const num = parseFloat(cleaned)
-  return Number.isFinite(num) ? num : 0
+  const number = parseFloat(cleaned)
+
+  return Number.isFinite(number) ? number : 0
 }
 
-export const calculateLineItem = (item) => {
-  const qty = parseNumber(item.qty ?? item.quantity) || 0
-  const price = parseNumber(item.price) || 0
-  const discountAmount = parseNumber(item.discount) || 0
-  const gstPercent = parseNumber(item.gst) || 0
+export const calculateLineItem = (item = {}) => {
+  const qty = parseNumber(item.qty ?? item.quantity)
+  const price = parseNumber(item.price)
+  const discountPercent = parseNumber(item.discount)
+  const gstPercent = parseNumber(item.gst)
 
   const basePriceTotal = qty * price
-  const taxableValue = Math.max(0, basePriceTotal - discountAmount)
-  const gstAmount = taxableValue * (gstPercent / 100)
-  const lineTotal = taxableValue + gstAmount
+
+  const discountAmount =
+    basePriceTotal * (discountPercent / 100)
+
+  const taxableValue = Math.max(
+    0,
+    basePriceTotal - discountAmount
+  )
+
+  const gstAmount =
+    taxableValue * (gstPercent / 100)
+
+  const lineTotal =
+    taxableValue + gstAmount
 
   return {
     qty,
     price,
+    discountPercent,
     discountAmount,
     gstPercent,
     basePriceTotal,
@@ -63,5 +96,7 @@ export const calculateLineItem = (item) => {
   }
 }
 
-export const hasAnyDiscount = (items) =>
-  items.some((item) => (parseNumber(item.discount) || 0) > 0)
+export const hasAnyDiscount = (items = []) =>
+  items.some(
+    (item) => parseNumber(item.discount) > 0
+  )
