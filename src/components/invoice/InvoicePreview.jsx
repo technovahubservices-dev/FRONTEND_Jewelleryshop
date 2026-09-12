@@ -1048,120 +1048,302 @@ export default function InvoicePreview({
             {/* ==================================================
                 TOTALS
             ================================================== */}
-            <div className="mb-8 flex justify-end">
 
-              <div
-                className="w-[82mm]"
-                style={{
-                  minWidth:
-                    '82mm',
-                  maxWidth:
-                    '82mm',
-                }}
-              >
+                        {/* ==================================================
+   {/* ============================================================
+    TOTALS
+============================================================ */}
 
-                <div className="space-y-2">
+<div
+  className="mb-8"
+  style={{
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    boxSizing: 'border-box',
+  }}
+>
+  <div
+    style={{
+      width: '82mm',
+      minWidth: '82mm',
+      maxWidth: '82mm',
+      boxSizing: 'border-box',
+    }}
+  >
+    <div
+      style={{
+        width: '100%',
+        boxSizing: 'border-box',
+      }}
+    >
 
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
+      {/* Total Items */}
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          minHeight: '22px',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          style={{
+            width: 'calc(100% - 30mm - 6mm)',
+            paddingRight: '6mm',
+            textAlign: 'right',
+            color: '#6B7280',
+            fontSize: '14px',
+            lineHeight: '20px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          Total Items:
+        </div>
 
-                    <span className="text-right text-gray-500">
-                      Total Items:
-                    </span>
+        <div
+          style={{
+            width: '30mm',
+            minWidth: '30mm',
+            textAlign: 'right',
+            color: '#111827',
+            fontSize: '14px',
+            fontWeight: 500,
+            lineHeight: '20px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          {totalQuantity}
+        </div>
+      </div>
 
-                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
-                      {totalQuantity}
-                    </span>
+      {/* Subtotal */}
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          minHeight: '22px',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          style={{
+            width: 'calc(100% - 30mm - 6mm)',
+            paddingRight: '6mm',
+            textAlign: 'right',
+            color: '#6B7280',
+            fontSize: '14px',
+            lineHeight: '20px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          Subtotal:
+        </div>
 
-                  </div>
+        <div
+          style={{
+            width: '30mm',
+            minWidth: '30mm',
+            textAlign: 'right',
+            color: '#111827',
+            fontSize: '14px',
+            fontWeight: 500,
+            lineHeight: '20px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          {formatCurrency(subtotal)}
+        </div>
+      </div>
 
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
+      {/* Discount */}
+      {showDiscount && (
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            minHeight: '22px',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div
+            style={{
+              width: 'calc(100% - 30mm - 6mm)',
+              paddingRight: '6mm',
+              textAlign: 'right',
+              color: '#6B7280',
+              fontSize: '14px',
+              lineHeight: '20px',
+              whiteSpace: 'nowrap',
+              boxSizing: 'border-box',
+            }}
+          >
+            Discount:
+          </div>
 
-                    <span className="text-right text-gray-500">
-                      Subtotal:
-                    </span>
+          <div
+            style={{
+              width: '30mm',
+              minWidth: '30mm',
+              textAlign: 'right',
+              color: '#111827',
+              fontSize: '14px',
+              fontWeight: 500,
+              lineHeight: '20px',
+              whiteSpace: 'nowrap',
+              boxSizing: 'border-box',
+            }}
+          >
+            - {formatCurrency(totalDiscount)}
+          </div>
+        </div>
+      )}
 
-                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
-                      {formatCurrency(
-                        subtotal
-                      )}
-                    </span>
+      {/* GST */}
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          minHeight: '22px',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          style={{
+            width: 'calc(100% - 30mm - 6mm)',
+            paddingRight: '6mm',
+            textAlign: 'right',
+            color: '#6B7280',
+            fontSize: '14px',
+            lineHeight: '20px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          GST:
+        </div>
 
-                  </div>
+        <div
+          style={{
+            width: '30mm',
+            minWidth: '30mm',
+            textAlign: 'right',
+            color: '#111827',
+            fontSize: '14px',
+            fontWeight: 500,
+            lineHeight: '20px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          {formatCurrency(totalGst)}
+        </div>
+      </div>
 
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
+      {/* Shipping */}
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          minHeight: '22px',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          style={{
+            width: 'calc(100% - 30mm - 6mm)',
+            paddingRight: '6mm',
+            textAlign: 'right',
+            color: '#6B7280',
+            fontSize: '14px',
+            lineHeight: '20px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          Shipping:
+        </div>
 
-                    <span className="text-right text-gray-500">
-                      Discount:
-                    </span>
+        <div
+          style={{
+            width: '30mm',
+            minWidth: '30mm',
+            textAlign: 'right',
+            color: '#111827',
+            fontSize: '14px',
+            fontWeight: 500,
+            lineHeight: '20px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          {formatCurrency(shipping)}
+        </div>
+      </div>
 
-                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
-                      -{' '}
-                      {formatCurrency(
-                        totalDiscount
-                      )}
-                    </span>
+      {/* Grand Total */}
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          marginTop: '8px',
+          paddingTop: '10px',
+          borderTop: '2px solid #0F5132',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          boxSizing: 'border-box',
+        }}
+      >
+        <div
+          style={{
+            width: 'calc(100% - 30mm - 6mm)',
+            paddingRight: '6mm',
+            textAlign: 'right',
+            color: '#111827',
+            fontSize: '16px',
+            fontWeight: 700,
+            lineHeight: '24px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          Grand Total:
+        </div>
 
-                  </div>
+        <div
+          style={{
+            width: '30mm',
+            minWidth: '30mm',
+            textAlign: 'right',
+            color: '#0F5132',
+            fontSize: '20px',
+            fontWeight: 700,
+            lineHeight: '24px',
+            whiteSpace: 'nowrap',
+            boxSizing: 'border-box',
+          }}
+        >
+          {formatCurrency(grandTotal)}
+        </div>
+      </div>
 
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
-
-                    <span className="text-right text-gray-500">
-                      GST:
-                    </span>
-
-                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
-                      {formatCurrency(
-                        totalGst
-                      )}
-                    </span>
-
-                  </div>
-
-                  <div className="grid grid-cols-[1fr_auto] items-center gap-6 text-sm">
-
-                    <span className="text-right text-gray-500">
-                      Shipping:
-                    </span>
-
-                    <span className="min-w-[30mm] text-right font-medium text-gray-900">
-                      {formatCurrency(
-                        shipping
-                      )}
-                    </span>
-
-                  </div>
-
-                  <div
-                    className="mt-3 grid grid-cols-[1fr_auto] items-center gap-6 border-t-2 pt-3"
-                    style={{
-                      borderColor:
-                        '#0F5132',
-                    }}
-                  >
-
-                    <span className="text-right text-base font-bold text-gray-900">
-                      Grand Total:
-                    </span>
-
-                    <span
-                      className="min-w-[30mm] text-right text-xl font-bold"
-                      style={{
-                        color:
-                          '#0F5132',
-                      }}
-                    >
-                      {formatCurrency(
-                        grandTotal
-                      )}
-                    </span>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
+    </div>
+  </div>
+</div>
 
             {/* ==================================================
                 NOTES
