@@ -78,13 +78,7 @@ export default function Header() {
             <span className="material-symbols-outlined text-[24px]">storefront</span>
           </button>
           {isAuthenticated ? (
-            <button
-              onClick={logout}
-              className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out"
-              title="Sign Out"
-            >
-              <span className="material-symbols-outlined text-[24px]">logout</span>
-            </button>
+            <Link to="/account" title="My Account"><User size={20} /></Link>
           ) : (
             <Link to="/login" className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out">
               <span className="material-symbols-outlined text-[24px]">person</span>
@@ -185,3 +179,4 @@ export default function Header() {
     </header>
   )
 }
+
