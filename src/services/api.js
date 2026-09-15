@@ -64,7 +64,7 @@ export const authAPI = {
 
 export const googleDriveAPI = {
   startOAuth: (config) =>
-    api.get('/auth/google-drive', config),
+    api.get('/integrations/google-drive', config),
 
   getStatus: (config) =>
     api.get('/integrations/google-drive/status', config),

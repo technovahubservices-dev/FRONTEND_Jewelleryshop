@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { googleDriveAPI } from '../../services/api'
 
 export default function SideNavBar({ isOpen, onClose }) {
   const location = useLocation()
@@ -58,7 +59,15 @@ export default function SideNavBar({ isOpen, onClose }) {
 
     console.log('Reconnecting Google Drive...')
 
-    // Add your Google Drive reconnect logic here
+    googleDriveAPI.startOAuth()
+      .then((response) => {
+        if (response.data?.authUrl) {
+          window.location.href = response.data.authUrl
+        }
+      })
+      .catch((error) => {
+        console.error('Google Drive reconnect failed:', error)
+      })
   }
 
   return (
@@ -158,3 +167,4 @@ export default function SideNavBar({ isOpen, onClose }) {
     </aside>
   )
 }
+
