@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { productAPI, categoryAPI, contentAPI } from '../services/api'
 import { resolveImageUrl } from '../utils/apiUrl'
@@ -7,11 +7,6 @@ import ProductCard from '../components/products/ProductCard'
 const COLLECTION_ORDER = [
   'Heritage', 'Eternal', 'Blossom', 'Celeste', 'Aura',
   'New Arrival', 'Best Seller', 'Bridal', 'Wedding', 'Occasion',
-]
-
-const OCCASION_OPTIONS = [
-  'Bridal', 'Wedding', 'Engagement', 'Party', 'Festive',
-  'Everyday', 'Anniversary', 'Gift',
 ]
 
 const METAL_OPTIONS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold']
@@ -41,7 +36,7 @@ export default function Shop() {
           limit: productsPerPage,
         }
         searchParams.forEach((value, key) => {
-          if (key === 'category' || key === 'collection' || key === 'occasion' || key === 'metal') {
+          if (key === 'category' || key === 'collection' || key === 'metal') {
             params[key] = value
           } else if (key === 'bridal' || key === 'wedding' || key === 'sale') {
             params[key] = value === 'true'
@@ -108,8 +103,7 @@ export default function Shop() {
     return {
       category: searchParams.getAll('category'),
       collection: searchParams.getAll('collection'),
-      occasion: searchParams.getAll('occasion'),
-      metal: searchParams.getAll('metal'),
+            metal: searchParams.getAll('metal'),
       bridal: searchParams.get('bridal') === 'true',
       wedding: searchParams.get('wedding') === 'true',
       sale: searchParams.get('sale') === 'true',
@@ -133,12 +127,6 @@ export default function Shop() {
     return COLLECTION_ORDER.filter(c => seen.has(c))
   }, [products])
 
-  const availableOccasions = useMemo(() => {
-    const occs = products.map(p => p.occasion).filter(Boolean)
-    const seen = new Set([...occs])
-    return OCCASION_OPTIONS.filter(o => seen.has(o))
-  }, [products])
-
   const toggleCheckboxFilter = (type, value) => {
     const current = filters[type] || []
     const updated = current.includes(value)
@@ -147,16 +135,15 @@ export default function Shop() {
 
     const params = new URLSearchParams()
 
-    if (type === 'category' || type === 'collection' || type === 'occasion' || type === 'metal') {
+    if (type === 'category' || type === 'collection' || type === 'metal') {
       updated.forEach(v => params.append(type, v))
     }
 
     const otherTypes = {
-      category: ['collection', 'occasion', 'metal'],
-      collection: ['category', 'occasion', 'metal'],
-      occasion: ['category', 'collection', 'metal'],
-      metal: ['category', 'collection', 'occasion'],
-    }[type] || ['category', 'collection', 'occasion', 'metal']
+      category: ['collection', 'metal'],
+      collection: ['category', 'metal'],
+            metal: ['category', 'collection'],
+    }[type] || ['category', 'collection', 'metal']
 
     otherTypes.forEach(t => {
       const vals = Array.isArray(filters[t]) ? filters[t] : []
@@ -175,7 +162,7 @@ export default function Shop() {
   const toggleBooleanFilter = (key) => {
     const params = new URLSearchParams()
 
-    ;['category', 'collection', 'occasion', 'metal'].forEach(t => {
+    ;['category', 'collection', 'metal'].forEach(t => {
       const vals = Array.isArray(filters[t]) ? filters[t] : []
       vals.forEach(v => params.append(t, v))
     })
@@ -195,7 +182,7 @@ export default function Shop() {
   const setPriceRange = (min, max) => {
     const params = new URLSearchParams()
 
-    ;['category', 'collection', 'occasion', 'metal'].forEach(t => {
+    ;['category', 'collection', 'metal'].forEach(t => {
       const vals = Array.isArray(filters[t]) ? filters[t] : []
       vals.forEach(v => params.append(t, v))
     })
@@ -222,7 +209,7 @@ export default function Shop() {
   const filteredProducts = products
 
   const activeFilterCount =
-    filters.category.length + filters.collection.length + filters.occasion.length +
+    filters.category.length + filters.collection.length +
     filters.metal.length +
     (filters.priceRange[0] > 0 ? 1 : 0) + (filters.priceRange[1] < 10000 ? 1 : 0)
 
@@ -377,30 +364,6 @@ export default function Shop() {
                   </div>
                 </div>
 
-                {/* Occasion Filter */}
-                <div>
-                  <h3 className="font-headline-md text-sm font-semibold text-charcoal-text uppercase tracking-widest mb-4 border-b border-outline-variant pb-2 flex justify-between items-center cursor-pointer">
-                    Occasion <span className="material-symbols-outlined text-[18px]">remove</span>
-                  </h3>
-                  <div className="space-y-3">
-                    {availableOccasions.length > 0 ? (
-                      availableOccasions.map((occasion) => (
-                        <label key={occasion} className="flex items-center space-x-3 cursor-pointer group">
-                          <input
-                            checked={filters.occasion.includes(occasion)}
-                            onChange={() => toggleCheckboxFilter('occasion', occasion)}
-                            className="form-checkbox h-4 w-4 text-deep-emerald border-outline-variant rounded-none focus:ring-deep-emerald"
-                            type="checkbox"
-                          />
-                          <span className="text-on-surface-variant group-hover:text-charcoal-text transition-colors">{occasion}</span>
-                        </label>
-                      ))
-                    ) : (
-                      <p className="text-xs text-on-surface-variant">No occasions available</p>
-                    )}
-                  </div>
-                </div>
-
                 {/* Bridal & Wedding Filters */}
                 <div className="space-y-3">
                   <label className="flex items-center space-x-3 cursor-pointer group">
@@ -471,8 +434,8 @@ export default function Shop() {
                       className="w-full h-2 bg-outline-variant rounded-full accent-deep-emerald cursor-pointer"
                     />
                     <div className="flex justify-between text-xs text-on-surface-variant mt-2">
-                      <span>â‚¹{filters.priceRange[0]}</span>
-                      <span>â‚¹{filters.priceRange[1]}</span>
+                      <span>₹{filters.priceRange[0]}</span>
+                      <span>₹{filters.priceRange[1]}</span>
                     </div>
                   </div>
                 </div>
@@ -546,6 +509,11 @@ export default function Shop() {
     </main>
   )
 }
+
+
+
+
+
 
 
 

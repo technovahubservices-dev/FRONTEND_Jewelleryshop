@@ -5,7 +5,6 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 const METALS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold'];
 const STATUS_OPTIONS = [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Disabled' }, { value: 'draft', label: 'Draft' }];
 const COLLECTIONS = ['Heritage', 'Eternal', 'Blossom', 'Celeste', 'Aura', 'Bridal', 'Wedding', 'Occasion'];
-const OCCASIONS = ['Bridal', 'Wedding', 'Engagement', 'Party', 'Festive', 'Everyday', 'Anniversary', 'Gift'];
 const MAX_FILES = 10;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
@@ -17,12 +16,8 @@ const initialFormState = {
   price: '',
   discountPrice: '',
   stock: '',
-  category: '',
-  subcategory: '',
-  metal: '',
-  collection: '',
-  occasion: '',
-  bridal: false,
+  category: '',  metal: '',
+  collection: '',  bridal: false,
   wedding: false,
   status: 'active',
   isFeatured: false,
@@ -42,12 +37,8 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           price: product.price || '',
           discountPrice: product.discountPrice || '',
           stock: product.stock || '',
-          category: product.category || '',
-          subcategory: product.subcategory || '',
-          metal: product.metal || '',
-          collection: product.collection || '',
-          occasion: product.occasion || '',
-          bridal: product.bridal || false,
+          category: product.category || '',          metal: product.metal || '',
+          collection: product.collection || '',          bridal: product.bridal || false,
           wedding: product.wedding || false,
           status: product.status || 'active',
           isFeatured: product.isFeatured || false,
@@ -104,12 +95,8 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
         price: product.price || '',
         discountPrice: product.discountPrice || '',
         stock: product.stock || '',
-        category: product.category || '',
-        subcategory: product.subcategory || '',
-        metal: product.metal || '',
-        collection: product.collection || '',
-        occasion: product.occasion || '',
-        bridal: product.bridal || false,
+        category: product.category || '',        metal: product.metal || '',
+        collection: product.collection || '',        bridal: product.bridal || false,
         wedding: product.wedding || false,
         status: product.status || 'active',
         isFeatured: product.isFeatured || false,
@@ -442,229 +429,8 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Product Name *
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-2.5 border ${
-                  errors.name ? 'border-error' : 'border-outline-variant'
-                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md`}
-                placeholder="Enter product name"
-              />
-              {errors.name && <p className="text-error text-xs mt-1">{errors.name}</p>}
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                SKU * (Editable)
-              </label>
-              <input
-                type="text"
-                name="sku"
-                value={formData.sku}
-                onChange={handleInputChange}
-                onBlur={handleSkuBlur}
-                className={`w-full px-4 py-2.5 border ${
-                  errors.sku || skuError ? 'border-error' : 'border-outline-variant'
-                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md font-mono`}
-                placeholder="Enter or edit SKU"
-              />
-              {errors.sku && <p className="text-error text-xs mt-1">{errors.sku}</p>}
-              {!errors.sku && skuError && (
-                <p className="text-error text-xs mt-1">{skuError}</p>
-              )}
-              {!errors.sku && skuCheckLoading && (
-                <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
-                  <span className="animate-spin w-3 h-3 border-2 border-on-surface-variant border-t-transparent rounded-full"></span>
-                  Checking SKU availability...
-                </p>
-              )}              <p className="text-xs text-on-surface-variant mt-1">
-                SKU is generated automatically by the backend when left blank
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Category *
-              </label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-2.5 border ${
-                  errors.category ? 'border-error' : 'border-outline-variant'
-                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none`}
-              >
-                <option value="">Select Category</option>
-                {categories.map((cat) => (
-                  <option key={cat._id || cat.id} value={cat.name}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              {errors.category && <p className="text-error text-xs mt-1">{errors.category}</p>}
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Metal
-              </label>
-              <select
-                name="metal"
-                value={formData.metal}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                <option value="">Select Metal</option>
-                {METALS.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Price (₹)
-              </label>
-              <input
-                type="number"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-              />
-              {errors.price && <p className="text-error text-xs mt-1">{errors.price}</p>}
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Discount Price (₹)
-              </label>
-              <input
-                type="number"
-                name="discountPrice"
-                value={formData.discountPrice}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-2.5 border ${
-                  errors.discountPrice ? 'border-error' : 'border-outline-variant'
-                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md`}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-              />
-              {errors.discountPrice && (
-                <p className="text-error text-xs mt-1">{errors.discountPrice}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Stock Quantity
-              </label>
-              <input
-                type="number"
-                name="stock"
-                value={formData.stock}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                placeholder="0"
-                min="0"
-              />
-              {errors.stock && <p className="text-error text-xs mt-1">{errors.stock}</p>}
-            </div>
-
-            <div>
-              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Status (Active / Disabled)
-              </label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-              >
-                {STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-on-surface-variant mt-1">
-                Active = visible in store | Disabled = hidden but not deleted
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-           <div>
-             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-               Subcategory
-             </label>
-             <input
-               type="text"
-               name="subcategory"
-               value={formData.subcategory}
-               onChange={handleInputChange}
-               className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-               placeholder="e.g., Engagement Rings"
-             />
-           </div>
-
-           <div>
-             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-               Collection
-             </label>
-             <select
-               name="collection"
-               value={formData.collection}
-               onChange={handleInputChange}
-               className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-             >
-               <option value="">Select Collection</option>
-               {COLLECTIONS.map((c) => (
-                 <option key={c} value={c}>
-                   {c}
-                 </option>
-               ))}
-             </select>
-           </div>
-         </div>
 
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-             <div>
-               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                 Occasion
-               </label>
-               <select
-                 name="occasion"
-                 value={formData.occasion}
-                 onChange={handleInputChange}
-                 className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
-               >
-                 <option value="">Select Occasion</option>
-                 {OCCASIONS.map((o) => (
-                   <option key={o} value={o}>
-                     {o}
-                   </option>
-                 ))}
-               </select>
-             </div>
 
              <div className="flex items-end">
                <div className="flex flex-col gap-3 w-full">
@@ -847,9 +613,9 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                   );
                 })}
               </div>
-            )}
-          </div>
-        </form>
+            )}</div>
+        </div>
+      </form>
 
         <div className="flex justify-end gap-3 p-6 border-t border-outline-variant">
           <button
@@ -880,6 +646,14 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     </div>
   );
 }
+
+
+
+
+
+
+
+
 
 
 
