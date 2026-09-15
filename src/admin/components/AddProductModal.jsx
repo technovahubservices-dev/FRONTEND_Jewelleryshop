@@ -653,7 +653,7 @@ export default function AddProductModal({
               formData.category &&
               formData.metal ? (
                 <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
-                  {skuLoading
+                  {skuCheckLoading
                     ? 'Generating...'
                     : `Auto-generated: ${formData.sku}`}
                 </p>
