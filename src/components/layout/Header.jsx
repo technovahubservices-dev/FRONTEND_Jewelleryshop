@@ -12,19 +12,41 @@ export default function Header() {
   const { count: wishlistCount } = useWishlist()
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [accessoriesOpen, setAccessoriesOpen] = useState(false)
+
+  const accessorySubcategories = [
+    'Engagement Rings',
+    'Wedding Bands',
+    'Cocktail Rings',
+    'Promise Rings',
+    'Diamond Necklaces',
+    'Gold Chains',
+    'Pendant Sets',
+    'Diamond Earrings',
+    'Gold Earrings',
+    'Hoop Earrings',
+    'Stud Earrings',
+    'Bracelets',
+    'Bangles',
+    'Cuffs',
+    'Chain Bracelets',
+  ]
 
   const mobileNavLinks = [
     { name: 'Shop', to: '/shop' },
-    { name: 'Necklace', to: '/shop' },
-    { name: 'Bangles', to: '/shop' },
-    { name: 'Earrings', to: '/shop' },
-    { name: 'Premium Bride', to: '/shop' },
+    { name: 'Necklace', to: '/shop?category=Necklaces' },
+    { name: 'Bangles', to: '/shop?category=Bangles' },
+    { name: 'Earrings', to: '/shop?category=Earrings' },
+    { name: 'Premium Bride', to: '/shop?bridal=true' },
     { name: 'Accessories', to: '/shop' },
-    { name: 'Blog', to: '/blog' },
+    { name: 'About', to: '/about' },
     { name: 'Contact us', to: '/contact' },
   ]
 
-  const closeMobileMenu = () => setMobileMenuOpen(false)
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false)
+    setAccessoriesOpen(false)
+  }
 
   return (
     <header className="w-full flex flex-col relative z-50">
@@ -44,11 +66,27 @@ export default function Header() {
           </Link>
 
           <nav className="hidden md:flex items-center space-x-6 shrink-0">
-            <NavLink to="/shop" className={({ isActive }) => `text-primary border-b-2 scale-95 duration-200 ease-in-out ${isActive ? 'border-regal-gold' : 'border-transparent'}`}>Necklace</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Bangles</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Earrings</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Premium Bride</NavLink>
-            <NavLink to="/shop" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Accessories</NavLink>
+            <NavLink to="/shop?category=Necklaces" className={({ isActive }) => `text-primary border-b-2 scale-95 duration-200 ease-in-out ${isActive ? "border-primary" : "border-transparent"}`}>Necklace</NavLink>
+            <NavLink to="/shop?category=Bangles" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Bangles</NavLink>
+            <NavLink to="/shop?category=Earrings" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Earrings</NavLink>
+            <NavLink to="/shop?bridal=true" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Premium Bride</NavLink>
+            <div className="relative group">
+  <button type="button" className="text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 border-b-2 border-transparent">
+    Accessories
+  </button>
+  <div className="absolute left-0 top-full mt-2 hidden group-hover:block bg-white shadow-lg border border-outline-variant min-w-[220px] py-2 z-50">
+    {accessorySubcategories.map((subcategory) => (
+      <NavLink
+        key={subcategory}
+        to={`/shop?subcategory=${encodeURIComponent(subcategory)}`}
+        className="block px-4 py-2 text-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-low"
+      >
+        {subcategory}
+      </NavLink>
+    ))}
+  </div>
+</div>
+            <NavLink to="/about" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>About</NavLink>
             <NavLink to="/contact" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Contact us</NavLink>
           </nav>
         </div>
@@ -138,20 +176,49 @@ export default function Header() {
       >
         <div className="flex flex-col pt-16 px-6 space-y-4">
           {mobileNavLinks.map((link) => (
-            <NavLink
-              key={link.name}
-              to={link.to}
-              onClick={closeMobileMenu}
-              className={({ isActive }) =>
-                `block py-3 px-2 text-lg font-body-md transition-colors duration-200 ${
-                  isActive
-                    ? 'text-deep-emerald border-l-2 border-regal-gold'
-                    : 'text-on-surface-variant hover:text-deep-emerald'
-                }`
-              }
-            >
-              {link.name}
-            </NavLink>
+            link.name === 'Accessories' ? (
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setAccessoriesOpen(!accessoriesOpen)}
+                  className="w-full flex items-center justify-between py-3 px-2 text-lg font-body-md text-on-surface-variant hover:text-deep-emerald"
+                >
+                  <span>Accessories</span>
+                  <span className="material-symbols-outlined">
+                    {accessoriesOpen ? 'expand_less' : 'expand_more'}
+                  </span>
+                </button>
+                {accessoriesOpen && (
+                  <div className="pl-4 space-y-1">
+                    {accessorySubcategories.map((subcategory) => (
+                      <NavLink
+                        key={subcategory}
+                        to={`/shop?subcategory=${encodeURIComponent(subcategory)}`}
+                        onClick={closeMobileMenu}
+                        className="block py-2 px-2 text-sm text-on-surface-variant hover:text-deep-emerald"
+                      >
+                        {subcategory}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <NavLink
+                key={link.name}
+                to={link.to}
+                onClick={closeMobileMenu}
+                className={({ isActive }) =>
+                  `block py-3 px-2 text-lg font-body-md transition-colors duration-200 ${
+                    isActive
+                      ? 'text-deep-emerald border-l-2 border-regal-gold'
+                      : 'text-on-surface-variant hover:text-deep-emerald'
+                  }`
+                }
+              >
+                {link.name}
+              </NavLink>
+            )
           ))}
           <div className="border-t border-outline-variant pt-4 mt-4">
             {isAuthenticated ? (
@@ -179,5 +246,19 @@ export default function Header() {
     </header>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

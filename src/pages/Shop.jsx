@@ -36,7 +36,7 @@ export default function Shop() {
           limit: productsPerPage,
         }
         searchParams.forEach((value, key) => {
-          if (key === 'category' || key === 'collection' || key === 'metal') {
+          if (key === 'category' || key === 'subcategory' || key === 'collection' || key === 'metal') {
             params[key] = value
           } else if (key === 'bridal' || key === 'wedding' || key === 'sale') {
             params[key] = value === 'true'
@@ -509,6 +509,7 @@ export default function Shop() {
     </main>
   )
 }
+
 
 
 
