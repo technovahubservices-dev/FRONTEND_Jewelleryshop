@@ -504,9 +504,7 @@ export default function AddProductModal({
     return;
   }
 
-  // Let backend generate SKU for new products
-  // when the user leaves SKU empty.
-  if (key === 'sku' && !isEdit && !value.trim()) {
+  if (key === 'sku' && !isEdit && !String(value).trim()) {
     return;
   }
 
@@ -1190,3 +1188,4 @@ export default function AddProductModal({
     </div>
   );
 }
+
