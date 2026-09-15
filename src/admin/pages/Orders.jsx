@@ -57,7 +57,7 @@ export default function Orders() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [viewOrder, setViewOrder] = useState(null)
-  const [updateForm, setUpdateForm] = useState({ status: '', paymentStatus: '', shippingStatus: '', trackingNumber: '', note: '' })
+  const [updateForm, setUpdateForm] = useState({ status: '', paymentStatus: '', shippingStatus: '', note: '' })
   const [updating, setUpdating] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
 
@@ -113,7 +113,6 @@ export default function Orders() {
         'Payment Status': (order.paymentStatus || '').toUpperCase(),
         'Order Status': (order.status || '').toUpperCase(),
         'Shipping Status': (order.shippingStatus || '').toUpperCase(),
-        'Tracking Number': order.trackingNumber || '',
       }))
 
       exportToExcel({
@@ -151,7 +150,6 @@ export default function Orders() {
       status: order.status || 'new',
       paymentStatus: order.paymentStatus || 'pending',
       shippingStatus: order.shippingStatus || 'not_shipped',
-      trackingNumber: order.trackingNumber || '',
       note: '',
     })
   }
@@ -165,7 +163,6 @@ export default function Orders() {
       if (updateForm.status !== viewOrder.status) payload.status = updateForm.status
       if (updateForm.paymentStatus !== viewOrder.paymentStatus) payload.paymentStatus = updateForm.paymentStatus
       if (updateForm.shippingStatus !== viewOrder.shippingStatus) payload.shippingStatus = updateForm.shippingStatus
-      if (updateForm.trackingNumber !== viewOrder.trackingNumber) payload.trackingNumber = updateForm.trackingNumber
       if (updateForm.note) payload.note = updateForm.note
 
       if (Object.keys(payload).length === 0) {
@@ -676,10 +673,6 @@ export default function Orders() {
                       <p className="text-xs text-on-surface-variant">Status</p>
                       {getShippingBadge(viewOrder.shippingStatus)}
                     </div>
-                    <div>
-                      <p className="text-xs text-on-surface-variant">Tracking Number</p>
-                      <p className="font-medium text-deep-emerald">{viewOrder.trackingNumber || 'Not assigned'}</p>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -728,16 +721,6 @@ export default function Orders() {
                         <option key={s.value} value={s.value}>{s.label}</option>
                       ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Tracking Number</label>
-                    <input
-                      type="text"
-                      value={updateForm.trackingNumber}
-                      onChange={(e) => setUpdateForm({ ...updateForm, trackingNumber: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-                      placeholder="Enter tracking number"
-                    />
                   </div>
                   <div className="md:col-span-2">
                     <label className="block font-label-caps text-xs text-on-surface-variant mb-1">Note</label>
@@ -807,3 +790,4 @@ export default function Orders() {
     </div>
   )
 }
+
