@@ -495,15 +495,23 @@ export default function AddProductModal({
       const formDataPayload = new FormData();
 
       Object.entries(formData).forEach(([key, value]) => {
-        if (typeof value === 'boolean') {
-          formDataPayload.append(key, value);
-        } else if (
-          value !== null &&
-          value !== undefined
-        ) {
-          formDataPayload.append(key, value);
-        }
-      });
+  if (typeof value === 'boolean') {
+    formDataPayload.append(key, value);
+    return;
+  }
+
+  if (value === null || value === undefined) {
+    return;
+  }
+
+  // Let backend generate SKU for new products
+  // when the user leaves SKU empty.
+  if (key === 'sku' && !isEdit && !value.trim()) {
+    return;
+  }
+
+  formDataPayload.append(key, value);
+});
 
       imageState.files.forEach((file) => {
         formDataPayload.append('images', file);
@@ -620,7 +628,7 @@ export default function AddProductModal({
 
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                SKU * (Editable)
+                SKU (Optional / Editable)
               </label>
 
               <input
@@ -649,20 +657,15 @@ export default function AddProductModal({
                 </p>
               )}
 
-              {!isEdit &&
-              formData.category &&
-              formData.metal ? (
-                <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
-                  {skuCheckLoading
-                    ? 'Generating...'
-                    : `Auto-generated: ${formData.sku}`}
-                </p>
-              ) : (
-                <p className="text-xs text-on-surface-variant mt-1">
-                  SKU auto-generates when name, category, and
-                  metal are filled
-                </p>
-              )}
+              {isEdit ? (
+  <p className="text-xs text-on-surface-variant mt-1">
+    Existing SKU can be edited if needed
+  </p>
+) : (
+  <p className="text-xs text-on-surface-variant mt-1">
+    Leave empty to automatically generate a unique SKU
+  </p>
+)}
             </div>
           </div>
 
