@@ -3,11 +3,34 @@ import { productAPI, categoryAPI } from '../../services/api';
 import { resolveImageUrl } from '../../utils/apiUrl';
 
 const METALS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold'];
-const STATUS_OPTIONS = [{ value: 'active', label: 'Active' }, { value: 'inactive', label: 'Disabled' }, { value: 'draft', label: 'Draft' }];
-const COLLECTIONS = ['Heritage', 'Eternal', 'Blossom', 'Celeste', 'Aura', 'Bridal', 'Wedding', 'Occasion'];
+
+const STATUS_OPTIONS = [
+  { value: 'active', label: 'Active' },
+  { value: 'inactive', label: 'Disabled' },
+  { value: 'draft', label: 'Draft' },
+];
+
+const COLLECTIONS = [
+  'Heritage',
+  'Eternal',
+  'Blossom',
+  'Celeste',
+  'Aura',
+  'Bridal',
+  'Wedding',
+  'Occasion',
+];
+
 const MAX_FILES = 10;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+
+const ALLOWED_TYPES = [
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
 
 const initialFormState = {
   name: '',
@@ -16,8 +39,10 @@ const initialFormState = {
   price: '',
   discountPrice: '',
   stock: '',
-  category: '',  metal: '',
-  collection: '',  bridal: false,
+  category: '',
+  metal: '',
+  collection: '',
+  bridal: false,
   wedding: false,
   status: 'active',
   isFeatured: false,
@@ -25,7 +50,12 @@ const initialFormState = {
   isNewArrival: false,
 };
 
-export default function AddProductModal({ isOpen, onClose, product = null, onSaved }) {
+export default function AddProductModal({
+  isOpen,
+  onClose,
+  product = null,
+  onSaved,
+}) {
   const isEdit = !!product;
 
   const [formData, setFormData] = useState(
@@ -37,8 +67,10 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           price: product.price || '',
           discountPrice: product.discountPrice || '',
           stock: product.stock || '',
-          category: product.category || '',          metal: product.metal || '',
-          collection: product.collection || '',          bridal: product.bridal || false,
+          category: product.category || '',
+          metal: product.metal || '',
+          collection: product.collection || '',
+          bridal: product.bridal || false,
           wedding: product.wedding || false,
           status: product.status || 'active',
           isFeatured: product.isFeatured || false,
@@ -50,7 +82,13 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
 
   const [imageState, setImageState] = useState({
     files: [],
-    existingImages: product ? (product.images || []).map((img) => (typeof img === 'string' ? img : (img?.url || img))).filter(Boolean) : [],
+    existingImages: product
+      ? (product.images || [])
+          .map((img) =>
+            typeof img === 'string' ? img : img?.url || img
+          )
+          .filter(Boolean)
+      : [],
     previews: [],
     primaryIndex: 0,
   });
@@ -64,17 +102,21 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
   const skuDebounceRef = useRef(null);
   const [categories, setCategories] = useState([]);
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await categoryAPI.getAll();
+
         if (response.data.success) {
-          setCategories(response.data.data.filter(c => c.isActive) || []);
+          setCategories(
+            response.data.data.filter((c) => c.isActive) || []
+          );
         }
       } catch (err) {
-        // Silently fail — category dropdown will show the select with empty options
+        // Silently fail — category dropdown will remain available
       }
     };
+
     fetchCategories();
   }, []);
 
@@ -95,78 +137,100 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
         price: product.price || '',
         discountPrice: product.discountPrice || '',
         stock: product.stock || '',
-        category: product.category || '',        metal: product.metal || '',
-        collection: product.collection || '',        bridal: product.bridal || false,
+        category: product.category || '',
+        metal: product.metal || '',
+        collection: product.collection || '',
+        bridal: product.bridal || false,
         wedding: product.wedding || false,
         status: product.status || 'active',
         isFeatured: product.isFeatured || false,
         isBestSeller: product.isBestSeller || false,
         isNewArrival: product.isNewArrival || false,
       });
+
       setImageState({
         files: [],
-        existingImages: (product.images || []).map((img) => (typeof img === 'string' ? img : (img?.url || img))).filter(Boolean),
+        existingImages: (product.images || [])
+          .map((img) =>
+            typeof img === 'string' ? img : img?.url || img
+          )
+          .filter(Boolean),
         previews: [],
         primaryIndex: 0,
       });
+
       setErrors({});
       setApiError('');
       setSkuError('');
     } else if (isOpen && !isEdit) {
       setFormData({ ...initialFormState });
+
       setImageState({
         files: [],
         existingImages: [],
         previews: [],
         primaryIndex: 0,
       });
+
       setErrors({});
       setApiError('');
       setSkuError('');
     }
   }, [product, isOpen, isEdit]);
+
   /* =========================================================
      SKU AVAILABILITY CHECK
      ========================================================= */
 
-  const checkSkuAvailability = useCallback(async (sku) => {
-    const trimmed = sku?.trim() || '';
-    if (!trimmed || isEdit) {
-      setSkuError('');
-      return;
-    }
+  const checkSkuAvailability = useCallback(
+    async (sku) => {
+      const trimmed = sku?.trim() || '';
 
-    setSkuCheckLoading(true);
-    setSkuError('');
-
-    try {
-      const response = await productAPI.checkSku(trimmed);
-      if (!response.data?.available) {
-        setSkuError('This SKU is already taken.');
-      } else {
+      if (!trimmed || isEdit) {
         setSkuError('');
+        return;
       }
-    } catch {
-      setSkuError('');
-    } finally {
-      setSkuCheckLoading(false);
-    }
-  }, [isEdit]);
 
-  const debouncedCheckSku = useCallback((sku) => {
-    if (skuDebounceRef.current) {
-      clearTimeout(skuDebounceRef.current);
-    }
-    skuDebounceRef.current = setTimeout(() => {
-      checkSkuAvailability(sku);
-    }, 500);
-  }, [checkSkuAvailability]);
+      setSkuCheckLoading(true);
+      setSkuError('');
+
+      try {
+        const response = await productAPI.checkSku(trimmed);
+
+        if (!response.data?.available) {
+          setSkuError('This SKU is already taken.');
+        } else {
+          setSkuError('');
+        }
+      } catch {
+        setSkuError('');
+      } finally {
+        setSkuCheckLoading(false);
+      }
+    },
+    [isEdit]
+  );
+
+  const debouncedCheckSku = useCallback(
+    (sku) => {
+      if (skuDebounceRef.current) {
+        clearTimeout(skuDebounceRef.current);
+      }
+
+      skuDebounceRef.current = setTimeout(() => {
+        checkSkuAvailability(sku);
+      }, 500);
+    },
+    [checkSkuAvailability]
+  );
 
   const handleSkuBlur = (e) => {
     const value = e.target.value;
+
     if (skuDebounceRef.current) {
       clearTimeout(skuDebounceRef.current);
     }
+
     void checkSkuAvailability(value);
   };
 
@@ -175,7 +239,10 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
      ========================================================= */
 
   const toggleCheckbox = (field) => {
-    setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: !prev[field],
+    }));
   };
 
   const handleInputChange = (e) => {
@@ -188,7 +255,10 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     }));
 
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
     }
 
     if (name === 'sku' && !isEdit) {
@@ -200,6 +270,7 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     const files = Array.from(e.target.files);
 
     const newErrors = { ...errors };
+
     delete newErrors.fileType;
     delete newErrors.fileSize;
     delete newErrors.fileCount;
@@ -208,17 +279,22 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
 
     files.forEach((file) => {
       if (!ALLOWED_TYPES.includes(file.type)) {
-        newErrors.fileType = `Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.`;
+        newErrors.fileType =
+          'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.';
         return;
       }
+
       if (file.size > MAX_FILE_SIZE) {
         newErrors.fileSize = `File ${file.name} exceeds 5MB limit.`;
         return;
       }
+
       validFiles.push(file);
     });
 
-    const totalFiles = imageState.files.length + validFiles.length;
+    const totalFiles =
+      imageState.files.length + validFiles.length;
+
     if (totalFiles > MAX_FILES) {
       newErrors.fileCount = `Maximum ${MAX_FILES} images allowed.`;
     }
@@ -226,25 +302,36 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     setErrors(newErrors);
 
     if (validFiles.length > 0) {
-      const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+      const newPreviews = validFiles.map((file) =>
+        URL.createObjectURL(file)
+      );
+
       setImageState((prev) => ({
         files: [...prev.files, ...validFiles],
         existingImages: prev.existingImages,
         previews: [...prev.previews, ...newPreviews],
-        primaryIndex: prev.files.length === 0 && prev.existingImages.length === 0 ? 0 : prev.primaryIndex,
+        primaryIndex:
+          prev.files.length === 0 &&
+          prev.existingImages.length === 0
+            ? 0
+            : prev.primaryIndex,
       }));
     }
   };
 
   const addImageUrl = () => {
     const url = imageUrlInput.trim();
+
     if (!url) return;
 
-    const urlPattern = /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i;
+    const urlPattern =
+      /^https?:\/\/.+\.(jpg|jpeg|png|webp|gif|svg)(\?.*)?$/i;
+
     if (!urlPattern.test(url)) {
       setErrors((prev) => ({
         ...prev,
-        imageUrl: 'Please enter a valid image URL (jpg, png, webp, gif, svg)',
+        imageUrl:
+          'Please enter a valid image URL (jpg, png, webp, gif, svg)',
       }));
       return;
     }
@@ -257,33 +344,50 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
 
     setImageState((prev) => {
       const newExisting = [...prev.existingImages, url];
+
       return {
         files: prev.files,
         existingImages: newExisting,
         previews: prev.previews,
-        primaryIndex: prev.existingImages.length === 0 && prev.files.length === 0 ? 0 : prev.primaryIndex,
+        primaryIndex:
+          prev.existingImages.length === 0 &&
+          prev.files.length === 0
+            ? 0
+            : prev.primaryIndex,
       };
     });
+
     setImageUrlInput('');
   };
 
   const removeFile = (index) => {
     const offset = imageState.existingImages.length;
+
     if (index < offset) {
       removeExistingImage(index);
     } else {
       const fileIndex = index - offset;
+
       setImageState((prev) => {
         const newFiles = [...prev.files];
         const newPreviews = [...prev.previews];
+
         newFiles.splice(fileIndex, 1);
         newPreviews.splice(fileIndex, 1);
 
         let newPrimary = prev.primaryIndex;
-        if (newFiles.length === 0 && newPreviews.length === 0 && prev.existingImages.length === 0) {
+
+        if (
+          newFiles.length === 0 &&
+          newPreviews.length === 0 &&
+          prev.existingImages.length === 0
+        ) {
           newPrimary = 0;
         } else {
-          newPrimary = Math.min(prev.primaryIndex, prev.existingImages.length + newFiles.length - 1);
+          newPrimary = Math.min(
+            prev.primaryIndex,
+            prev.existingImages.length + newFiles.length - 1
+          );
         }
 
         return {
@@ -299,25 +403,35 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
   const removeExistingImage = (index) => {
     setImageState((prev) => ({
       files: prev.files,
-      existingImages: prev.existingImages.filter((_, i) => i !== index),
+      existingImages: prev.existingImages.filter(
+        (_, i) => i !== index
+      ),
       previews: prev.previews,
       primaryIndex: 0,
     }));
   };
 
   const setPrimary = (index) => {
-    setImageState((prev) => ({ ...prev, primaryIndex: index }));
+    setImageState((prev) => ({
+      ...prev,
+      primaryIndex: index,
+    }));
   };
 
   const getAllImages = () => {
-    return [...imageState.existingImages, ...imageState.previews];
+    return [
+      ...imageState.existingImages,
+      ...imageState.previews,
+    ];
   };
 
   const validate = () => {
     const newErrors = {};
+
     if (!formData.name.trim()) {
       newErrors.name = 'Product name is required';
     }
+
     if (!formData.category) {
       newErrors.category = 'Category is required';
     }
@@ -325,31 +439,50 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     if (formData.price && formData.discountPrice) {
       const priceVal = parseFloat(formData.price);
       const discountVal = parseFloat(formData.discountPrice);
-      if (!isNaN(priceVal) && !isNaN(discountVal) && discountVal >= priceVal) {
-        newErrors.discountPrice = 'Discount price must be less than regular price';
+
+      if (
+        !isNaN(priceVal) &&
+        !isNaN(discountVal) &&
+        discountVal >= priceVal
+      ) {
+        newErrors.discountPrice =
+          'Discount price must be less than regular price';
       }
     }
 
-    if (formData.price && isNaN(parseFloat(formData.price))) {
+    if (
+      formData.price &&
+      isNaN(parseFloat(formData.price))
+    ) {
       newErrors.price = 'Price must be a valid number';
     }
 
-    if (formData.stock && isNaN(parseInt(formData.stock, 10))) {
+    if (
+      formData.stock &&
+      isNaN(parseInt(formData.stock, 10))
+    ) {
       newErrors.stock = 'Stock must be a valid number';
     }
 
     const allImages = getAllImages();
+
     if (allImages.length === 0) {
-      newErrors.images = 'At least one product image is required (upload or URL)';
+      newErrors.images =
+        'At least one product image is required (upload or URL)';
     }
 
     setApiError('');
+
     return newErrors;
   };
 
   const handleSubmit = async (e) => {
-    if (e && e.preventDefault) e.preventDefault();
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
+
     const validationErrors = validate();
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -364,7 +497,10 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
       Object.entries(formData).forEach(([key, value]) => {
         if (typeof value === 'boolean') {
           formDataPayload.append(key, value);
-        } else if (value !== null && value !== undefined) {
+        } else if (
+          value !== null &&
+          value !== undefined
+        ) {
           formDataPayload.append(key, value);
         }
       });
@@ -373,22 +509,39 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
         formDataPayload.append('images', file);
       });
 
-      const existingImageUrls = [...imageState.existingImages];
-      formDataPayload.append('imageUrls', JSON.stringify(existingImageUrls));
+      const existingImageUrls = [
+        ...imageState.existingImages,
+      ];
+
+      formDataPayload.append(
+        'imageUrls',
+        JSON.stringify(existingImageUrls)
+      );
 
       if (isEdit) {
-        await productAPI.update(product._id || product.id, formDataPayload);
+        await productAPI.update(
+          product._id || product.id,
+          formDataPayload
+        );
       } else {
         await productAPI.create(formDataPayload);
       }
 
-      onSaved && onSaved(isEdit ? 'Product updated successfully' : 'Product created successfully');
+      onSaved &&
+        onSaved(
+          isEdit
+            ? 'Product updated successfully'
+            : 'Product created successfully'
+        );
+
       onClose();
     } catch (error) {
       if (error.response?.data?.message) {
         setApiError(error.response.data.message);
       } else {
-        setApiError('An error occurred while saving the product');
+        setApiError(
+          'An error occurred while saving the product'
+        );
       }
     } finally {
       setLoading(false);
@@ -398,7 +551,6 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
   if (!isOpen) return null;
 
   const allImages = getAllImages();
-  const offset = imageState.existingImages.length;
 
   return (
     <div
@@ -409,59 +561,396 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
         className="bg-surface-white rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-outline-variant">
           <h2 className="font-headline-md text-headline-md text-deep-emerald">
-            {isEdit ? 'Edit Product' : 'Add New Jewellery Product'}
+            {isEdit
+              ? 'Edit Product'
+              : 'Add New Jewellery Product'}
           </h2>
+
           <button
             onClick={onClose}
             className="text-on-surface-variant hover:text-deep-emerald transition-colors"
           >
-            <span className="material-symbols-outlined">close</span>
+            <span className="material-symbols-outlined">
+              close
+            </span>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto p-6 space-y-6"
+        >
           {apiError && (
             <div className="p-4 bg-error-container/10 border border-error-container/20 text-error rounded-lg text-sm">
               {apiError}
             </div>
           )}
 
+          {/* =====================================================
+              PRODUCT NAME + SKU
+              ===================================================== */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                Product Name *
+              </label>
 
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2.5 border ${
+                  errors.name
+                    ? 'border-error'
+                    : 'border-outline-variant'
+                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md`}
+                placeholder="Enter product name"
+              />
 
-             <div className="flex items-end">
-               <div className="flex flex-col gap-3 w-full">
-                 <label className="flex items-center gap-3 cursor-pointer">
-                   <input
-                     type="checkbox"
-                     name="bridal"
-                     checked={formData.bridal}
-                     onChange={() => toggleCheckbox('bridal')}
-                     className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
-                   />
-                   <span className="font-body-md text-on-surface">Bridal</span>
-                 </label>
-                 <label className="flex items-center gap-3 cursor-pointer">
-                   <input
-                     type="checkbox"
-                     name="wedding"
-                     checked={formData.wedding}
-                     onChange={() => toggleCheckbox('wedding')}
-                     className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
-                   />
-                   <span className="font-body-md text-on-surface">Wedding</span>
-                 </label>
-               </div>
-             </div>
-         </div>
+              {errors.name && (
+                <p className="text-error text-xs mt-1">
+                  {errors.name}
+                </p>
+              )}
+            </div>
 
-          <div>
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                SKU * (Editable)
+              </label>
+
+              <input
+                type="text"
+                name="sku"
+                value={formData.sku}
+                onChange={handleInputChange}
+                onBlur={handleSkuBlur}
+                className={`w-full px-4 py-2.5 border ${
+                  errors.sku || skuError
+                    ? 'border-error'
+                    : 'border-outline-variant'
+                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md font-mono`}
+                placeholder="Enter or edit SKU"
+              />
+
+              {errors.sku && (
+                <p className="text-error text-xs mt-1">
+                  {errors.sku}
+                </p>
+              )}
+
+              {skuError && (
+                <p className="text-error text-xs mt-1">
+                  {skuError}
+                </p>
+              )}
+
+              {!isEdit &&
+              formData.category &&
+              formData.metal ? (
+                <p className="text-xs text-on-surface-variant mt-1 flex items-center gap-1">
+                  {skuLoading
+                    ? 'Generating...'
+                    : `Auto-generated: ${formData.sku}`}
+                </p>
+              ) : (
+                <p className="text-xs text-on-surface-variant mt-1">
+                  SKU auto-generates when name, category, and
+                  metal are filled
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* =====================================================
+              CATEGORY + METAL
+              ===================================================== */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                Category *
+              </label>
+
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2.5 border ${
+                  errors.category
+                    ? 'border-error'
+                    : 'border-outline-variant'
+                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none`}
+              >
+                <option value="">Select Category</option>
+
+                {categories.map((cat) => (
+                  <option
+                    key={cat._id || cat.id}
+                    value={cat.name}
+                  >
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+
+              {errors.category && (
+                <p className="text-error text-xs mt-1">
+                  {errors.category}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                Metal
+              </label>
+
+              <select
+                name="metal"
+                value={formData.metal}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
+              >
+                <option value="">Select Metal</option>
+
+                {METALS.map((metal) => (
+                  <option key={metal} value={metal}>
+                    {metal}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* =====================================================
+              PRICE + DISCOUNT PRICE
+              ===================================================== */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                Price (₹)
+              </label>
+
+              <input
+                type="number"
+                name="price"
+                value={formData.price}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+
+              {errors.price && (
+                <p className="text-error text-xs mt-1">
+                  {errors.price}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                Discount Price (₹)
+              </label>
+
+              <input
+                type="number"
+                name="discountPrice"
+                value={formData.discountPrice}
+                onChange={handleInputChange}
+                className={`w-full px-4 py-2.5 border ${
+                  errors.discountPrice
+                    ? 'border-error'
+                    : 'border-outline-variant'
+                } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md`}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+
+              {errors.discountPrice && (
+                <p className="text-error text-xs mt-1">
+                  {errors.discountPrice}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* =====================================================
+              STOCK + STATUS
+              ===================================================== */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                Stock Quantity
+              </label>
+
+              <input
+                type="number"
+                name="stock"
+                value={formData.stock}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+                placeholder="0"
+                min="0"
+              />
+
+              {errors.stock && (
+                <p className="text-error text-xs mt-1">
+                  {errors.stock}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                Status (Active / Disabled)
+              </label>
+
+              <select
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
+              >
+                {STATUS_OPTIONS.map((option) => (
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              <p className="text-xs text-on-surface-variant mt-1">
+                Active = visible in store | Disabled = hidden
+                but not deleted
+              </p>
+            </div>
+          </div>
+
+          {/* =====================================================
+              COLLECTION
+              This is the last field in the top multi-column area.
+              ===================================================== */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+                Collection
+              </label>
+
+              <select
+                name="collection"
+                value={formData.collection}
+                onChange={handleInputChange}
+                className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
+              >
+                <option value="">Select Collection</option>
+
+                {COLLECTIONS.map((collection) => (
+                  <option
+                    key={collection}
+                    value={collection}
+                  >
+                    {collection}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* =====================================================
+              TAGS / CHECKBOXES - FULL WIDTH
+              ===================================================== */}
+          <div className="w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 w-full">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="bridal"
+                  checked={formData.bridal}
+                  onChange={() => toggleCheckbox('bridal')}
+                  className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
+                />
+                <span className="font-body-md text-on-surface">
+                  Bridal
+                </span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="wedding"
+                  checked={formData.wedding}
+                  onChange={() => toggleCheckbox('wedding')}
+                  className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
+                />
+                <span className="font-body-md text-on-surface">
+                  Wedding
+                </span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="isFeatured"
+                  checked={formData.isFeatured}
+                  onChange={() =>
+                    toggleCheckbox('isFeatured')
+                  }
+                  className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
+                />
+                <span className="font-body-md text-on-surface">
+                  Featured Product
+                </span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="isBestSeller"
+                  checked={formData.isBestSeller}
+                  onChange={() =>
+                    toggleCheckbox('isBestSeller')
+                  }
+                  className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
+                />
+                <span className="font-body-md text-on-surface">
+                  Best Seller
+                </span>
+              </label>
+
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="isNewArrival"
+                  checked={formData.isNewArrival}
+                  onChange={() =>
+                    toggleCheckbox('isNewArrival')
+                  }
+                  className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
+                />
+                <span className="font-body-md text-on-surface">
+                  New Arrival
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* =====================================================
+              DESCRIPTION - FULL WIDTH
+              ===================================================== */}
+          <div className="w-full">
             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
               Description
             </label>
+
             <textarea
               name="description"
               value={formData.description}
@@ -469,50 +958,26 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
               rows={4}
               className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md resize-y"
               placeholder="Enter product description"
-            ></textarea>
+            />
+
+            {errors.description && (
+              <p className="text-error text-xs mt-1">
+                {errors.description}
+              </p>
+            )}
           </div>
 
-          <div className="flex flex-col gap-3">
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="isFeatured"
-                checked={formData.isFeatured}
-                onChange={() => toggleCheckbox('isFeatured')}
-                className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
-              />
-              <span className="font-body-md text-on-surface">Featured Product</span>
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="isBestSeller"
-                checked={formData.isBestSeller}
-                onChange={() => toggleCheckbox('isBestSeller')}
-                className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
-              />
-              <span className="font-body-md text-on-surface">Best Seller</span>
-            </label>
-
-            <label className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                name="isNewArrival"
-                checked={formData.isNewArrival}
-                onChange={() => toggleCheckbox('isNewArrival')}
-                className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
-              />
-              <span className="font-body-md text-on-surface">New Arrival</span>
-            </label>
-          </div>
-
-          <div>
+          {/* =====================================================
+              PRODUCT IMAGES - FULL WIDTH
+              ===================================================== */}
+          <div className="w-full">
             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
               Product Images *
             </label>
-            <div className="space-y-4">
-              <div className="border-2 border-dashed border-outline-variant rounded-lg p-4 text-center hover:border-deep-emerald transition-colors">
+
+            <div className="space-y-4 w-full">
+              {/* Upload */}
+              <div className="border-2 border-dashed border-outline-variant rounded-lg p-4 text-center hover:border-deep-emerald transition-colors w-full">
                 <input
                   type="file"
                   name="images"
@@ -521,70 +986,131 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                   onChange={handleFileChange}
                   className="hidden"
                   id="imageUpload"
-                  disabled={allImages.length >= MAX_FILES}
+                  disabled={
+                    allImages.length >= MAX_FILES
+                  }
                 />
-                <label htmlFor="imageUpload" className="cursor-pointer">
+
+                <label
+                  htmlFor="imageUpload"
+                  className="cursor-pointer block"
+                >
                   <span className="material-symbols-outlined text-3xl text-on-surface-variant mb-2">
                     upload
                   </span>
+
                   <p className="text-sm font-body-md text-on-surface mb-1">
                     Click to upload images from device
                   </p>
+
                   <p className="text-xs text-on-surface-variant">
-                    Up to {MAX_FILES} images, max 5MB each (JPEG, PNG, WebP, GIF)
+                    Up to {MAX_FILES} images, max 5MB each
+                    (JPEG, PNG, WebP, GIF)
                   </p>
                 </label>
               </div>
 
-              <div className="border border-outline-variant rounded-lg p-4 bg-surface-container-low">
+              {/* Image URL */}
+              <div className="border border-outline-variant rounded-lg p-4 bg-surface-container-low w-full">
                 <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
                   Or enter Image URL(s)
                 </label>
-                <div className="flex gap-2">
+
+                <div className="flex gap-2 w-full">
                   <input
                     type="url"
                     value={imageUrlInput}
-                    onChange={(e) => setImageUrlInput(e.target.value)}
-                    className="flex-1 px-4 py-2 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+                    onChange={(e) =>
+                      setImageUrlInput(e.target.value)
+                    }
+                    className="flex-1 min-w-0 px-4 py-2 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
                     placeholder="https://example.com/image.jpg"
                   />
+
                   <button
                     type="button"
                     onClick={addImageUrl}
-                    disabled={!imageUrlInput.trim() || allImages.length >= MAX_FILES}
+                    disabled={
+                      !imageUrlInput.trim() ||
+                      allImages.length >= MAX_FILES
+                    }
                     className="px-4 py-2 bg-deep-emerald text-surface-white font-label-caps text-label-caps text-xs rounded hover:bg-deep-emerald/90 transition-colors disabled:opacity-50"
                   >
                     Add
                   </button>
                 </div>
-                {errors.imageUrl && <p className="text-error text-xs mt-1">{errors.imageUrl}</p>}
+
+                {errors.imageUrl && (
+                  <p className="text-error text-xs mt-1">
+                    {errors.imageUrl}
+                  </p>
+                )}
               </div>
             </div>
 
-            {errors.images && <p className="text-error text-xs mt-1">{errors.images}</p>}
-            {errors.fileType && <p className="text-error text-xs mt-1">{errors.fileType}</p>}
-            {errors.fileSize && <p className="text-error text-xs mt-1">{errors.fileSize}</p>}
-            {errors.fileCount && <p className="text-error text-xs mt-1">{errors.fileCount}</p>}
+            {/* Image errors */}
+            {errors.images && (
+              <p className="text-error text-xs mt-1">
+                {errors.images}
+              </p>
+            )}
 
+            {errors.fileType && (
+              <p className="text-error text-xs mt-1">
+                {errors.fileType}
+              </p>
+            )}
+
+            {errors.fileSize && (
+              <p className="text-error text-xs mt-1">
+                {errors.fileSize}
+              </p>
+            )}
+
+            {errors.fileCount && (
+              <p className="text-error text-xs mt-1">
+                {errors.fileCount}
+              </p>
+            )}
+
+            {/* Image previews */}
             {allImages.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4 w-full">
                 {allImages.map((img, idx) => {
-                  const isPrimary = idx === imageState.primaryIndex;
+                  const isPrimary =
+                    idx === imageState.primaryIndex;
+
                   return (
                     <div
-                      key={`${isEdit ? (product._id || product.id) : 'new'}-${idx}`}
+                      key={`${
+                        isEdit
+                          ? product._id || product.id
+                          : 'new'
+                      }-${idx}`}
                       className={`relative group border-2 rounded overflow-hidden ${
-                        isPrimary ? 'border-deep-emerald' : 'border-outline-variant'
+                        isPrimary
+                          ? 'border-deep-emerald'
+                          : 'border-outline-variant'
                       }`}
                     >
                       <img
-                        src={typeof img === 'string' ? (img.startsWith('blob:') ? img : resolveImageUrl(img)) : resolveImageUrl(img?.url || '')}
+                        src={
+                          typeof img === 'string'
+                            ? img.startsWith('blob:')
+                              ? img
+                              : resolveImageUrl(img)
+                            : resolveImageUrl(
+                                img?.url || ''
+                              )
+                        }
                         alt={`Product ${idx + 1}`}
                         className="w-full h-24 object-cover"
                         onError={(e) => {
-                          e.target.src = 'https://placehold.co/400x400?text=No+Image';
+                          e.target.src =
+                            'https://placehold.co/400x400?text=No+Image';
                         }}
                       />
+
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                         {isPrimary ? (
                           <span className="text-white text-xs font-label-caps bg-deep-emerald px-2 py-1 rounded">
@@ -593,30 +1119,40 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
                         ) : (
                           <button
                             type="button"
-                            onClick={() => setPrimary(idx)}
+                            onClick={() =>
+                              setPrimary(idx)
+                            }
                             className="p-1 text-white hover:text-deep-emerald transition-colors"
                             title="Set as primary"
                           >
-                            <span className="material-symbols-outlined text-sm">star</span>
+                            <span className="material-symbols-outlined text-sm">
+                              star
+                            </span>
                           </button>
                         )}
+
                         <button
                           type="button"
-                          onClick={() => removeFile(idx)}
+                          onClick={() =>
+                            removeFile(idx)
+                          }
                           className="p-1 text-white hover:text-error transition-colors"
                           title="Remove"
                         >
-                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <span className="material-symbols-outlined text-sm">
+                            delete
+                          </span>
                         </button>
                       </div>
                     </div>
                   );
                 })}
               </div>
-            )}</div>
-        </div>
-      </form>
+            )}
+          </div>
+        </form>
 
+        {/* Footer */}
         <div className="flex justify-end gap-3 p-6 border-t border-outline-variant">
           <button
             type="button"
@@ -626,12 +1162,17 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
           >
             Cancel
           </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              disabled={loading || skuCheckLoading || !!skuError}
-             className="px-6 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded hover:bg-deep-emerald/90 transition-colors flex items-center gap-2 disabled:opacity-50"
-            >
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={
+              loading ||
+              skuCheckLoading ||
+              !!skuError
+            }
+            className="px-6 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-label-caps rounded hover:bg-deep-emerald/90 transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
             {loading ? (
               <>
                 <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
@@ -646,14 +1187,3 @@ export default function AddProductModal({ isOpen, onClose, product = null, onSav
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
