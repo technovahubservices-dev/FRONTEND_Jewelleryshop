@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { orderAPI } from '../services/api'
@@ -216,16 +216,7 @@ export default function OrderDetail() {
               </div>
             </div>
 
-            <div className="flex gap-3 flex-wrap">
-              <button
-                onClick={handleViewInvoice}
-                disabled={downloadingInvoice}
-                className="inline-flex items-center gap-2 px-4 py-2.5 border border-outline-variant text-deep-emerald font-label-caps text-label-caps text-xs rounded hover:bg-surface-container-low transition-colors disabled:opacity-50"
-              >
-                <span className="material-symbols-outlined text-[16px]">visibility</span>
-                View Invoice
-              </button>
-              <button
+            <div className="flex gap-3 flex-wrap">`r`n              <button
                 onClick={handleDownloadInvoice}
                 disabled={downloadingInvoice}
                 className="inline-flex items-center gap-2 px-4 py-2.5 border border-outline-variant text-deep-emerald font-label-caps text-label-caps text-xs rounded hover:bg-surface-container-low transition-colors disabled:opacity-50"
@@ -456,7 +447,7 @@ export default function OrderDetail() {
                       </div>
                       <div className="text-right flex-shrink-0">
                         <p className="font-body-md text-body-md text-primary">
-                          {formatCurrency(item.price)} Ã— {item.quantity}
+                          {formatCurrency(item.price)} × {item.quantity}
                         </p>
                         <p className="font-semibold text-deep-emerald">
                           {formatCurrency((item.price * item.quantity))}
@@ -514,3 +505,5 @@ export default function OrderDetail() {
     </main>
   )
 }
+
+
