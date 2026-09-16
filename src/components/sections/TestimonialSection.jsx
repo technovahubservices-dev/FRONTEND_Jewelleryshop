@@ -106,7 +106,7 @@ export default function TestimonialSection({ title, testimonials: propTestimonia
                   className="w-full flex-shrink-0"
                 >
                   <div
-                    className="grid gap-6 px-1"
+                    className="grid gap-6 px-1 justify-items-center"
                     style={{ gridTemplateColumns: `repeat(${itemsPerSlide}, minmax(0, 1fr))` }}
                   >
                     {testimonials.slice(slideIndex * itemsPerSlide, slideIndex * itemsPerSlide + itemsPerSlide).map((testimonial) => (
@@ -186,3 +186,4 @@ export default function TestimonialSection({ title, testimonials: propTestimonia
     </section>
   )
 }
+
