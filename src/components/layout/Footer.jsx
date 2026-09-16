@@ -18,24 +18,14 @@ return (
               Experience quiet luxury in every detail.
             </p>
 
+
             <div className="flex space-x-4 text-deep-emerald opacity-80 hover:opacity-100 transition-opacity">
-              <Link aria-label="Instagram" to="/shop">
-                <span className="material-symbols-outlined">
-                  photo_camera
-                </span>
-              </Link>
-
-              <Link aria-label="Facebook" to="/shop">
-                <span className="material-symbols-outlined">
-                  thumb_up
-                </span>
-              </Link>
-
-              <Link aria-label="Twitter" to="/shop">
-                <span className="material-symbols-outlined">
-                  alternate_email
-                </span>
-              </Link>
+              <a href="mailto:kruthikajewellery@gmail.com" aria-label="Email" className="hover:text-primary transition-colors">
+                Email
+              </a>
+              <a href="https://www.instagram.com/kruthika_jewellery/" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
+                Instagram
+              </a>
             </div>
           </div>
 
@@ -114,50 +104,6 @@ return (
               <li><Link className="hover:text-primary transition-colors" to="/about">About Us</Link></li>
               <li><Link className="hover:text-primary transition-colors" to="/contact">Contact Us</Link></li>
               <li><Link className="hover:text-primary transition-colors" to="/contact">Reviews</Link></li>
-            </ul>
-          </div>
-          {/* Customer Care */}
-          <div className="md:col-span-2">
-            <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-deep-emerald mb-6">
-              Customer Care
-            </h3>
-
-            <ul className="space-y-4 font-body-md text-body-md text-on-surface-variant">
-              <li>
-                <Link
-                  className="hover:text-primary transition-colors"
-                  to="/account"
-                >
-                  Support
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="hover:text-primary transition-colors"
-                  to="/account"
-                >
-                  Shipping
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="hover:text-primary transition-colors"
-                  to="/account"
-                >
-                  Returns
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="hover:text-primary transition-colors"
-                  to="/account"
-                >
-                  Track Order
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
