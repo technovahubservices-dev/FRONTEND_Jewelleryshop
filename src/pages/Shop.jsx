@@ -224,7 +224,7 @@ export default function Shop() {
   }
 
   return (
-    <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-[120px]">
+    <main className="flex-grow w-full px-2 md:px-4 py-3 md:py-5">
       {loading ? (
         <div className="text-center py-20">
           <span className="material-symbols-outlined text-[48px] text-on-surface-variant/30 mb-4">inventory_2</span>
@@ -300,7 +300,7 @@ export default function Shop() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-12">
+          <div className="flex flex-col md:flex-row gap-6">
             {/* Filter Toggle (Mobile) */}
             <div className="md:hidden mb-4">
               <button
@@ -468,7 +468,7 @@ export default function Shop() {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     {filteredProducts.map((product) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
@@ -509,6 +509,12 @@ export default function Shop() {
     </main>
   )
 }
+
+
+
+
+
+
 
 
 
