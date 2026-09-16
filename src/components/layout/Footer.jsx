@@ -5,10 +5,10 @@ export default function Footer() {
 return (
     <>
       <footer className="bg-soft-cream w-full py-20 px-margin-desktop border-t border-outline-variant mt-auto">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-container-max mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-container-max mx-auto">
 
           {/* Company Information */}
-          <div className="md:col-span-3 mb-10 md:mb-0">
+          <div className="mb-10 md:mb-0">
             <div className="text-headline-lg font-headline-lg text-deep-emerald mb-6">
               JKR
             </div>
@@ -36,7 +36,7 @@ return (
           </div>
 
           {/* Explore */}
-          <div className="md:col-span-2 md:col-start-5">
+          <div className="">
             <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-deep-emerald mb-6">
               Explore
             </h3>
@@ -63,7 +63,7 @@ return (
           </div>
 
           {/* Get In Touch */}
-          <div className="md:col-span-3">
+          <div className="">
             <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-deep-emerald mb-6">
               Get In Touch
             </h3>
@@ -87,8 +87,9 @@ return (
               </p>
           </div>
 
+          </div>
           {/* Quick Links */}
-          <div className="md:col-span-2">
+          <div className="">
             <h3 className="font-label-caps text-label-caps uppercase tracking-widest text-deep-emerald mb-6">
               Quick Links
             </h3>
@@ -122,7 +123,6 @@ return (
             </Link>
           </div>
         </div>
-      </div>
       </footer>
 
       {/* Fixed WhatsApp Button */}
@@ -130,6 +130,8 @@ return (
     </>
   )
 }
+
+
 
 
 
