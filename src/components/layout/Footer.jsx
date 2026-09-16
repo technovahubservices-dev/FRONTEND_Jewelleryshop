@@ -4,8 +4,8 @@ import WhatsAppButton from '../WhatsAppButton'
 export default function Footer() {
 return (
     <>
-      <footer className="bg-soft-cream w-full py-20 px-margin-desktop border-t border-outline-variant mt-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-container-max mx-auto">
+      <footer className="bg-soft-cream w-full py-20 px-0 border-t border-outline-variant mt-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 w-full">
 
           {/* Company Information */}
           <div className="mb-10 md:mb-0">
@@ -104,7 +104,7 @@ return (
         </div>
 
         {/* Footer Bottom */}
-        <div className="max-w-container-max mx-auto mt-16 pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center text-sm text-on-surface-variant">
+        <div className="w-full mt-16 pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center text-sm text-on-surface-variant">
           <p>&copy; 2024 JKR. All Rights Reserved.</p>
 
           <div className="flex space-x-6 mt-4 md:mt-0">
@@ -130,10 +130,4 @@ return (
     </>
   )
 }
-
-
-
-
-
-
 

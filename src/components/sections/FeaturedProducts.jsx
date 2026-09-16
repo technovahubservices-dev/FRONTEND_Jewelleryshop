@@ -94,7 +94,7 @@ export default function FeaturedProducts({ title, description }) {
 
   return (
     <section className="w-full bg-surface-white py-6 md:py-1">
-      <div className="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop">
+      <div className="w-full px-0">
         <div className="text-center mb-12">
           <h2 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-emerald mb-1">
             {title || 'Featured Products'}
@@ -207,3 +207,4 @@ export default function FeaturedProducts({ title, description }) {
     </section>
   )
 }
+

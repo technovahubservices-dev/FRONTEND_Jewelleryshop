@@ -849,7 +849,7 @@ export default function Home() {
 
       {collections.length > 0 && (
         <section className="w-full bg-surface-container-low">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+          <div className="w-full px-0 py-16 md:py-24">
             <div className="text-center mb-16">
               <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
                 {collectionSectionTitle}
@@ -937,7 +937,7 @@ export default function Home() {
       =================================================== */}
 
       <section className="w-full bg-surface-white py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="w-full px-0">
           <div className="text-center mb-10">
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
               Why Trust Us?
@@ -1023,7 +1023,7 @@ export default function Home() {
       =================================================== */}
 
       <section className="w-full bg-surface-white">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-16 md:py-24">
+        <div className="w-full px-0 py-16 md:py-24">
           <FeaturedProducts
             title={featuredSectionTitle}
             description={
@@ -1047,7 +1047,7 @@ export default function Home() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 max-w-7xl mx-auto px-4 md:px-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 w-full px-0">
           {reels.map(
             (reel) => {
               const isYouTube =
@@ -1267,7 +1267,7 @@ export default function Home() {
 
       {activeFestiveImages.length > 0 ? (
       <section className="w-full bg-surface-white py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
+        <div className="w-full px-0">
           <div className="text-center mb-8">
             <h2 className="font-playfair text-3xl md:text-4xl text-[#2c2c2c] italic">
               Festive Exclusive
@@ -1378,3 +1378,4 @@ export default function Home() {
     </main>
   )
 }
+
