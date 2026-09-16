@@ -216,7 +216,7 @@ export default function OrderDetail() {
               </div>
             </div>
 
-            <div className="flex gap-3 flex-wrap">`r`n              <button
+            <div className="flex gap-3 flex-wrap">              <button
                 onClick={handleDownloadInvoice}
                 disabled={downloadingInvoice}
                 className="inline-flex items-center gap-2 px-4 py-2.5 border border-outline-variant text-deep-emerald font-label-caps text-label-caps text-xs rounded hover:bg-surface-container-low transition-colors disabled:opacity-50"

@@ -65,7 +65,7 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/search" element={<Search />} />
-      <Route path="/blog" element={<Blog />} />`r`n      <Route path="/about" element={<About />} />
+      <Route path="/blog" element={<Blog />} />     <Route path="/about" element={<About />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/contact" element={<Contact />} />
 
