@@ -1,10 +1,7 @@
-﻿
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import {
   formatCurrency,
   formatDate,
-  calculateLineItem,
-  hasAnyDiscount,
 } from '../../utils/formatters'
 import { orderAPI, storeAPI } from '../../services/api'
 
@@ -201,105 +198,46 @@ export default function InvoicePreview({
     ''
 
   // ============================================================
-  // CALCULATE ITEMS
+  // INVOICE ITEMS
+  // USE BACKEND ORDER ITEM VALUES DIRECTLY
   // ============================================================
-  const calculatedItems = items.map((item) =>
-    calculateLineItem(item)
-  )
+  const calculatedItems = items
 
   // ============================================================
-  // TOTAL QUANTITY
+  // INVOICE TOTALS
+  // USE BACKEND ORDER VALUES
   // ============================================================
   const totalQuantity =
-    calculatedItems.reduce(
+    items.reduce(
       (sum, item) =>
-        sum + Number(item.qty || 0),
+        sum + Number(item.quantity || 0),
       0
     )
 
-  // ============================================================
-  // SUBTOTAL
-  // ============================================================
   const subtotal =
-    calculatedItems.reduce(
-      (sum, item) =>
-        sum +
-        Number(item.price || 0) *
-          Number(item.qty || 0),
-      0
-    )
+    Number(order?.itemsPrice || 0)
 
-  // ============================================================
-  // DISCOUNT
-  // ============================================================
   const totalDiscount =
-    calculatedItems.reduce(
-      (sum, item) =>
-        sum +
-        Number(item.discountAmount || 0),
-      0
-    )
+    Number(order?.discount || 0)
 
-  // ============================================================
-  // GST
-  // ============================================================
   const totalGst =
-    calculatedItems.reduce(
-      (sum, item) => {
-        const gross =
-          Number(item.price || 0) *
-          Number(item.qty || 0)
+    Number(order?.taxPrice || 0)
 
-        const discount =
-          Number(
-            item.discountAmount || 0
-          )
-
-        const taxableAmount =
-          gross - discount
-
-        const gstAmount =
-          taxableAmount *
-          (Number(
-            item.gstPercent || 0
-          ) / 100)
-
-        return sum + gstAmount
-      },
-      0
-    )
-
-  // ============================================================
-  // SHIPPING
-  // ============================================================
   const shipping =
-    Number(
-      order?.shipping ||
-        order?.shippingCharge ||
-        order?.deliveryCharge ||
-        0
-    )
+    Number(order?.shippingPrice || 0)
 
-  // ============================================================
-  // GRAND TOTAL
-  // ============================================================
-  const calculatedGrandTotal =
-    subtotal -
-    totalDiscount +
-    totalGst +
-    shipping
-
-  // Use the same calculation shown in the totals section.
-  // This prevents a backend total from disagreeing with
-  // Subtotal - Discount + GST + Shipping.
-  const grandTotal = calculatedGrandTotal
+  const grandTotal =
+    Number(order?.totalPrice || 0)
 
   // ============================================================
   // DISCOUNT VISIBILITY
   // ============================================================
   const showDiscount =
-    hasAnyDiscount(items) ||
-    totalDiscount > 0
+    totalDiscount > 0 ||
+    items.some(
+      (item) =>
+        Number(item.discount || 0) > 0
+    )
 
   // ============================================================
   // NOTES
@@ -961,7 +899,7 @@ export default function InvoicePreview({
                   {calculatedItems.map(
                     (item, index) => (
                       <tr
-                        key={`${item.sku || item.productName || 'item'}-${index}`}
+                        key={`${item.sku || item.productName || item.name || 'item'}-${index}`}
                         className={
                           index % 2 === 0
                             ? 'bg-gray-50'
@@ -987,25 +925,28 @@ export default function InvoicePreview({
                         </td>
 
                         <td className="px-2 py-3 text-center text-sm text-gray-600">
-                          {item.qty || 0}
+                          {item.quantity || 0}
                         </td>
 
                         <td className="whitespace-nowrap px-2 py-3 text-right text-sm text-gray-600">
                           {formatCurrency(
-                            item.price || 0
+                            Number(
+                              item.price || 0
+                            )
                           )}
                         </td>
 
                         <td className="whitespace-nowrap px-2 py-3 text-right text-sm text-gray-600">
-                          {formatCurrency(
-                            item.discountAmount ||
-                              0
+                          {Number(
+                            item.discount || 0
                           )}
+                          %
                         </td>
 
                         <td className="whitespace-nowrap px-2 py-3 text-right text-sm text-gray-600">
-                          {item.gstPercent ||
-                            0}
+                          {Number(
+                            item.gst || 0
+                          )}
                           %
                         </td>
 
@@ -1017,8 +958,9 @@ export default function InvoicePreview({
                           }}
                         >
                           {formatCurrency(
-                            item.lineTotal ||
-                              0
+                            Number(
+                              item.lineTotal || 0
+                            )
                           )}
                         </td>
 
@@ -1034,12 +976,7 @@ export default function InvoicePreview({
 
             {/* ============================================================
                 TOTALS
-                Fixed two-column table layout.
-                The amount column is always fixed to 32mm and the
-                label column gets the remaining space, preventing
-                overlap in browser preview and html2canvas.
             ============================================================ */}
-
             <div
               className="mb-8"
               style={{
@@ -1065,6 +1002,7 @@ export default function InvoicePreview({
                 </colgroup>
 
                 <tbody>
+
                   <tr>
                     <td
                       style={{
@@ -1080,6 +1018,7 @@ export default function InvoicePreview({
                     >
                       Total Items:
                     </td>
+
                     <td
                       style={{
                         padding: '3px 0',
@@ -1112,6 +1051,7 @@ export default function InvoicePreview({
                     >
                       Subtotal:
                     </td>
+
                     <td
                       style={{
                         padding: '3px 0',
@@ -1145,6 +1085,7 @@ export default function InvoicePreview({
                       >
                         Discount:
                       </td>
+
                       <td
                         style={{
                           padding: '3px 0',
@@ -1158,7 +1099,9 @@ export default function InvoicePreview({
                           boxSizing: 'border-box',
                         }}
                       >
-                        - {formatCurrency(totalDiscount)}
+                        - {formatCurrency(
+                          totalDiscount
+                        )}
                       </td>
                     </tr>
                   )}
@@ -1178,6 +1121,7 @@ export default function InvoicePreview({
                     >
                       GST:
                     </td>
+
                     <td
                       style={{
                         padding: '3px 0',
@@ -1210,6 +1154,7 @@ export default function InvoicePreview({
                     >
                       Shipping:
                     </td>
+
                     <td
                       style={{
                         padding: '3px 0',
@@ -1244,6 +1189,7 @@ export default function InvoicePreview({
                     >
                       Grand Total:
                     </td>
+
                     <td
                       style={{
                         borderTop: '2px solid #0F5132',
@@ -1258,9 +1204,12 @@ export default function InvoicePreview({
                         boxSizing: 'border-box',
                       }}
                     >
-                      {formatCurrency(grandTotal)}
+                      {formatCurrency(
+                        grandTotal
+                      )}
                     </td>
                   </tr>
+
                 </tbody>
               </table>
             </div>
@@ -1370,7 +1319,7 @@ export default function InvoicePreview({
 
             <button
               onClick={handleDownloadPDF}
-              className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors"
+              className="flex items-center gap-2 px-6 py-2.5 text-sm font-semibold text-white shadow-sm"
               style={{
                 backgroundColor:
                   '#0F5132',
