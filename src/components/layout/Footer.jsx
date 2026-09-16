@@ -21,10 +21,16 @@ return (
 
             <div className="flex space-x-4 text-deep-emerald opacity-80 hover:opacity-100 transition-opacity">
               <a href="mailto:kruthikajewellery@gmail.com" aria-label="Email" className="hover:text-primary transition-colors">
-                Email
+                <span className="material-symbols-outlined">mail</span>
               </a>
               <a href="https://www.instagram.com/kruthika_jewellery/" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
-                Instagram
+                <span className="material-symbols-outlined">photo_camera</span>
+              </a>
+              <a href="https://www.facebook.com/kruthikajewellery" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-primary transition-colors">
+                <span className="material-symbols-outlined">thumb_up</span>
+              </a>
+              <a href="https://www.youtube.com/@kruthikajewellery" target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">
+                <span className="material-symbols-outlined">play_circle</span>
               </a>
             </div>
           </div>
@@ -79,18 +85,6 @@ return (
                 <span className="font-semibold">Business Hours:</span><br />
                 10 am - 7 pm (Mon-Sat)
               </p>
-              <div className="flex space-x-4 pt-2">
-                <a href="https://www.facebook.com/kruthikajewellery" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-primary transition-colors">
-                  Facebook
-                </a>
-                <a href="https://www.instagram.com/kruthika_jewellery/" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
-                  Instagram
-                </a>
-                <a href="https://www.youtube.com/@kruthikajewellery" target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">
-                  YouTube
-                </a>
-              </div>
-            </div>
           </div>
 
           {/* Quick Links */}
@@ -128,6 +122,7 @@ return (
             </Link>
           </div>
         </div>
+      </div>
       </footer>
 
       {/* Fixed WhatsApp Button */}
