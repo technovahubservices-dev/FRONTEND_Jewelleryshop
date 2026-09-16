@@ -8,7 +8,7 @@ return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-container-max mx-auto">
 
           {/* Company Information */}
-          <div className="md:col-span-4 mb-10 md:mb-0">
+          <div className="md:col-span-3 mb-10 md:mb-0">
             <div className="text-headline-lg font-headline-lg text-deep-emerald mb-6">
               JKR
             </div>
@@ -61,15 +61,6 @@ return (
                   to="/shop"
                 >
                   Collections
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  className="hover:text-primary transition-colors"
-                  to="/shop"
-                >
-                  Store Finder
                 </Link>
               </li>
             </ul>
@@ -198,6 +189,7 @@ return (
     </>
   )
 }
+
 
 
 
