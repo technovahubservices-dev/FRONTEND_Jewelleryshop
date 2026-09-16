@@ -41,7 +41,7 @@ export const PreviewModal = ({ isOpen, onClose, media }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-3 sm:p-4"
+      className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999] p-4"
       onClick={onClose}
     >
       <div
@@ -50,7 +50,7 @@ export const PreviewModal = ({ isOpen, onClose, media }) => {
       >
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 sm:-top-12 sm:right-0 text-white bg-black/50 sm:bg-transparent rounded-full p-1 sm:p-0 hover:text-gray-300 transition-colors"
+          className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
         >
           <span className="material-symbols-outlined text-2xl">close</span>
         </button>
@@ -60,7 +60,7 @@ export const PreviewModal = ({ isOpen, onClose, media }) => {
             <iframe
               src={embedUrl}
               title={media.title || 'Video Preview'}
-              className="w-full h-[55vh] min-h-[280px] max-h-[600px] rounded-lg"
+              className="w-full h-[500px] md:h-[600px] rounded-lg"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
@@ -108,10 +108,10 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
   const videoSrc = hasValue ? resolveVideoUrl(safeValue) : ''
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+    <div className="flex items-end gap-3">
       <div className="flex-1">
         <label className="block font-label-caps text-xs text-on-surface-variant mb-1">{label}</label>
-        <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+        <div className="flex gap-3">
           <input
             type="text"
             value={safeValue}
@@ -130,7 +130,7 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
               }
               e.target.value = ''
             }}
-            className="text-xs w-full sm:w-auto max-w-full"
+            className="text-xs"
           />
         </div>
       </div>
@@ -159,10 +159,10 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
   const safeValue = typeof value === 'string' ? value : ''
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+    <div className="flex items-end gap-3">
       <div className="flex-1">
         <label className="block font-label-caps text-xs text-on-surface-variant mb-1">{label}</label>
-        <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+        <div className="flex gap-3">
           <input
             type="text"
             value={safeValue}
@@ -181,7 +181,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
               }
               e.target.value = ''
             }}
-            className="text-xs w-full sm:w-auto max-w-full"
+            className="text-xs"
           />
         </div>
       </div>
@@ -203,7 +203,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
 export const Toast = ({ message, type, onClose }) => {
   if (!message) return null
   return (
-    <div className={`fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-50 px-3 sm:px-4 py-3 rounded-lg shadow-lg font-body-md text-sm flex items-center gap-2 transition-all ${
+    <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg font-body-md text-sm flex items-center gap-2 transition-all ${
       type === 'success' ? 'bg-primary-container text-primary-container-fg' : 'bg-error-container text-error-container-fg'
     }`}>
       <span className="material-symbols-outlined text-sm">
@@ -230,23 +230,23 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
   const hasThumb = safeThumbValue.trim() !== ''
 
   return (
-    <div className="p-3 sm:p-4 bg-surface-white rounded-lg border border-outline-variant/50">
-      {hasThumb && (
-        <div className="mb-4">
-          <div className="w-20 h-20 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30">
-            <img
-              src={resolveImageUrl(safeThumbValue)}
-              alt="thumb"
-              className="w-full h-full object-cover"
-              onError={(e) => { e.target.style.display = 'none' }}
-            />
+    <div className="p-4 bg-surface-white rounded-lg border border-outline-variant/50">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+        {hasThumb && (
+          <div className="md:col-span-1 flex-shrink-0">
+            <div className="w-20 h-20 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30">
+                <img
+                    src={resolveImageUrl(safeThumbValue)}
+                alt="thumb"
+                className="w-full h-full object-cover"
+                onError={(e) => { e.target.style.display = 'none'; }}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
         {fields.map((field) => (
-          <div key={field.key} className={field.fullWidth ? 'sm:col-span-2 xl:col-span-3' : ''}>
+          <div key={field.key} className={field.fullWidth ? 'md:col-span-6' : 'md:col-span-2'}>
             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">{field.label}</label>
             {field.type === 'textarea' ? (
               <textarea
@@ -259,28 +259,16 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
             ) : field.type === 'number' ? (
               <input
                 type="number"
-                value={item[field.key] ?? ''}
+                value={item[field.key] || ''}
                 onChange={(e) => onChange(index, field.key, e.target.value)}
                 className="w-full px-3 py-2 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
                 placeholder={field.placeholder || ''}
               />
-            ) : field.type === 'select' ? (
-              <select
-                value={item[field.key] || ''}
-                onChange={(e) => onChange(index, field.key, e.target.value)}
-                className="w-full px-3 py-2 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md bg-surface-white"
-              >
-                {(field.options || []).map((option) => (
-                  <option key={option.value ?? option} value={option.value ?? option}>
-                    {option.label ?? option}
-                  </option>
-                ))}
-              </select>
-            ) : field.type === 'custom' ? (
-              field.render(item, index, onChange)
+            ) : field.type === 'toggle' ? null : field.component ? (
+              field.component(item[field.key], (val) => onChange(index, field.key, val))
             ) : (
               <input
-                type="text"
+                type={field.type || 'text'}
                 value={item[field.key] || ''}
                 onChange={(e) => onChange(index, field.key, e.target.value)}
                 className="w-full px-3 py-2 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
@@ -289,40 +277,39 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
             )}
           </div>
         ))}
-      </div>
 
-      <div className="flex flex-wrap items-center gap-3 pt-4 mt-4 border-t border-outline-variant/30">
-        {onToggle && (
-          <label className="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
+        <div className="md:col-span-6 flex items-end gap-4 pt-2">
+          <div className="flex items-center gap-2">
             <input
               type="checkbox"
-              checked={Boolean(item.isActive)}
+              id={`active-${index}`}
+              checked={item.isActive !== undefined ? item.isActive : true}
               onChange={(e) => onToggle(index, e.target.checked)}
-              className="w-4 h-4 accent-deep-emerald"
+              className="w-4 h-4 rounded border-outline-variant text-deep-emerald focus:ring-deep-emerald"
             />
-            {toggleLabel}
-          </label>
-        )}
+            <label htmlFor={`active-${index}`} className="font-body-md text-sm text-on-surface cursor-pointer">
+              {toggleLabel}
+            </label>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-2 ml-auto">
           {onPreview && hasThumb && (
             <button
               type="button"
-              onClick={() => onPreview(item)}
-              className="inline-flex items-center justify-center gap-1 px-3 py-2 text-sm border border-outline-variant rounded hover:border-deep-emerald hover:text-deep-emerald transition-colors"
+              onClick={() => onPreview(safeThumbValue)}
+              className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded transition-colors"
+              title="Preview image"
             >
-              <span className="material-symbols-outlined text-base">visibility</span>
-              <span className="hidden sm:inline">Preview</span>
+              <span className="material-symbols-outlined text-sm">visibility</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={() => onDelete(index)}
-            className="inline-flex items-center justify-center gap-1 px-3 py-2 text-sm border border-error-container/40 text-error rounded hover:bg-error-container/10 transition-colors"
+            className="p-2 text-error hover:bg-error/10 rounded transition-colors"
+            title="Remove item"
           >
-            <span className="material-symbols-outlined text-base">delete</span>
-            <span className="hidden sm:inline">Delete</span>
+            <span className="material-symbols-outlined text-sm">delete</span>
           </button>
         </div>
       </div>

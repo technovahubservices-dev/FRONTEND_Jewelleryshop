@@ -231,17 +231,17 @@ export default function ContentManagement() {
 
   return (
     <div className="min-h-screen bg-surface-container-low w-full">
-      <div className="w-full px-4 md:px-6 lg:px-8 py-4">
+      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4">
         <div className="p-2">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
             <div>
-              <h1 className="text-3xl font-playfair text-deep-emerald font-bold mb-1">Content Management</h1>
+              <h1 className="text-2xl sm:text-3xl font-playfair text-deep-emerald font-bold mb-1">Content Management</h1>
               <p className="text-sm text-on-surface-variant">Manage homepage configuration via tabbed interface.</p>
             </div>
           </div>
 
           <div className="border-b border-outline-variant/30 mb-6 overflow-x-auto">
-            <nav className="flex gap-2 min-w-max">
+            <nav className="flex gap-1 sm:gap-2 min-w-max">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
@@ -250,13 +250,13 @@ export default function ContentManagement() {
                     setError('')
                     setSuccess('')
                   }}
-                  className={`flex items-center gap-2 px-5 py-3 font-label-caps text-label-caps text-sm rounded-t-lg border-b-2 transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 font-label-caps text-label-caps text-xs sm:text-sm rounded-t-lg border-b-2 transition-all whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'text-deep-emerald border-deep-emerald bg-surface-white'
                       : 'text-on-surface-variant border-transparent hover:text-deep-emerald hover:bg-surface-container-low'
                   }`}
                 >
-                  <span className="material-symbols-outlined text-lg">{tab.icon}</span>
+                  <span className="material-symbols-outlined text-base sm:text-lg">{tab.icon}</span>
                   {tab.label}
                 </button>
               ))}
@@ -264,13 +264,13 @@ export default function ContentManagement() {
           </div>
 
           {error && (
-            <div className="p-4 bg-error-container/10 border border-error-container/20 text-error rounded-lg text-sm mb-4 flex items-center gap-2">
+            <div className="p-3 sm:p-4 bg-error-container/10 border border-error-container/20 text-error rounded-lg text-sm mb-4 flex items-start sm:items-center gap-2">
               <span className="material-symbols-outlined text-sm">error</span>
               {error}
             </div>
           )}
 
-          <div className="bg-surface-white p-6 rounded-xl border border-outline-variant/30 mb-24">
+          <div className="bg-surface-white p-3 sm:p-4 md:p-6 rounded-xl border border-outline-variant/30 mb-24">
             {ActiveTabComponent && (
               <ActiveTabComponent
                 settings={settings}
@@ -284,12 +284,12 @@ export default function ContentManagement() {
             )}
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 bg-surface-white border-t border-outline-variant/50 px-6 py-4 shadow-lg z-40">
-            <div className="max-w-7xl mx-auto flex justify-end">
+          <div className="fixed bottom-0 left-0 right-0 bg-surface-white border-t border-outline-variant/50 px-3 sm:px-4 md:px-6 py-3 sm:py-4 shadow-lg z-40">
+            <div className="max-w-7xl mx-auto flex justify-stretch sm:justify-end">
               <button
                 onClick={handleSaveTab}
                 disabled={saving}
-                className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-deep-emerald text-surface-white font-label-caps text-label-caps text-sm rounded-lg transition-all duration-200 hover:bg-deep-emerald/90 active:scale-95 shadow-sm disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 bg-deep-emerald text-surface-white font-label-caps text-label-caps text-sm rounded-lg transition-all duration-200 hover:bg-deep-emerald/90 active:scale-95 shadow-sm disabled:opacity-50"
               >
                 {saving ? (
                   <>
@@ -317,3 +317,4 @@ export default function ContentManagement() {
     </div>
   )
 }
+
