@@ -4,7 +4,7 @@ import WhatsAppButton from '../WhatsAppButton'
 export default function Footer() {
 return (
     <>
-      <footer className="bg-soft-cream w-full py-20 px-0 border-t border-outline-variant mt-auto">
+      <footer className="bg-soft-cream w-full py-20 px-2 md:px-4 border-t border-outline-variant mt-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 w-full">
 
           {/* Company Information */}
@@ -130,4 +130,5 @@ return (
     </>
   )
 }
+
 
