@@ -1211,48 +1211,36 @@ export default function Home() {
                 <Link
                   to={reel.shopLink}
                   key={reel.id}
-                  className="flex flex-col aspect-[9/16] w-full rounded-2xl overflow-hidden relative group bg-black shadow-sm"
+                  className="flex aspect-[9/16] w-full rounded-2xl overflow-hidden relative group bg-black shadow-sm"
                 >
-                  <div className="w-full flex-1 relative overflow-hidden bg-black">
+                  <div className="w-full h-full relative overflow-hidden bg-black">
                     {renderMedia()}
                   </div>
 
-                  <div className="bg-white p-3 flex flex-col">
-                    <h3 className="line-clamp-2 min-h-[32px] text-xs text-gray-700 font-medium">
-                      {reel.title}
-                    </h3>
+                  <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out bg-black/60 backdrop-blur-sm px-4 py-4 text-center z-10">
+  <p className="text-white text-sm font-medium tracking-wide">
+    {reel.sku || reel.title}
+  </p>
 
-                    {reel.price && (
-                      <p className="text-xs text-gray-900 font-semibold mt-1">
-                        {reel.price}
-                      </p>
-                    )}
-
-                    <span className="text-[10px] font-sans font-medium text-gray-500 mt-2 group-hover:text-gray-800 transition-colors">
-                      Shop Now
-                    </span>
-                  </div>
+  <span className="text-white/80 text-[10px] uppercase tracking-widest mt-1 block">
+    Shop Now
+  </span>
+</div>
                 </Link>
               ) : (
                 <div
                   key={reel.id}
-                  className="flex flex-col aspect-[9/16] w-full rounded-2xl overflow-hidden relative group bg-black shadow-sm"
+                  className="flex aspect-[9/16] w-full rounded-2xl overflow-hidden relative group bg-black shadow-sm"
                 >
-                  <div className="w-full flex-1 relative overflow-hidden bg-black">
+                  <div className="w-full h-full relative overflow-hidden bg-black">
                     {renderMedia()}
                   </div>
 
-                  <div className="bg-white p-3 flex flex-col">
-                    <h3 className="line-clamp-2 min-h-[32px] text-xs text-gray-700 font-medium">
-                      {reel.title}
-                    </h3>
-
-                    {reel.price && (
-                      <p className="text-xs text-gray-900 font-semibold mt-1">
-                        {reel.price}
-                      </p>
-                    )}
-                  </div>
+                  <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out bg-black/60 backdrop-blur-sm px-4 py-4 text-center z-10">
+  <p className="text-white text-sm font-medium tracking-wide">
+    {reel.sku || reel.title}
+  </p>
+</div>
                 </div>
               )
             }
@@ -1378,5 +1366,6 @@ export default function Home() {
     </main>
   )
 }
+
 
 
