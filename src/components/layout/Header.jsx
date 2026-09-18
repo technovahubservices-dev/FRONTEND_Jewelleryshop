@@ -74,12 +74,12 @@ export default function Header() {
               <img
                 src={logo}
                 alt="JKR"
-                className="w-16 h-16 lg:w-[68px] lg:h-[68px] object-cover rounded-full"
+                className="w-16 h-16 lg:w-[68px] lg:h-[68px] object-cover rounded-full border-2 border-regal-gold shadow-[0_2px_0_rgba(184,134,11,0.55),0_5px_10px_rgba(184,134,11,0.30)]"
               />
             </Link>
 
             {/* Center navigation */}
-            <nav className="absolute left-[44%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2 border border-outline-variant rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.10),0_6px_14px_rgba(0,0,0,0.07)]">
+            <nav className="absolute left-[43%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2 border border-outline-variant rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.10),0_6px_14px_rgba(0,0,0,0.07)]">
               <NavLink to="/shop?category=Necklaces" className={navClass}>
                 Necklace
               </NavLink>
@@ -127,7 +127,7 @@ export default function Header() {
             </nav>
 
             {/* Utility icons */}
-            <div className="ml-auto flex items-center gap-3 lg:gap-4 text-primary">
+            <div className="ml-auto flex items-center gap-2 lg:gap-3 xl:gap-4 text-primary">
               <button
                 className="w-36 lg:w-44 xl:w-52 h-10 px-3 flex items-center justify-end rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] hover:border-primary hover:text-regal-gold hover:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05),0_3px_0_rgba(0,0,0,0.14),0_7px_14px_rgba(0,0,0,0.12)] transition-all duration-200" onClick={() => navigate('/search')} title="Search"><span className="material-symbols-outlined text-[19px] font-normal">
                   search
@@ -221,7 +221,7 @@ export default function Header() {
             <img
               src={logo}
               alt="JKR"
-              className="w-8 h-8 object-contain rounded-full overflow-hidden"
+              className="w-9 h-9 object-cover rounded-full border-2 border-regal-gold shadow-[0_2px_0_rgba(184,134,11,0.55),0_4px_8px_rgba(184,134,11,0.28)]"
             />
             <span>JKR</span>
           </Link>
@@ -359,6 +359,12 @@ export default function Header() {
     </header>
   )
 }
+
+
+
+
+
+
 
 
 
