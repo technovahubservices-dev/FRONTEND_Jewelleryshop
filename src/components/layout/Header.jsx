@@ -49,9 +49,9 @@ export default function Header() {
   }
 
   const navClass = ({ isActive }) =>
-    `relative whitespace-nowrap py-2 text-[13px] lg:text-sm tracking-[0.08em] font-medium transition-colors duration-300 ${
+    `relative whitespace-nowrap py-1.5 text-[12px] lg:text-[13px] tracking-[0.10em] font-normal transition-colors duration-300 ${
       isActive
-        ? 'text-primary after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[1px] after:bg-regal-gold'
+        ? 'text-primary'
         : 'text-on-surface-variant hover:text-primary'
     }`
 
@@ -60,7 +60,7 @@ export default function Header() {
       <AnnouncementBar />
 
       {/* Desktop Header */}
-      <div className="hidden md:block w-full bg-white border-t border-b border-outline-variant">
+      <div className="hidden md:block sticky top-0 z-50 w-full bg-white border-t border-b border-outline-variant">
         <div className="w-full px-6 lg:px-10 xl:px-16">
 
           {/* Top row */}
@@ -79,7 +79,7 @@ export default function Header() {
             </Link>
 
             {/* Center navigation */}
-            <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-6 lg:gap-8 xl:gap-9">
+            <nav className="absolute left-[46%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2.5 border border-outline-variant bg-white shadow-[0_2px_0_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.06)]">
               <NavLink to="/shop?category=Necklaces" className={navClass}>
                 Necklace
               </NavLink>
@@ -129,11 +129,7 @@ export default function Header() {
             {/* Utility icons */}
             <div className="ml-auto flex items-center gap-3 lg:gap-4 text-primary">
               <button
-                className="hover:text-regal-gold transition-colors"
-                onClick={() => navigate('/search')}
-                title="Search"
-              >
-                <span className="material-symbols-outlined text-[22px]">
+                className="h-10 min-w-10 px-3 flex items-center justify-center border border-outline-variant hover:border-primary hover:text-regal-gold transition-all duration-200" onClick={() => navigate('/search')} title="Search"><span className="material-symbols-outlined text-[21px]">
                   search
                 </span>
               </button>
@@ -184,7 +180,7 @@ export default function Header() {
                 <Link
                   to="/account"
                   title="My Account"
-                  className="h-10 w-10 flex items-center justify-center border border-outline-variant hover:border-primary hover:text-regal-gold transition-all duration-200"
+                  className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
                   >
                     <span className="material-symbols-outlined text-[21px]">person
                   </span>
@@ -193,7 +189,7 @@ export default function Header() {
                 <Link
                   to="/login"
                   title="Login"
-                  className="h-10 w-10 flex items-center justify-center border border-outline-variant hover:border-primary hover:text-regal-gold transition-all duration-200"
+                  className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
                   >
                     <span className="material-symbols-outlined text-[21px]">person
                   </span>
@@ -363,6 +359,10 @@ export default function Header() {
     </header>
   )
 }
+
+
+
+
 
 
 
