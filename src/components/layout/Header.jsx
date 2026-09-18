@@ -48,119 +48,233 @@ export default function Header() {
     setAccessoriesOpen(false)
   }
 
+  const navClass = ({ isActive }) =>
+    `relative whitespace-nowrap py-2 text-sm tracking-wide transition-colors duration-300 ${
+      isActive
+        ? 'text-primary after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[1px] after:bg-regal-gold'
+        : 'text-on-surface-variant hover:text-primary'
+    }`
+
   return (
     <header className="w-full flex flex-col relative z-50">
       <AnnouncementBar />
 
-      {/* Main Container: grid system forces true absolute centering */}
-      <div className="w-full bg-white shadow-sm py-4 px-6 grid grid-cols-3 items-center">
-        
-        {/* Left Side: Empty spacer block to maintain perfect balance */}
-        <div className="hidden md:block"></div>
+      {/* Desktop Header */}
+      <div className="hidden md:block w-full bg-white border-b border-outline-variant">
+        <div className="w-full px-6 lg:px-10 xl:px-16">
 
-        {/* Center Side: Logo, Text, and Navigation Links perfectly grouped together */}
-        <div className="flex items-center justify-center gap-8 col-span-3 md:col-span-1">
-          <Link className="flex items-center gap-3 text-display-lg font-display-lg tracking-tighter text-deep-emerald hover:opacity-80 transition-opacity shrink-0" to="/">
-            <img src={logo} alt="JKR" className="w-15 h-14 object-contain" />
-            <span></span>
-          </Link>
+          {/* Top row */}
+          <div className="relative min-h-[82px] flex items-center justify-between">
 
-          <nav className="hidden md:flex items-center space-x-6 shrink-0">
-            <NavLink to="/shop?category=Necklaces" className={({ isActive }) => `text-primary border-b-2 scale-95 duration-200 ease-in-out ${isActive ? "border-primary" : "border-transparent"}`}>Necklace</NavLink>
-            <NavLink to="/shop?category=Bangles" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Bangles</NavLink>
-            <NavLink to="/shop?category=Earrings" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Earrings</NavLink>
-            <NavLink to="/shop?bridal=true" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Premium Bride</NavLink>
-            <div className="relative group">
-  <button type="button" className="text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 border-b-2 border-transparent">
-    Accessories
-  </button>
-  <div className="absolute left-0 top-full mt-2 hidden group-hover:block bg-white shadow-lg border border-outline-variant min-w-[220px] py-2 z-50">
-    {accessorySubcategories.map((subcategory) => (
-      <NavLink
-        key={subcategory}
-        to={`/shop?subcategory=${encodeURIComponent(subcategory)}`}
-        className="block px-4 py-2 text-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-low"
-      >
-        {subcategory}
-      </NavLink>
-    ))}
-  </div>
-</div>
-            <NavLink to="/about" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>About</NavLink>
-            <NavLink to="/contact" className={({ isActive }) => `text-on-surface-variant hover:text-primary transition-colors duration-300 scale-95 duration-200 ease-in-out border-b-2 ${isActive ? 'border-regal-gold text-primary' : 'border-transparent'}`}>Contact us</NavLink>
-          </nav>
-        </div>
-
-        {/* Right Side: Utility Icons aligned to the right edge */}
-        <div className="hidden md:flex items-center justify-end space-x-6 text-primary shrink-0">
-          <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/search')} title="Search">
-            <span className="material-symbols-outlined text-[24px]">search</span>
-          </button>
-           <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out relative" onClick={() => navigate('/cart')} title="Cart">
-            <span className="material-symbols-outlined text-[24px]">shopping_cart</span>
-            {itemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] px-[2px]">
-                {itemCount > 99 ? '99+' : itemCount}
-              </span>
-            )}
-          </button>
-           <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out relative" onClick={() => navigate('/wishlist')} title="Wishlist">
-            <span className="material-symbols-outlined text-[24px]">favorite</span>
-            {wishlistCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] px-[2px]">
-                {wishlistCount > 99 ? '99+' : wishlistCount}
-              </span>
-            )}
-           </button>
-          <button className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out" onClick={() => navigate('/shop')} title="Shop">
-            <span className="material-symbols-outlined text-[24px]">storefront</span>
-          </button>
-          {isAuthenticated ? (
-            <Link to="/account" title="My Account"><span className="material-symbols-outlined text-[24px]">person</span></Link>
-          ) : (
-            <Link to="/login" className="hover:text-regal-gold transition-colors scale-95 duration-200 ease-in-out">
-              <span className="material-symbols-outlined text-[24px]">person</span>
+            {/* Logo */}
+            <Link
+              to="/"
+              className="flex items-center shrink-0 transition-opacity hover:opacity-80"
+            >
+              <img
+                src={logo}
+                alt="JKR"
+                className="w-16 h-16 lg:w-[68px] lg:h-[68px] object-contain"
+              />
             </Link>
-          )}
+
+            {/* Center navigation */}
+            <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-7 lg:gap-9 xl:gap-10">
+              <NavLink to="/shop?category=Necklaces" className={navClass}>
+                Necklace
+              </NavLink>
+
+              <NavLink to="/shop?category=Bangles" className={navClass}>
+                Bangles
+              </NavLink>
+
+              <NavLink to="/shop?category=Earrings" className={navClass}>
+                Earrings
+              </NavLink>
+
+              <NavLink to="/shop?bridal=true" className={navClass}>
+                Premium Bride
+              </NavLink>
+
+              <div className="relative group">
+                <button
+                  type="button"
+                  className="relative whitespace-nowrap py-2 text-sm tracking-wide text-on-surface-variant hover:text-primary transition-colors duration-300"
+                >
+                  Accessories
+                </button>
+
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 hidden group-hover:block bg-white shadow-lg border border-outline-variant min-w-[230px] py-2 z-50">
+                  {accessorySubcategories.map((subcategory) => (
+                    <NavLink
+                      key={subcategory}
+                      to={`/shop?subcategory=${encodeURIComponent(subcategory)}`}
+                      className="block px-5 py-2.5 text-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors"
+                    >
+                      {subcategory}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+
+              <NavLink to="/about" className={navClass}>
+                About
+              </NavLink>
+
+              <NavLink to="/contact" className={navClass}>
+                Contact us
+              </NavLink>
+            </nav>
+
+            {/* Utility icons */}
+            <div className="ml-auto flex items-center gap-5 lg:gap-6 text-primary">
+              <button
+                className="hover:text-regal-gold transition-colors"
+                onClick={() => navigate('/search')}
+                title="Search"
+              >
+                <span className="material-symbols-outlined text-[22px]">
+                  search
+                </span>
+              </button>
+
+              <button
+                className="relative hover:text-regal-gold transition-colors"
+                onClick={() => navigate('/wishlist')}
+                title="Wishlist"
+              >
+                <span className="material-symbols-outlined text-[22px]">
+                  favorite
+                </span>
+
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {wishlistCount > 99 ? '99+' : wishlistCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                className="relative hover:text-regal-gold transition-colors"
+                onClick={() => navigate('/cart')}
+                title="Cart"
+              >
+                <span className="material-symbols-outlined text-[22px]">
+                  shopping_cart
+                </span>
+
+                {itemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {itemCount > 99 ? '99+' : itemCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                className="hover:text-regal-gold transition-colors"
+                onClick={() => navigate('/shop')}
+                title="Shop"
+              >
+                <span className="material-symbols-outlined text-[22px]">
+                  storefront
+                </span>
+              </button>
+
+              {isAuthenticated ? (
+                <Link
+                  to="/account"
+                  title="My Account"
+                  className="hover:text-regal-gold transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[22px]">
+                    person
+                  </span>
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  title="Login"
+                  className="hover:text-regal-gold transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[22px]">
+                    person
+                  </span>
+                </Link>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Mobile view header */}
-      <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant flex items-center justify-between p-4 shadow-sm">
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          title="Menu"
-        >
-          <span className="material-symbols-outlined">
-            {mobileMenuOpen ? 'close' : 'menu'}
-          </span>
-        </button>
-        <Link className="flex items-center gap-2 font-display-lg text-[24px] text-deep-emerald tracking-tighter" to="/">
-          <img src={logo} alt="JKR" className="w-6 h-6 object-contain" />
-          <span>JKR</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/wishlist')} className="relative" title="Wishlist">
-            <span className="material-symbols-outlined">favorite</span>
-            {wishlistCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center min-w-[16px] px-[1px]">
-                {wishlistCount > 99 ? '99+' : wishlistCount}
-              </span>
-            )}
+      {/* Mobile Header */}
+      <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant shadow-sm">
+        <div className="h-[64px] px-4 flex items-center justify-between">
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            title="Menu"
+            className="w-10 h-10 flex items-center justify-start"
+          >
+            <span className="material-symbols-outlined">
+              {mobileMenuOpen ? 'close' : 'menu'}
+            </span>
           </button>
-          <button className="relative" onClick={() => navigate('/cart')} title="Cart">
-            <span className="material-symbols-outlined">shopping_cart</span>
-            {itemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center min-w-[16px] px-[1px]">
-                {itemCount > 99 ? '99+' : itemCount}
+
+          <Link
+            className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-[24px] font-display-lg text-deep-emerald tracking-tighter"
+            to="/"
+          >
+            <img
+              src={logo}
+              alt="JKR"
+              className="w-8 h-8 object-contain"
+            />
+            <span>JKR</span>
+          </Link>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/wishlist')}
+              className="relative"
+              title="Wishlist"
+            >
+              <span className="material-symbols-outlined">
+                favorite
               </span>
-            )}
-          </button>
-          <Link to="/account"><span className="material-symbols-outlined">person</span></Link>
+
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {wishlistCount > 99 ? '99+' : wishlistCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              className="relative"
+              onClick={() => navigate('/cart')}
+              title="Cart"
+            >
+              <span className="material-symbols-outlined">
+                shopping_cart
+              </span>
+
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                  {itemCount > 99 ? '99+' : itemCount}
+                </span>
+              )}
+            </button>
+
+            <Link to="/account" title="My Account">
+              <span className="material-symbols-outlined">
+                person
+              </span>
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* Mobile menu overlay */}
+      {/* Mobile Overlay */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -168,66 +282,71 @@ export default function Header() {
         />
       )}
 
-      {/* Mobile menu drawer */}
+      {/* Mobile Drawer */}
       <nav
-        className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-surface shadow-xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-[82%] max-w-sm bg-surface shadow-xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex flex-col pt-16 px-6 space-y-4">
-          {mobileNavLinks.map((link) => (
-            link.name === 'Accessories' ? (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setAccessoriesOpen(!accessoriesOpen)}
-                  className="w-full flex items-center justify-between py-3 px-2 text-lg font-body-md text-on-surface-variant hover:text-deep-emerald"
+        <div className="flex flex-col pt-20 px-6 pb-8 overflow-y-auto h-full">
+
+          <div className="space-y-1">
+            {mobileNavLinks.map((link) =>
+              link.name === 'Accessories' ? (
+                <div key={link.name}>
+                  <button
+                    type="button"
+                    onClick={() => setAccessoriesOpen(!accessoriesOpen)}
+                    className="w-full flex items-center justify-between py-3.5 px-2 text-base font-body-md text-on-surface-variant hover:text-deep-emerald"
+                  >
+                    <span>Accessories</span>
+                    <span className="material-symbols-outlined">
+                      {accessoriesOpen ? 'expand_less' : 'expand_more'}
+                    </span>
+                  </button>
+
+                  {accessoriesOpen && (
+                    <div className="pl-4 pb-2 space-y-1">
+                      {accessorySubcategories.map((subcategory) => (
+                        <NavLink
+                          key={subcategory}
+                          to={`/shop?subcategory=${encodeURIComponent(subcategory)}`}
+                          onClick={closeMobileMenu}
+                          className="block py-2 px-2 text-sm text-on-surface-variant hover:text-deep-emerald"
+                        >
+                          {subcategory}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <NavLink
+                  key={link.name}
+                  to={link.to}
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) =>
+                    `block py-3.5 px-2 text-base font-body-md transition-colors duration-200 ${
+                      isActive
+                        ? 'text-deep-emerald border-l-2 border-regal-gold pl-4'
+                        : 'text-on-surface-variant hover:text-deep-emerald'
+                    }`
+                  }
                 >
-                  <span>Accessories</span>
-                  <span className="material-symbols-outlined">
-                    {accessoriesOpen ? 'expand_less' : 'expand_more'}
-                  </span>
-                </button>
-                {accessoriesOpen && (
-                  <div className="pl-4 space-y-1">
-                    {accessorySubcategories.map((subcategory) => (
-                      <NavLink
-                        key={subcategory}
-                        to={`/shop?subcategory=${encodeURIComponent(subcategory)}`}
-                        onClick={closeMobileMenu}
-                        className="block py-2 px-2 text-sm text-on-surface-variant hover:text-deep-emerald"
-                      >
-                        {subcategory}
-                      </NavLink>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <NavLink
-                key={link.name}
-                to={link.to}
-                onClick={closeMobileMenu}
-                className={({ isActive }) =>
-                  `block py-3 px-2 text-lg font-body-md transition-colors duration-200 ${
-                    isActive
-                      ? 'text-deep-emerald border-l-2 border-regal-gold'
-                      : 'text-on-surface-variant hover:text-deep-emerald'
-                  }`
-                }
-              >
-                {link.name}
-              </NavLink>
-            )
-          ))}
-          <div className="border-t border-outline-variant pt-4 mt-4">
+                  {link.name}
+                </NavLink>
+              )
+            )}
+          </div>
+
+          <div className="border-t border-outline-variant pt-5 mt-6">
             {isAuthenticated ? (
               <button
                 onClick={() => {
                   logout()
                   closeMobileMenu()
                 }}
-                className="block w-full text-left py-3 px-2 text-lg font-body-md text-on-surface-variant hover:text-deep-emerald transition-colors duration-200"
+                className="block w-full text-left py-3.5 px-2 text-base font-body-md text-on-surface-variant hover:text-deep-emerald"
               >
                 Sign Out
               </button>
@@ -235,7 +354,7 @@ export default function Header() {
               <Link
                 to="/login"
                 onClick={closeMobileMenu}
-                className="block py-3 px-2 text-lg font-body-md text-on-surface-variant hover:text-deep-emerald transition-colors duration-200"
+                className="block py-3.5 px-2 text-base font-body-md text-on-surface-variant hover:text-deep-emerald"
               >
                 Login
               </Link>
@@ -246,19 +365,3 @@ export default function Header() {
     </header>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
