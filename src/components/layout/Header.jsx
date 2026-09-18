@@ -49,7 +49,7 @@ export default function Header() {
   }
 
   const navClass = ({ isActive }) =>
-    `relative whitespace-nowrap py-2 text-sm tracking-wide transition-colors duration-300 ${
+    `relative whitespace-nowrap py-2 text-[13px] lg:text-sm tracking-[0.08em] font-medium transition-colors duration-300 ${
       isActive
         ? 'text-primary after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[1px] after:bg-regal-gold'
         : 'text-on-surface-variant hover:text-primary'
@@ -60,11 +60,11 @@ export default function Header() {
       <AnnouncementBar />
 
       {/* Desktop Header */}
-      <div className="hidden md:block w-full bg-white border-b border-outline-variant">
+      <div className="hidden md:block w-full bg-white border-t border-b border-outline-variant">
         <div className="w-full px-6 lg:px-10 xl:px-16">
 
           {/* Top row */}
-          <div className="relative min-h-[82px] flex items-center justify-between">
+          <div className="relative min-h-[82px] flex items-center justify-between gap-6">
 
             {/* Logo */}
             <Link
@@ -79,7 +79,7 @@ export default function Header() {
             </Link>
 
             {/* Center navigation */}
-            <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-7 lg:gap-9 xl:gap-10">
+            <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-6 lg:gap-8 xl:gap-9">
               <NavLink to="/shop?category=Necklaces" className={navClass}>
                 Necklace
               </NavLink>
@@ -127,7 +127,7 @@ export default function Header() {
             </nav>
 
             {/* Utility icons */}
-            <div className="ml-auto flex items-center gap-5 lg:gap-6 text-primary">
+            <div className="ml-auto flex items-center gap-3 lg:gap-4 text-primary">
               <button
                 className="hover:text-regal-gold transition-colors"
                 onClick={() => navigate('/search')}
@@ -184,20 +184,18 @@ export default function Header() {
                 <Link
                   to="/account"
                   title="My Account"
-                  className="hover:text-regal-gold transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[22px]">
-                    person
+                  className="h-10 w-10 flex items-center justify-center border border-outline-variant hover:border-primary hover:text-regal-gold transition-all duration-200"
+                  >
+                    <span className="material-symbols-outlined text-[21px]">person
                   </span>
                 </Link>
               ) : (
                 <Link
                   to="/login"
                   title="Login"
-                  className="hover:text-regal-gold transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[22px]">
-                    person
+                  className="h-10 w-10 flex items-center justify-center border border-outline-variant hover:border-primary hover:text-regal-gold transition-all duration-200"
+                  >
+                    <span className="material-symbols-outlined text-[21px]">person
                   </span>
                 </Link>
               )}
@@ -365,3 +363,6 @@ export default function Header() {
     </header>
   )
 }
+
+
+
