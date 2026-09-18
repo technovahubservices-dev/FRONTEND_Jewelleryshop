@@ -79,7 +79,7 @@ export default function Header() {
             </Link>
 
             {/* Center navigation */}
-            <nav className="absolute left-[46%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2.5 border border-outline-variant bg-white shadow-[0_2px_0_rgba(0,0,0,0.08),0_4px_12px_rgba(0,0,0,0.06)]">
+            <nav className="absolute left-[44%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2 border border-outline-variant rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.10),0_6px_14px_rgba(0,0,0,0.07)]">
               <NavLink to="/shop?category=Necklaces" className={navClass}>
                 Necklace
               </NavLink>
@@ -129,7 +129,7 @@ export default function Header() {
             {/* Utility icons */}
             <div className="ml-auto flex items-center gap-3 lg:gap-4 text-primary">
               <button
-                className="h-10 min-w-10 px-3 flex items-center justify-center border border-outline-variant hover:border-primary hover:text-regal-gold transition-all duration-200" onClick={() => navigate('/search')} title="Search"><span className="material-symbols-outlined text-[21px]">
+                className="h-10 min-w-10 px-2 flex items-center justify-center border-0 border-b border-outline-variant hover:border-primary hover:text-regal-gold transition-all duration-200" onClick={() => navigate('/search')} title="Search"><span className="material-symbols-outlined text-[20px]">
                   search
                 </span>
               </button>
@@ -182,7 +182,7 @@ export default function Header() {
                   title="My Account"
                   className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
                   >
-                    <span className="material-symbols-outlined text-[21px]">person
+                    <span className="material-symbols-outlined text-[20px]">person
                   </span>
                 </Link>
               ) : (
@@ -191,7 +191,7 @@ export default function Header() {
                   title="Login"
                   className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
                   >
-                    <span className="material-symbols-outlined text-[21px]">person
+                    <span className="material-symbols-outlined text-[20px]">person
                   </span>
                 </Link>
               )}
@@ -359,6 +359,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
