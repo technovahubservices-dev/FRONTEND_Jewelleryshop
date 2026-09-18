@@ -129,7 +129,7 @@ export default function Header() {
             {/* Utility icons */}
             <div className="ml-auto flex items-center gap-3 lg:gap-4 text-primary">
               <button
-                className="h-10 min-w-10 px-2 flex items-center justify-center border-0 border-b border-outline-variant hover:border-primary hover:text-regal-gold transition-all duration-200" onClick={() => navigate('/search')} title="Search"><span className="material-symbols-outlined text-[20px]">
+                className="w-36 lg:w-44 xl:w-52 h-10 px-3 flex items-center justify-end rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] hover:border-primary hover:text-regal-gold hover:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05),0_3px_0_rgba(0,0,0,0.14),0_7px_14px_rgba(0,0,0,0.12)] transition-all duration-200" onClick={() => navigate('/search')} title="Search"><span className="material-symbols-outlined text-[19px] font-normal">
                   search
                 </span>
               </button>
@@ -182,7 +182,7 @@ export default function Header() {
                   title="My Account"
                   className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
                   >
-                    <span className="material-symbols-outlined text-[20px]">person
+                    <span className="material-symbols-outlined text-[19px] font-normal">person
                   </span>
                 </Link>
               ) : (
@@ -191,7 +191,7 @@ export default function Header() {
                   title="Login"
                   className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
                   >
-                    <span className="material-symbols-outlined text-[20px]">person
+                    <span className="material-symbols-outlined text-[19px] font-normal">person
                   </span>
                 </Link>
               )}
@@ -359,6 +359,8 @@ export default function Header() {
     </header>
   )
 }
+
+
 
 
 
