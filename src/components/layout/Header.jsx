@@ -74,7 +74,7 @@ export default function Header() {
               <img
                 src={logo}
                 alt="JKR"
-                className="w-16 h-16 lg:w-[68px] lg:h-[68px] object-contain"
+                className="w-16 h-16 lg:w-[68px] lg:h-[68px] object-cover rounded-full"
               />
             </Link>
 
@@ -207,7 +207,7 @@ export default function Header() {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             title="Menu"
-            className="w-10 h-10 flex items-center justify-start"
+            className="w-10 h-10 flex items-center justify-start rounded-full overflow-hidden"
           >
             <span className="material-symbols-outlined">
               {mobileMenuOpen ? 'close' : 'menu'}
@@ -221,7 +221,7 @@ export default function Header() {
             <img
               src={logo}
               alt="JKR"
-              className="w-8 h-8 object-contain"
+              className="w-8 h-8 object-contain rounded-full overflow-hidden"
             />
             <span>JKR</span>
           </Link>
@@ -359,6 +359,12 @@ export default function Header() {
     </header>
   )
 }
+
+
+
+
+
+
 
 
 
