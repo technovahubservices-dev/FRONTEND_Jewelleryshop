@@ -155,15 +155,27 @@ export default function Header() {
             <div className="ml-auto flex items-center gap-3 lg:gap-4 xl:gap-5 text-primary">
 
               {/* Search */}
-              <button
-                className="w-36 lg:w-44 xl:w-52 h-10 px-3 flex items-center justify-end rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] hover:border-primary hover:text-regal-gold hover:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05),0_3px_0_rgba(0,0,0,0.14),0_7px_14px_rgba(0,0,0,0.12)] transition-all duration-200"
-                onClick={() => navigate('/search')}
-                title="Search"
+              <form
+                className="w-36 lg:w-44 xl:w-52 h-10 px-3 flex items-center rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] focus-within:border-primary transition-all duration-200"
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  const term = e.currentTarget.elements.search.value.trim()
+                  navigate(term ? `/search?q=${encodeURIComponent(term)}` : '/search')
+                }}
               >
-                <span className="material-symbols-outlined text-[20px] font-normal leading-none">
-                  search
-                </span>
-              </button>
+                <input
+                  name="search"
+                  type="search"
+                  placeholder="Search..."
+                  className="w-full min-w-0 bg-transparent outline-none text-sm"
+                  aria-label="Search products"
+                />
+                <button type="submit" title="Search" className="flex-shrink-0">
+                  <span className="material-symbols-outlined text-[20px] font-normal leading-none hover:text-regal-gold transition-colors">
+                    search
+                  </span>
+                </button>
+              </form>
 
               {/* Wishlist */}
               <button
@@ -419,6 +431,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
