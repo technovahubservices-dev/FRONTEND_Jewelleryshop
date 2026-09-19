@@ -1,10 +1,11 @@
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useWishlist } from '../../context/WishlistContext'
 import AnnouncementBar from '../../pages/AnnouncementBar'
+import { categoryAPI } from '../../services/api'
 import logo from '../../assets/icons/logo.jpeg'
 
 export default function Header() {
@@ -418,6 +419,8 @@ export default function Header() {
     </header>
   )
 }
+
+
 
 
 
