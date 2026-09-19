@@ -127,7 +127,7 @@ export default function Header() {
             </nav>
 
             {/* Utility icons */}
-            <div className="ml-auto flex items-center gap-2 lg:gap-3 xl:gap-4 text-primary">
+            <div className="ml-auto flex items-center gap-4 lg:gap-5 xl:gap-6 text-primary">
               <button
                 className="w-36 lg:w-44 xl:w-52 h-10 px-3 flex items-center justify-end rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] hover:border-primary hover:text-regal-gold hover:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05),0_3px_0_rgba(0,0,0,0.14),0_7px_14px_rgba(0,0,0,0.12)] transition-all duration-200" onClick={() => navigate('/search')} title="Search"><span className="material-symbols-outlined text-[19px] font-normal">
                   search
@@ -139,7 +139,7 @@ export default function Header() {
                 onClick={() => navigate('/wishlist')}
                 title="Wishlist"
               >
-                <span className="material-symbols-outlined text-[22px]">
+                <span className="material-symbols-outlined text-[19px] font-normal">
                   favorite
                 </span>
 
@@ -155,7 +155,7 @@ export default function Header() {
                 onClick={() => navigate('/cart')}
                 title="Cart"
               >
-                <span className="material-symbols-outlined text-[22px]">
+                <span className="material-symbols-outlined text-[19px] font-normal">
                   shopping_cart
                 </span>
 
@@ -171,7 +171,7 @@ export default function Header() {
                 onClick={() => navigate('/shop')}
                 title="Shop"
               >
-                <span className="material-symbols-outlined text-[22px]">
+                <span className="material-symbols-outlined text-[19px] font-normal">
                   storefront
                 </span>
               </button>
@@ -202,16 +202,14 @@ export default function Header() {
 
       {/* Mobile Header */}
       <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant shadow-sm">
-        <div className="h-[64px] px-4 flex items-center justify-between">
+        <div className="relative h-[64px] px-4 flex items-center justify-between">
 
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             title="Menu"
-            className="w-10 h-10 flex items-center justify-start rounded-full overflow-hidden"
+            className="w-10 h-10 flex items-center justify-center"
           >
-            <span className="material-symbols-outlined">
-              {mobileMenuOpen ? 'close' : 'menu'}
-            </span>
+            <span className="material-symbols-outlined text-[19px] font-normal">{mobileMenuOpen ? 'close' : 'menu'}</span>
           </button>
 
           <Link
@@ -226,15 +224,13 @@ export default function Header() {
             <span>JKR</span>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/wishlist')}
-              className="relative"
+              className="relative flex items-center justify-center"
               title="Wishlist"
             >
-              <span className="material-symbols-outlined">
-                favorite
-              </span>
+              <span className="material-symbols-outlined text-[19px] font-normal">favorite</span>
 
               {wishlistCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
@@ -244,13 +240,11 @@ export default function Header() {
             </button>
 
             <button
-              className="relative"
+              className="relative flex items-center justify-center"
               onClick={() => navigate('/cart')}
               title="Cart"
             >
-              <span className="material-symbols-outlined">
-                shopping_cart
-              </span>
+              <span className="material-symbols-outlined text-[19px] font-normal">shopping_cart</span>
 
               {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
@@ -260,9 +254,7 @@ export default function Header() {
             </button>
 
             <Link to="/account" title="My Account">
-              <span className="material-symbols-outlined">
-                person
-              </span>
+              <span className="material-symbols-outlined text-[19px] font-normal">person</span>
             </Link>
           </div>
         </div>
@@ -282,7 +274,7 @@ export default function Header() {
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex flex-col pt-20 px-6 pb-8 overflow-y-auto h-full">
+        <div className="flex flex-col pt-6 px-6 pb-12 overflow-y-auto h-full">
 
           <div className="space-y-1">
             {mobileNavLinks.map((link) =>
@@ -294,9 +286,7 @@ export default function Header() {
                     className="w-full flex items-center justify-between py-3.5 px-2 text-base font-body-md text-on-surface-variant hover:text-deep-emerald"
                   >
                     <span>Accessories</span>
-                    <span className="material-symbols-outlined">
-                      {accessoriesOpen ? 'expand_less' : 'expand_more'}
-                    </span>
+                    <span className="material-symbols-outlined text-[19px] font-normal">{accessoriesOpen ? 'expand_less' : 'expand_more'}</span>
                   </button>
 
                   {accessoriesOpen && (
@@ -359,6 +349,17 @@ export default function Header() {
     </header>
   )
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 

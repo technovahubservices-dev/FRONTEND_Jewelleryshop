@@ -662,7 +662,7 @@ export default function Home() {
 
       {homepageSettings?.heroSectionEnabled !== false && (
       <section className="w-full relative overflow-hidden bg-[#f8f0df]">
-        <div className="relative w-full min-h-[220px] md:min-h-[400px]">
+        <div className="relative w-full">
           {heroImages.map(
             (image, index) => {
               const isActive =
@@ -686,7 +686,7 @@ export default function Home() {
                           'JKR Jewellery Offers'
                         : ''
                     }
-                    className="w-full h-auto min-h-[220px] md:min-h-[400px] block object-cover"
+                    className="w-full h-auto block object-cover"
                     loading={
                       index === 0
                         ? 'eager'
@@ -772,8 +772,8 @@ export default function Home() {
           CATEGORIES
       =================================================== */}
 
-      <section className="w-full px-2 md:px-4 py-6 md:py-10">
-        <div className="text-center mb-10">
+      <section className="w-full px-4 sm:px-6 lg:px-10 py-8 md:py-12">
+        <div className="text-center mb-8 md:mb-10">
           <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
             {homepageSettings?.categorySectionTitle || 'Shop by Category'}
           </h2>
@@ -783,7 +783,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
           {categories.map(
             (category, index) => {
               const categoryImage =
@@ -803,7 +803,7 @@ export default function Home() {
                     category?.id ||
                     index
                   }
-                  className="group relative h-40 md:h-48 rounded-xl overflow-hidden block border border-outline-variant/10 shadow-sm bg-gray-50"
+                  className="group relative h-44 sm:h-48 lg:h-52 rounded-xl overflow-hidden block border border-outline-variant/10 shadow-sm bg-gray-50"
                 >
                   <img
                     src={
@@ -938,7 +938,7 @@ export default function Home() {
 
       <section className="w-full bg-surface-white py-12 md:py-16">
         <div className="w-full px-2 md:px-4">
-          <div className="text-center mb-10">
+          <div className="text-center mb-8 md:mb-10">
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
               Why Trust Us?
             </h2>
@@ -1366,6 +1366,8 @@ export default function Home() {
     </main>
   )
 }
+
+
 
 
 
