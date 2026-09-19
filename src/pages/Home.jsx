@@ -1040,7 +1040,7 @@ export default function Home() {
       <section className="w-full bg-white py-8 md:py-12 border-t border-gray-100">
         <div className="text-center mb-8">
           
-          <h3 className="font-headline-md text-headline-md text-deep-emerald mt-2">{homepageSettings?.videoSectionTitle || 'Watch & Shop'}</h3>
+          <h3 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">{homepageSettings?.videoSectionTitle || 'Watch & Shop'}</h3>
           {homepageSettings?.videoSectionDescription && (
             <p className="text-sm text-on-surface-variant mt-2 max-w-2xl mx-auto">{homepageSettings.videoSectionDescription}</p>
           )}
@@ -1365,6 +1365,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 
