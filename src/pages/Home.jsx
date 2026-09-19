@@ -369,8 +369,7 @@ export default function Home() {
      ======================================================= */
 
   const collectionSectionTitle =
-    homepageSettings?.collectionSectionTitle ||
-    'Our Collections'
+    'Accessories'
 
   const featuredSectionTitle =
     homepageSettings?.featuredSectionTitle ||
@@ -1366,6 +1365,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 

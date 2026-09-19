@@ -126,7 +126,7 @@ export default function Header() {
                   Accessories
                 </button>
 
-                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 hidden group-hover:block bg-white shadow-lg border border-outline-variant min-w-[230px] py-2 z-50">
+                <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 hidden group-hover:block bg-white shadow-lg border border-outline-variant min-w-[230px] py-2 z-50">
                   {accessories.map((accessory) => (
                     <NavLink
                       key={accessory._id || accessory.id || accessory.name}
@@ -419,6 +419,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
