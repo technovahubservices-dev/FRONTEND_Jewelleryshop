@@ -1046,7 +1046,7 @@ export default function Home() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 w-full px-4 sm:px-6 lg:px-10">
           {reels.map(
             (reel) => {
               const isYouTube =
@@ -1368,6 +1368,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 
