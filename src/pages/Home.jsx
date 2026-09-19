@@ -771,7 +771,7 @@ export default function Home() {
           CATEGORIES
       =================================================== */}
 
-      <section className="w-full px-4 sm:px-6 lg:px-10 py-8 md:py-12">
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="text-center mb-8 md:mb-10">
           <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
             {homepageSettings?.categorySectionTitle || 'Shop by Category'}
@@ -782,7 +782,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-4 max-w-6xl mx-auto">
           {categories.map(
             (category, index) => {
               const categoryImage =
@@ -936,7 +936,7 @@ export default function Home() {
       =================================================== */}
 
       <section className="w-full bg-surface-white py-12 md:py-16">
-        <div className="w-full px-2 md:px-4">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 md:mb-10">
             <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
               Why Trust Us?
@@ -949,7 +949,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-6 md:gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-5 md:gap-6 max-w-6xl mx-auto">
             {[
               {
                 icon: 'groups',
@@ -1046,7 +1046,7 @@ export default function Home() {
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 w-full px-2 md:px-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {reels.map(
             (reel) => {
               const isYouTube =
@@ -1254,7 +1254,7 @@ export default function Home() {
 
       {activeFestiveImages.length > 0 ? (
       <section className="w-full bg-surface-white py-12 md:py-16">
-        <div className="w-full px-2 md:px-4">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h2 className="font-playfair text-3xl md:text-4xl text-[#2c2c2c] italic">
               Festive Exclusive
@@ -1365,6 +1365,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 
