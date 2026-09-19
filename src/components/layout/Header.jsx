@@ -182,7 +182,7 @@ export default function Header() {
                   title="My Account"
                   className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
                   >
-                    <span className="material-symbols-outlined text-[19px] font-normal">person
+                    <span className="material-symbols-outlined text-[20px] font-normal leading-none">person
                   </span>
                 </Link>
               ) : (
@@ -191,7 +191,7 @@ export default function Header() {
                   title="Login"
                   className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
                   >
-                    <span className="material-symbols-outlined text-[19px] font-normal">person
+                    <span className="material-symbols-outlined text-[20px] font-normal leading-none">person
                   </span>
                 </Link>
               )}
@@ -230,7 +230,7 @@ export default function Header() {
               className="relative flex items-center justify-center"
               title="Wishlist"
             >
-              <span className="material-symbols-outlined text-[19px] font-normal">favorite</span>
+              <span className="material-symbols-outlined text-[20px] font-normal leading-none">favorite</span>
 
               {wishlistCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
@@ -244,7 +244,7 @@ export default function Header() {
               onClick={() => navigate('/cart')}
               title="Cart"
             >
-              <span className="material-symbols-outlined text-[19px] font-normal">shopping_cart</span>
+              <span className="material-symbols-outlined text-[20px] font-normal leading-none">shopping_cart</span>
 
               {itemCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
@@ -254,7 +254,7 @@ export default function Header() {
             </button>
 
             <Link to="/account" title="My Account">
-              <span className="material-symbols-outlined text-[19px] font-normal">person</span>
+              <span className="material-symbols-outlined text-[20px] font-normal leading-none">person</span>
             </Link>
           </div>
         </div>
@@ -349,6 +349,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
