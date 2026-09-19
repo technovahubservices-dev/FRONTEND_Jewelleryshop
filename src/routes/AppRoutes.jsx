@@ -86,7 +86,8 @@ export default function AppRoutes() {
       {/* Admin routes */}
       <Route path="/admin" element={adminElement(Dashboard)} />
       <Route path="/admin/products" element={adminElement(Products)} />
-      <Route path="/admin/categories" element={adminElement(Categories)} />`r`n      <Route path="/admin/accessories" element={adminElement(Accessories)} />
+      <Route path="/admin/categories" element={adminElement(Categories)} />
+      <Route path="/admin/accessories" element={adminElement(Accessories)} />
       <Route path="/admin/orders" element={adminElement(Orders)} />
       <Route path="/admin/contact" element={adminElement(ContactEnquiries)} />
       <Route path="/admin/customers" element={adminElement(Customers)} />
@@ -100,5 +101,6 @@ export default function AppRoutes() {
     </Routes>
   )
 }
+
 
 
