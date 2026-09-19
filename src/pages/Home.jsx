@@ -1315,7 +1315,7 @@ export default function Home() {
         </div>
 
         {/* ================= RIGHT IMAGE ================= */}
-        <div className="h-[400px] md:h-auto min-h-[500px] relative overflow-hidden">
+        <div className="h-[400px] md:min-h-[500px] relative overflow-hidden">
 
           <div className="heritage-scroll-track h-full">
 
