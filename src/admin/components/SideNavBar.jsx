@@ -22,6 +22,11 @@ export default function SideNavBar({ isOpen, onClose }) {
       icon: 'fa-solid fa-layer-group',
       path: '/admin/categories',
     },
+      {
+        name: 'Accessories Management',
+        icon: 'fa-solid fa-bag-shopping',
+        path: '/admin/accessories',
+      },
     {
       name: 'Orders',
       icon: 'fa-solid fa-file-invoice-dollar',
@@ -167,6 +172,7 @@ export default function SideNavBar({ isOpen, onClose }) {
     </aside>
   )
 }
+
 
 
 
