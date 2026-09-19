@@ -771,9 +771,9 @@ export default function Home() {
           CATEGORIES
       =================================================== */}
 
-      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div className="text-center mb-8 md:mb-10">
-          <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
+      <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 md:py-7">
+        <div className="text-center mb-5 md:mb-6">
+          <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-2">
             {homepageSettings?.categorySectionTitle || 'Shop by Category'}
           </h2>
 
@@ -782,7 +782,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-4 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 max-w-6xl mx-auto">
           {categories.map(
             (category, index) => {
               const categoryImage =
@@ -848,9 +848,9 @@ export default function Home() {
 
       {collections.length > 0 && (
         <section className="w-full bg-surface-container-low">
-          <div className="w-full px-4 sm:px-6 lg:px-10 py-10 sm:py-14 md:py-20">
-            <div className="text-center mb-8 sm:mb-10 md:mb-12">
-              <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
+          <div className="w-full px-4 sm:px-6 lg:px-10 py-6 sm:py-8 md:py-10">
+            <div className="text-center mb-5 sm:mb-10 md:mb-12">
+              <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-2">
                 {collectionSectionTitle}
               </h2>
 
@@ -935,10 +935,10 @@ export default function Home() {
           WHY TRUST US
       =================================================== */}
 
-      <section className="w-full bg-surface-white py-12 md:py-16">
+      <section className="w-full bg-surface-white py-7 md:py-9">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 md:mb-10">
-            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
+          <div className="text-center mb-5 md:mb-6">
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-2">
               Why Trust Us?
             </h2>
 
@@ -949,7 +949,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-5 md:gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 md:gap-5 max-w-6xl mx-auto">
             {[
               {
                 icon: 'groups',
@@ -1022,7 +1022,7 @@ export default function Home() {
       =================================================== */}
 
       <section className="w-full bg-surface-white">
-        <div className="w-full px-4 sm:px-6 lg:px-10 py-10 sm:py-14 md:py-20">
+        <div className="w-full px-4 sm:px-6 lg:px-10 py-6 sm:py-8 md:py-10">
           <FeaturedProducts
             title={featuredSectionTitle}
             description={
@@ -1037,16 +1037,16 @@ export default function Home() {
       =================================================== */}
 
       {reels.length > 0 && (
-      <section className="w-full bg-white py-8 md:py-12 border-t border-gray-100">
-        <div className="text-center mb-8">
+      <section className="w-full bg-white py-5 md:py-7 border-t border-gray-100">
+        <div className="text-center mb-5">
           
-          <h3 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">{homepageSettings?.videoSectionTitle || 'Watch & Shop'}</h3>
+          <h3 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-2">{homepageSettings?.videoSectionTitle || 'Watch & Shop'}</h3>
           {homepageSettings?.videoSectionDescription && (
             <p className="text-sm text-on-surface-variant mt-2 max-w-2xl mx-auto">{homepageSettings.videoSectionDescription}</p>
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 w-full px-4 sm:px-6 lg:px-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 w-full px-4 sm:px-6 lg:px-10">
           {reels.map(
             (reel) => {
               const isYouTube =
@@ -1253,10 +1253,10 @@ export default function Home() {
       =================================================== */}
 
       {activeFestiveImages.length > 0 ? (
-      <section className="w-full bg-surface-white py-12 md:py-16">
+      <section className="w-full bg-surface-white py-7 md:py-9">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">Festive Exclusive</h2>
+          <div className="text-center mb-5">
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-2">Festive Exclusive</h2>
             {homepageSettings?.festiveExclusiveTitle && (
               <h3 className="font-headline-md text-headline-md text-deep-emerald mt-2">
                 {homepageSettings?.festiveExclusiveTitle}
@@ -1267,7 +1267,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 bg-soft-cream border-2 border-regal-gold overflow-hidden rounded-2xl items-stretch">
 
           {/* ================= LEFT CONTENT ================= */}
-          <div className="p-8 sm:p-10 md:p-12 lg:p-14 flex flex-col justify-center">
+          <div className="p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col justify-center">
 
             {/* CMS Description */}
             {homepageSettings?.festiveExclusiveDescription && (
@@ -1313,7 +1313,7 @@ export default function Home() {
         </div>
 
         {/* ================= RIGHT IMAGE ================= */}
-        <div className="relative min-h-[500px] overflow-hidden self-stretch">
+        <div className="relative min-h-[420px] overflow-hidden self-stretch">
 
           <div className="heritage-scroll-track absolute inset-0 flex h-full">
 
@@ -1363,6 +1363,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 
