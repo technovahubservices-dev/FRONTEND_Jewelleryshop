@@ -1256,9 +1256,7 @@ export default function Home() {
       <section className="w-full bg-surface-white py-12 md:py-16">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <h2 className="font-playfair text-3xl md:text-4xl text-[#2c2c2c] italic">
-              Festive Exclusive
-            </h2>
+            <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">Festive Exclusive</h2>
             {homepageSettings?.festiveExclusiveTitle && (
               <h3 className="font-headline-md text-headline-md text-deep-emerald mt-2">
                 {homepageSettings?.festiveExclusiveTitle}
@@ -1365,6 +1363,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 
