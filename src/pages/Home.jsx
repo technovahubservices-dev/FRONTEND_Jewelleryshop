@@ -1244,7 +1244,7 @@ export default function Home() {
               )
             }
           )}
-        </div>
+      </div>
       </section>
       )}
 
@@ -1346,6 +1346,9 @@ export default function Home() {
 
         </div>
 
+        <div className="mt-3 border-t-2 border-regal-gold"></div>
+        <div className="mt-1 border-t border-regal-gold"></div>
+
       </div>
     </div>
   </section>
@@ -1365,6 +1368,13 @@ export default function Home() {
     </main>
   )
 }
+
+
+
+
+
+
+
 
 
 
