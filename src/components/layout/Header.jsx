@@ -64,7 +64,7 @@ export default function Header() {
       ===================================================== */}
       <div className="hidden md:block sticky top-0 z-50 w-full bg-white border-t border-b border-outline-variant">
         <div className="w-full px-6 lg:px-10 xl:px-16">
-          <div className="relative min-h-[82px] flex items-center justify-between gap-6">
+          <div className="relative min-h-[82px] flex items-center justify-between gap-4">
 
             {/* Logo */}
             <Link
@@ -79,7 +79,7 @@ export default function Header() {
             </Link>
 
             {/* Center Navigation */}
-            <nav className="absolute left-[43%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2 border border-outline-variant rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.10),0_6px_14px_rgba(0,0,0,0.07)]">
+            <nav className="flex items-center gap-4 lg:gap-5 xl:gap-7 px-4 lg:px-5 xl:px-6 mx-auto py-2 border border-outline-variant rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.10),0_6px_14px_rgba(0,0,0,0.07)]">
               <NavLink
                 to="/"
                 className={navClass}
@@ -152,11 +152,11 @@ export default function Header() {
             {/* =================================================
                 DESKTOP UTILITY ICONS
             ================================================= */}
-            <div className="ml-auto flex items-center gap-3 lg:gap-4 xl:gap-5 text-primary">
+            <div className="flex items-center gap-2 lg:gap-3 xl:gap-4 shrink-0 text-primary">
 
               {/* Search */}
               <form
-                className="w-36 lg:w-44 xl:w-52 h-10 px-3 flex items-center rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] focus-within:border-primary transition-all duration-200"
+                className="w-28 lg:w-36 xl:w-48 h-10 px-3 flex items-center rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] focus-within:border-primary transition-all duration-200"
                 onSubmit={(e) => {
                   e.preventDefault()
                   const term = e.currentTarget.elements.search.value.trim()
@@ -431,6 +431,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
