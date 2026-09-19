@@ -15,24 +15,21 @@ export default function Header() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [accessoriesOpen, setAccessoriesOpen] = useState(false)
+  const [accessories, setAccessories] = useState([])
 
-  const accessorySubcategories = [
-    'Engagement Rings',
-    'Wedding Bands',
-    'Cocktail Rings',
-    'Promise Rings',
-    'Diamond Necklaces',
-    'Gold Chains',
-    'Pendant Sets',
-    'Diamond Earrings',
-    'Gold Earrings',
-    'Hoop Earrings',
-    'Stud Earrings',
-    'Bracelets',
-    'Bangles',
-    'Cuffs',
-    'Chain Bracelets',
-  ]
+  useEffect(() => {
+    const fetchAccessories = async () => {
+      try {
+        const response = await categoryAPI.getAll()
+        if (response.data?.success) {
+          setAccessories((response.data.data || []).filter((category) => category.isActive))
+        }
+      } catch (error) {
+        console.error('Failed to fetch accessories:', error)
+      }
+    }
+    fetchAccessories()
+  }, [])
 
   const mobileNavLinks = [
     { name: 'Shop', to: '/shop' },
@@ -82,6 +79,19 @@ export default function Header() {
 
             {/* Center Navigation */}
             <nav className="absolute left-[43%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2 border border-outline-variant rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.10),0_6px_14px_rgba(0,0,0,0.07)]">
+              <NavLink
+                to="/home"
+                className={navClass}
+              >
+                Home
+              </NavLink>
+
+              <NavLink
+                to="/about"
+                className={navClass}
+              >
+                About
+              </NavLink>
 
               <NavLink
                 to="/shop?category=Necklaces"
@@ -104,12 +114,7 @@ export default function Header() {
                 Earrings
               </NavLink>
 
-              <NavLink
-                to="/shop?bridal=true"
-                className={navClass}
-              >
-                Premium Bride
-              </NavLink>
+              
 
               {/* Accessories */}
               <div className="relative group">
@@ -121,24 +126,19 @@ export default function Header() {
                 </button>
 
                 <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 hidden group-hover:block bg-white shadow-lg border border-outline-variant min-w-[230px] py-2 z-50">
-                  {accessorySubcategories.map((subcategory) => (
+                  {accessories.map((accessory) => (
                     <NavLink
-                      key={subcategory}
-                      to={`/shop?subcategory=${encodeURIComponent(subcategory)}`}
+                      key={accessory._id || accessory.id || accessory.name}
+                      to={`/shop?subcategory=${encodeURIComponent(accessory.name)}`}
                       className="block px-5 py-2.5 text-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors"
                     >
-                      {subcategory}
+                      {accessory.name}
                     </NavLink>
                   ))}
                 </div>
               </div>
 
-              <NavLink
-                to="/about"
-                className={navClass}
-              >
-                About
-              </NavLink>
+              
 
               <NavLink
                 to="/contact"
@@ -358,14 +358,14 @@ export default function Header() {
 
                   {accessoriesOpen && (
                     <div className="pl-4 pb-2 space-y-1">
-                      {accessorySubcategories.map((subcategory) => (
+                      {accessories.map((accessory) => (
                         <NavLink
-                          key={subcategory}
-                          to={`/shop?subcategory=${encodeURIComponent(subcategory)}`}
+                          key={accessory._id || accessory.id || accessory.name}
+                          to={`/shop?subcategory=${encodeURIComponent(accessory.name)}`}
                           onClick={closeMobileMenu}
                           className="block py-2 px-2 text-sm text-on-surface-variant hover:text-deep-emerald"
                         >
-                          {subcategory}
+                          {accessory.name}
                         </NavLink>
                       ))}
                     </div>
@@ -418,4 +418,6 @@ export default function Header() {
     </header>
   )
 }
+
+
 
