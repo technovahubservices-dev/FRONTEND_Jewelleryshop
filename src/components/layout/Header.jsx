@@ -391,9 +391,7 @@ export default function Header() {
                   onClick={closeMobileMenu}
                   className={({ isActive }) =>
                     `block py-3.5 px-2 text-base font-body-md transition-colors duration-200 ${
-                      isActive
-                        ? 'text-deep-emerald border-l-2 border-regal-gold pl-4'
-                        : 'text-on-surface-variant hover:text-deep-emerald'
+                      isActive ? 'text-deep-emerald border-l-2 border-regal-gold pl-4' : 'text-on-surface-variant hover:text-deep-emerald'
                     }`
                   }
                 >
@@ -431,6 +429,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
