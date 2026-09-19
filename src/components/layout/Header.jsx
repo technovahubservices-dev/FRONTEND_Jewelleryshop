@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
@@ -11,6 +12,7 @@ export default function Header() {
   const { itemCount } = useCart()
   const { count: wishlistCount } = useWishlist()
   const navigate = useNavigate()
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [accessoriesOpen, setAccessoriesOpen] = useState(false)
 
@@ -56,14 +58,14 @@ export default function Header() {
     }`
 
   return (
-    <header className="w-full flex flex-col relative z-50">
+    <header className="w-full relative z-50">
       <AnnouncementBar />
 
-      {/* Desktop Header */}
+      {/* =====================================================
+          DESKTOP HEADER
+      ===================================================== */}
       <div className="hidden md:block sticky top-0 z-50 w-full bg-white border-t border-b border-outline-variant">
         <div className="w-full px-6 lg:px-10 xl:px-16">
-
-          {/* Top row */}
           <div className="relative min-h-[82px] flex items-center justify-between gap-6">
 
             {/* Logo */}
@@ -78,24 +80,38 @@ export default function Header() {
               />
             </Link>
 
-            {/* Center navigation */}
+            {/* Center Navigation */}
             <nav className="absolute left-[43%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2 border border-outline-variant rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.10),0_6px_14px_rgba(0,0,0,0.07)]">
-              <NavLink to="/shop?category=Necklaces" className={navClass}>
+
+              <NavLink
+                to="/shop?category=Necklaces"
+                className={navClass}
+              >
                 Necklace
               </NavLink>
 
-              <NavLink to="/shop?category=Bangles" className={navClass}>
+              <NavLink
+                to="/shop?category=Bangles"
+                className={navClass}
+              >
                 Bangles
               </NavLink>
 
-              <NavLink to="/shop?category=Earrings" className={navClass}>
+              <NavLink
+                to="/shop?category=Earrings"
+                className={navClass}
+              >
                 Earrings
               </NavLink>
 
-              <NavLink to="/shop?bridal=true" className={navClass}>
+              <NavLink
+                to="/shop?bridal=true"
+                className={navClass}
+              >
                 Premium Bride
               </NavLink>
 
+              {/* Accessories */}
               <div className="relative group">
                 <button
                   type="button"
@@ -117,81 +133,101 @@ export default function Header() {
                 </div>
               </div>
 
-              <NavLink to="/about" className={navClass}>
+              <NavLink
+                to="/about"
+                className={navClass}
+              >
                 About
               </NavLink>
 
-              <NavLink to="/contact" className={navClass}>
+              <NavLink
+                to="/contact"
+                className={navClass}
+              >
                 Contact us
               </NavLink>
             </nav>
 
-            {/* Utility icons */}
-            <div className="ml-auto flex items-center gap-4 lg:gap-5 xl:gap-6 text-primary">
+            {/* =================================================
+                DESKTOP UTILITY ICONS
+            ================================================= */}
+            <div className="ml-auto flex items-center gap-3 lg:gap-4 xl:gap-5 text-primary">
+
+              {/* Search */}
               <button
-                className="w-36 lg:w-44 xl:w-52 h-10 px-3 flex items-center justify-end rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] hover:border-primary hover:text-regal-gold hover:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05),0_3px_0_rgba(0,0,0,0.14),0_7px_14px_rgba(0,0,0,0.12)] transition-all duration-200" onClick={() => navigate('/search')} title="Search"><span className="material-symbols-outlined text-[19px] font-normal">
+                className="w-36 lg:w-44 xl:w-52 h-10 px-3 flex items-center justify-end rounded-full border border-outline-variant bg-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),0_2px_0_rgba(0,0,0,0.12),0_5px_12px_rgba(0,0,0,0.10)] hover:border-primary hover:text-regal-gold hover:shadow-[inset_0_1px_2px_rgba(0,0,0,0.05),0_3px_0_rgba(0,0,0,0.14),0_7px_14px_rgba(0,0,0,0.12)] transition-all duration-200"
+                onClick={() => navigate('/search')}
+                title="Search"
+              >
+                <span className="material-symbols-outlined text-[20px] font-normal leading-none">
                   search
                 </span>
               </button>
 
+              {/* Wishlist */}
               <button
-                className="relative hover:text-regal-gold transition-colors"
+                className="relative w-10 h-10 flex items-center justify-center hover:text-regal-gold transition-colors"
                 onClick={() => navigate('/wishlist')}
                 title="Wishlist"
               >
-                <span className="material-symbols-outlined text-[19px] font-normal">
+                <span className="material-symbols-outlined text-[20px] font-normal leading-none">
                   favorite
                 </span>
 
                 {wishlistCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute top-0 right-0 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {wishlistCount > 99 ? '99+' : wishlistCount}
                   </span>
                 )}
               </button>
 
+              {/* Cart */}
               <button
-                className="relative hover:text-regal-gold transition-colors"
+                className="relative w-10 h-10 flex items-center justify-center hover:text-regal-gold transition-colors"
                 onClick={() => navigate('/cart')}
                 title="Cart"
               >
-                <span className="material-symbols-outlined text-[19px] font-normal">
+                <span className="material-symbols-outlined text-[20px] font-normal leading-none">
                   shopping_cart
                 </span>
 
                 {itemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  <span className="absolute top-0 right-0 bg-primary text-surface-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
                     {itemCount > 99 ? '99+' : itemCount}
                   </span>
                 )}
               </button>
 
+              {/* Shop */}
               <button
-                className="hover:text-regal-gold transition-colors"
+                className="w-10 h-10 flex items-center justify-center hover:text-regal-gold transition-colors"
                 onClick={() => navigate('/shop')}
                 title="Shop"
               >
-                <span className="material-symbols-outlined text-[19px] font-normal">
+                <span className="material-symbols-outlined text-[20px] font-normal leading-none">
                   storefront
                 </span>
               </button>
 
+              {/* Account / Login */}
               {isAuthenticated ? (
                 <Link
                   to="/account"
                   title="My Account"
-                  className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
-                  >
-                    <span className="material-symbols-outlined text-[20px] font-normal leading-none">person
+                  className="w-10 h-10 flex items-center justify-center hover:text-regal-gold transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px] font-normal leading-none">
+                    person
                   </span>
                 </Link>
               ) : (
                 <Link
                   to="/login"
                   title="Login"
-                  className="h-10 w-10 flex items-center justify-center hover:text-regal-gold transition-colors duration-200"
-                  >
-                    <span className="material-symbols-outlined text-[20px] font-normal leading-none">person
+                  className="w-10 h-10 flex items-center justify-center hover:text-regal-gold transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[20px] font-normal leading-none">
+                    person
                   </span>
                 </Link>
               )}
@@ -200,18 +236,24 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Header */}
-      <header className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant shadow-sm">
+      {/* =====================================================
+          MOBILE HEADER
+      ===================================================== */}
+      <div className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant shadow-sm">
         <div className="relative h-[64px] px-4 flex items-center justify-between">
 
+          {/* Menu */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             title="Menu"
             className="w-10 h-10 flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-[19px] font-normal">{mobileMenuOpen ? 'close' : 'menu'}</span>
+            <span className="material-symbols-outlined text-[19px] font-normal leading-none">
+              {mobileMenuOpen ? 'close' : 'menu'}
+            </span>
           </button>
 
+          {/* Mobile Logo */}
           <Link
             className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 text-[24px] font-display-lg text-deep-emerald tracking-tighter"
             to="/"
@@ -224,43 +266,60 @@ export default function Header() {
             <span>JKR</span>
           </Link>
 
+          {/* Mobile Utility Icons */}
           <div className="flex items-center gap-3">
+
+            {/* Wishlist */}
             <button
               onClick={() => navigate('/wishlist')}
-              className="relative flex items-center justify-center"
+              className="relative w-10 h-10 flex items-center justify-center"
               title="Wishlist"
             >
-              <span className="material-symbols-outlined text-[20px] font-normal leading-none">favorite</span>
+              <span className="material-symbols-outlined text-[20px] font-normal leading-none">
+                favorite
+              </span>
 
               {wishlistCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                <span className="absolute top-0 right-0 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
                   {wishlistCount > 99 ? '99+' : wishlistCount}
                 </span>
               )}
             </button>
 
+            {/* Cart */}
             <button
-              className="relative flex items-center justify-center"
+              className="relative w-10 h-10 flex items-center justify-center"
               onClick={() => navigate('/cart')}
               title="Cart"
             >
-              <span className="material-symbols-outlined text-[20px] font-normal leading-none">shopping_cart</span>
+              <span className="material-symbols-outlined text-[20px] font-normal leading-none">
+                shopping_cart
+              </span>
 
               {itemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                <span className="absolute top-0 right-0 bg-primary text-surface-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
                   {itemCount > 99 ? '99+' : itemCount}
                 </span>
               )}
             </button>
 
-            <Link to="/account" title="My Account">
-              <span className="material-symbols-outlined text-[20px] font-normal leading-none">person</span>
+            {/* Account */}
+            <Link
+              to="/account"
+              title="My Account"
+              className="w-10 h-10 flex items-center justify-center"
+            >
+              <span className="material-symbols-outlined text-[20px] font-normal leading-none">
+                person
+              </span>
             </Link>
           </div>
         </div>
-      </header>
+      </div>
 
-      {/* Mobile Overlay */}
+      {/* =====================================================
+          MOBILE OVERLAY
+      ===================================================== */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 md:hidden"
@@ -268,7 +327,9 @@ export default function Header() {
         />
       )}
 
-      {/* Mobile Drawer */}
+      {/* =====================================================
+          MOBILE DRAWER
+      ===================================================== */}
       <nav
         className={`fixed top-0 left-0 h-full w-[82%] max-w-sm bg-surface shadow-xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
@@ -280,13 +341,19 @@ export default function Header() {
             {mobileNavLinks.map((link) =>
               link.name === 'Accessories' ? (
                 <div key={link.name}>
+
                   <button
                     type="button"
                     onClick={() => setAccessoriesOpen(!accessoriesOpen)}
                     className="w-full flex items-center justify-between py-3.5 px-2 text-base font-body-md text-on-surface-variant hover:text-deep-emerald"
                   >
                     <span>Accessories</span>
-                    <span className="material-symbols-outlined text-[19px] font-normal">{accessoriesOpen ? 'expand_less' : 'expand_more'}</span>
+
+                    <span className="material-symbols-outlined text-[19px] font-normal leading-none">
+                      {accessoriesOpen
+                        ? 'expand_less'
+                        : 'expand_more'}
+                    </span>
                   </button>
 
                   {accessoriesOpen && (
@@ -323,6 +390,7 @@ export default function Header() {
             )}
           </div>
 
+          {/* Mobile Authentication */}
           <div className="border-t border-outline-variant pt-5 mt-6">
             {isAuthenticated ? (
               <button
@@ -344,44 +412,10 @@ export default function Header() {
               </Link>
             )}
           </div>
+
         </div>
       </nav>
     </header>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
