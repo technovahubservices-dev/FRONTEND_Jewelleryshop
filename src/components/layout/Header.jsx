@@ -55,7 +55,7 @@ export default function Header() {
     }`
 
   return (
-    <header className="w-full relative z-50">
+    <header className="sticky top-0 z-50 w-full relative z-50">
       <AnnouncementBar />
 
       {/* =====================================================
@@ -428,6 +428,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
