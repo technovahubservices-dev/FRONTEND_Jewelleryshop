@@ -81,7 +81,7 @@ export default function Header() {
             {/* Center Navigation */}
             <nav className="absolute left-[43%] -translate-x-1/2 flex items-center gap-6 lg:gap-7 xl:gap-9 px-5 lg:px-7 py-2 border border-outline-variant rounded-full bg-white shadow-[0_3px_0_rgba(0,0,0,0.10),0_6px_14px_rgba(0,0,0,0.07)]">
               <NavLink
-                to="/home"
+                to="/"
                 className={navClass}
               >
                 Home
@@ -419,6 +419,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 
