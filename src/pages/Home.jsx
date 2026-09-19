@@ -1266,10 +1266,10 @@ export default function Home() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 bg-soft-cream border border-outline-variant/30 overflow-hidden rounded-2xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 bg-soft-cream border-2 border-regal-gold overflow-hidden rounded-2xl items-stretch">
 
           {/* ================= LEFT CONTENT ================= */}
-          <div className="p-8 sm:p-10 md:p-14 lg:p-16 flex flex-col justify-center">
+          <div className="p-8 sm:p-10 md:p-12 lg:p-14 flex flex-col justify-center">
 
             {/* CMS Description */}
             {homepageSettings?.festiveExclusiveDescription && (
@@ -1368,6 +1368,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 
