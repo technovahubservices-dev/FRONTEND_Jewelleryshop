@@ -1315,9 +1315,9 @@ export default function Home() {
         </div>
 
         {/* ================= RIGHT IMAGE ================= */}
-        <div className="h-[400px] md:min-h-[500px] relative overflow-hidden">
+        <div className="relative min-h-[500px] overflow-hidden self-stretch">
 
-          <div className="heritage-scroll-track h-full">
+          <div className="heritage-scroll-track absolute inset-0 flex h-full">
 
             {activeFestiveImages.map(
               (image, index) => (
@@ -1346,9 +1346,6 @@ export default function Home() {
 
         </div>
 
-        <div className="mt-3 border-t-2 border-regal-gold"></div>
-        <div className="mt-1 border-t border-regal-gold"></div>
-
       </div>
     </div>
   </section>
@@ -1368,6 +1365,8 @@ export default function Home() {
     </main>
   )
 }
+
+
 
 
 
