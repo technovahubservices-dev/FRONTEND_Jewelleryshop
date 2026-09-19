@@ -5,9 +5,9 @@ export default function Footer() {
   return (
     <>
       <footer className="bg-soft-cream w-full border-t border-outline-variant mt-auto">
-        <div className="w-full px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 py-14 md:py-16 lg:py-20">
+        <div className="w-full px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 py-8 md:py-10 lg:py-12">
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 lg:gap-x-14 xl:gap-x-20 gap-y-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-10 lg:gap-x-14 xl:gap-x-20 gap-y-8">
 
             {/* Company Information */}
             <div className="sm:col-span-2 lg:col-span-1 flex flex-col">
@@ -15,7 +15,7 @@ export default function Footer() {
                 JKR
               </div>
 
-              <p className="text-on-surface-variant text-sm leading-7 mb-7 max-w-sm">
+              <p className="text-on-surface-variant text-sm leading-7 mb-5 max-w-sm">
                 Crafting timeless elegance for the modern connoisseur.
                 Experience quiet luxury in every detail.
               </p>
@@ -45,7 +45,7 @@ export default function Footer() {
                 Explore
               </h3>
 
-              <ul className="space-y-4 font-body-md text-body-md text-on-surface-variant">
+              <ul className="space-y-3 font-body-md text-body-md text-on-surface-variant">
                 <li>
                   <Link className="hover:text-primary transition-colors" to="/shop">
                     Jewellery
@@ -66,7 +66,7 @@ export default function Footer() {
                 Get In Touch
               </h3>
 
-              <div className="space-y-5 text-sm leading-6 text-on-surface-variant">
+              <div className="space-y-3 text-sm leading-6 text-on-surface-variant">
                 <p>
                   <span className="font-semibold">WhatsApp (Messages Only):</span><br />
                   <a href="https://wa.me/918951218527" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">
@@ -94,7 +94,7 @@ export default function Footer() {
                 Quick Links
               </h3>
 
-              <ul className="space-y-4 font-body-md text-body-md text-on-surface-variant">
+              <ul className="space-y-3 font-body-md text-body-md text-on-surface-variant">
                 <li>
                   <Link className="hover:text-primary transition-colors" to="/account">
                     My Account
@@ -123,7 +123,7 @@ export default function Footer() {
           </div>
 
           {/* Footer Bottom */}
-          <div className="w-full mt-12 md:mt-16 pt-6 md:pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-sm text-on-surface-variant">
+          <div className="w-full mt-8 md:mt-10 pt-4 md:pt-5 border-t border-surface-variant flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-sm text-on-surface-variant">
             <p>
               &copy; 2024 JKR. All Rights Reserved.
             </p>
@@ -145,3 +145,4 @@ export default function Footer() {
     </>
   )
 }
+
