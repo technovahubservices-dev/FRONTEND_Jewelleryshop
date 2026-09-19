@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { googleDriveAPI } from '../../services/api'
 
 export default function TopAppBar({ onMenuClick }) {
   const { user } = useAuth()
+  const navigate = useNavigate()
+  const [searchTerm, setSearchTerm] = useState('')
   const [googleDriveConnected, setGoogleDriveConnected] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -44,11 +47,22 @@ export default function TopAppBar({ onMenuClick }) {
           <i className="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
         </div>
 
-        <input
-          className="block w-full pl-10 pr-3 py-2 border-none bg-surface-container-low rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:bg-white transition-colors"
-          placeholder="Search products, SKUs, or orders..."
-          type="text"
-        />
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            const term = searchTerm.trim()
+            if (!term) return
+            navigate(`/admin/products?search=${encodeURIComponent(term)}`)
+          }}
+        >
+          <input
+            className="block w-full pl-10 pr-3 py-2 border-none bg-surface-container-low rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:bg-white transition-colors"
+            placeholder="Search products, SKUs, or orders..."
+            type="text"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+          />
+        </form>
       </div>
 
       <div className="flex items-center gap-5">
