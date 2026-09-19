@@ -23,6 +23,7 @@ import AdminLayout from '../admin/layouts/AdminLayout'
 import Dashboard from '../admin/pages/Dashboard'
 import Products from '../admin/pages/Products'
 import Categories from '../admin/pages/Categories'
+import Accessories from '../admin/pages/Accessories'
 import Orders from '../admin/pages/Orders'
 import ContactEnquiries from '../admin/pages/ContactEnquiries'
 import Customers from '../admin/pages/Customers'
@@ -85,7 +86,7 @@ export default function AppRoutes() {
       {/* Admin routes */}
       <Route path="/admin" element={adminElement(Dashboard)} />
       <Route path="/admin/products" element={adminElement(Products)} />
-      <Route path="/admin/categories" element={adminElement(Categories)} />
+      <Route path="/admin/categories" element={adminElement(Categories)} />`r`n      <Route path="/admin/accessories" element={adminElement(Accessories)} />
       <Route path="/admin/orders" element={adminElement(Orders)} />
       <Route path="/admin/contact" element={adminElement(ContactEnquiries)} />
       <Route path="/admin/customers" element={adminElement(Customers)} />
@@ -99,4 +100,5 @@ export default function AppRoutes() {
     </Routes>
   )
 }
+
 

@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useWishlist } from '../../context/WishlistContext'
 import AnnouncementBar from '../../pages/AnnouncementBar'
-import { categoryAPI } from '../../services/api'
+import { accessoryAPI } from '../../services/api'
 import logo from '../../assets/icons/logo.jpeg'
 
 export default function Header() {
@@ -21,9 +21,9 @@ export default function Header() {
   useEffect(() => {
     const fetchAccessories = async () => {
       try {
-        const response = await categoryAPI.getAll()
+        const response = await accessoryAPI.getAll()
         if (response.data?.success) {
-          setAccessories((response.data.data || []).filter((category) => category.isActive))
+          setAccessories((response.data.data || []).filter((accessory) => accessory.isActive))
         }
       } catch (error) {
         console.error('Failed to fetch accessories:', error)
@@ -419,6 +419,7 @@ export default function Header() {
     </header>
   )
 }
+
 
 
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { productAPI, categoryAPI } from '../../services/api';
+import { productAPI, categoryAPI, accessoryAPI } from '../../services/api';
 import { resolveImageUrl } from '../../utils/apiUrl';
 
 const METALS = ['Gold', 'Silver', 'Platinum', 'Rose Gold', 'White Gold'];
@@ -40,6 +40,7 @@ const initialFormState = {
   discountPrice: '',
   stock: '',
   category: '',
+  subcategory: '',
   metal: '',
   collection: '',
   bridal: false,
@@ -68,6 +69,7 @@ export default function AddProductModal({
           discountPrice: product.discountPrice || '',
           stock: product.stock || '',
           category: product.category || '',
+        subcategory: product.subcategory || '',
           metal: product.metal || '',
           collection: product.collection || '',
           bridal: product.bridal || false,
@@ -101,6 +103,7 @@ export default function AddProductModal({
   const [skuError, setSkuError] = useState('');
   const skuDebounceRef = useRef(null);
   const [categories, setCategories] = useState([]);
+  const [accessories, setAccessories] = useState([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -118,6 +121,17 @@ export default function AddProductModal({
     };
 
     fetchCategories();
+    const fetchAccessories = async () => {
+      try {
+        const response = await accessoryAPI.getAll();
+        if (response.data?.success) {
+          setAccessories((response.data.data || []).filter((item) => item.isActive));
+        }
+      } catch (err) {
+        console.error('Failed to fetch accessories:', err);
+      }
+    };
+    fetchAccessories();
   }, []);
 
   useEffect(() => {
@@ -138,6 +152,7 @@ export default function AddProductModal({
         discountPrice: product.discountPrice || '',
         stock: product.stock || '',
         category: product.category || '',
+        subcategory: product.subcategory || '',
         metal: product.metal || '',
         collection: product.collection || '',
         bridal: product.bridal || false,
@@ -1188,4 +1203,6 @@ export default function AddProductModal({
     </div>
   );
 }
+
+
 
