@@ -849,8 +849,8 @@ export default function Home() {
 
       {collections.length > 0 && (
         <section className="w-full bg-surface-container-low">
-          <div className="w-full px-2 md:px-4 py-16 md:py-24">
-            <div className="text-center mb-16">
+          <div className="w-full px-4 sm:px-6 lg:px-10 py-10 sm:py-14 md:py-20">
+            <div className="text-center mb-8 sm:mb-10 md:mb-12">
               <h2 className="font-playfair text-3xl md:text-4xl font-bold text-deep-emerald mb-4">
                 {collectionSectionTitle}
               </h2>
@@ -858,7 +858,7 @@ export default function Home() {
               <div className="h-[1px] w-12 bg-regal-gold mx-auto" />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-4 sm:gap-5 md:gap-6">
               {collections
                 .slice(0, 4)
                 .map(
@@ -880,11 +880,11 @@ export default function Home() {
                         }
                         className={
                           index === 0
-                            ? 'md:col-span-8'
-                            : 'md:col-span-4'
+                            ? 'sm:col-span-2 md:col-span-8'
+                            : 'sm:col-span-1 md:col-span-4'
                         }
                       >
-                        <div className="group cursor-pointer relative overflow-hidden h-[400px] md:h-[500px] rounded-2xl shadow-lg">
+                        <div className="group cursor-pointer relative overflow-hidden h-[300px] sm:h-[360px] md:h-[500px] rounded-2xl shadow-lg">
                           <div
                             className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
                             style={{
@@ -1023,7 +1023,7 @@ export default function Home() {
       =================================================== */}
 
       <section className="w-full bg-surface-white">
-        <div className="w-full px-2 md:px-4 py-16 md:py-24">
+        <div className="w-full px-4 sm:px-6 lg:px-10 py-10 sm:py-14 md:py-20">
           <FeaturedProducts
             title={featuredSectionTitle}
             description={
@@ -1366,6 +1366,7 @@ export default function Home() {
     </main>
   )
 }
+
 
 
 
