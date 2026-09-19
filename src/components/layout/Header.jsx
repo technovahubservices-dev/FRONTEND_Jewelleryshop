@@ -33,16 +33,15 @@ export default function Header() {
   }, [])
 
   const mobileNavLinks = [
-    { name: 'Shop', to: '/shop' },
+    { name: 'Home', to: '/' },
+    { name: 'About', to: '/about' },
     { name: 'Necklace', to: '/shop?category=Necklaces' },
     { name: 'Bangles', to: '/shop?category=Bangles' },
     { name: 'Earrings', to: '/shop?category=Earrings' },
     { name: 'Premium Bride', to: '/shop?bridal=true' },
     { name: 'Accessories', to: '/shop' },
-    { name: 'About', to: '/about' },
     { name: 'Contact us', to: '/contact' },
   ]
-
   const closeMobileMenu = () => {
     setMobileMenuOpen(false)
     setAccessoriesOpen(false)
@@ -391,7 +390,7 @@ export default function Header() {
                   onClick={closeMobileMenu}
                   className={({ isActive }) =>
                     `block py-3.5 px-2 text-base font-body-md transition-colors duration-200 ${
-                      isActive ? 'text-deep-emerald border-l-2 border-regal-gold pl-4' : 'text-on-surface-variant hover:text-deep-emerald'
+                      isActive ? 'text-deep-emerald border-l-2 border-regal-gold pl-2' : 'text-on-surface-variant hover:text-deep-emerald'
                     }`
                   }
                 >
@@ -429,6 +428,8 @@ export default function Header() {
     </header>
   )
 }
+
+
 
 
 
