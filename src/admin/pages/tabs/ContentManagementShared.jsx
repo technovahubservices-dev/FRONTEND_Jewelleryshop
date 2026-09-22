@@ -104,6 +104,7 @@ export const PreviewModal = ({ isOpen, onClose, media }) => {
 
 export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
   const [uploaded, setUploaded] = useState(false)
+  const inputRef = useRef(null)
   const safeValue = typeof value === 'string' ? value : ''
   const hasValue = safeValue.trim() !== ''
   const videoSrc = hasValue ? resolveVideoUrl(safeValue) : ''
@@ -128,10 +129,12 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
           />
 
           <input
+            ref={inputRef}
             type="file"
             accept="video/*"
+            className="hidden"
             onChange={async (e) => {
-              const file = e.target.files[0]
+              const file = e.target.files?.[0]
 
               if (file) {
                 const url = await fileInputRef.current.handleUpload(file, {
@@ -146,8 +149,18 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
 
               e.target.value = ''
             }}
-            className="text-xs w-full sm:w-auto max-w-full"
           />
+
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-outline-variant rounded text-sm font-medium whitespace-nowrap hover:border-deep-emerald hover:text-deep-emerald transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">
+              upload_file
+            </span>
+            Choose File
+          </button>
 
           {uploaded && (
             <span className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded bg-green-100 text-green-700 text-xs font-medium whitespace-nowrap">
@@ -187,6 +200,7 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
 
 export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
   const [uploaded, setUploaded] = useState(false)
+  const inputRef = useRef(null)
   const safeValue = typeof value === 'string' ? value : ''
 
   return (
@@ -209,13 +223,17 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
           />
 
           <input
+            ref={inputRef}
             type="file"
             accept="image/*"
+            className="hidden"
             onChange={async (e) => {
-              const file = e.target.files[0]
+              const file = e.target.files?.[0]
 
               if (file) {
-                const url = await fileInputRef.current.handleUpload(file, { useGenericMedia: fileInputRef.current.useGenericMedia })
+                const url = await fileInputRef.current.handleUpload(file, {
+                  useGenericMedia: fileInputRef.current.useGenericMedia,
+                })
 
                 if (url) {
                   setUploaded(true)
@@ -225,8 +243,18 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
 
               e.target.value = ''
             }}
-            className="text-xs w-full sm:w-auto max-w-full"
           />
+
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-outline-variant rounded text-sm font-medium whitespace-nowrap hover:border-deep-emerald hover:text-deep-emerald transition-colors"
+          >
+            <span className="material-symbols-outlined text-base">
+              upload_file
+            </span>
+            Choose File
+          </button>
 
           {uploaded && (
             <span className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded bg-green-100 text-green-700 text-xs font-medium whitespace-nowrap">
