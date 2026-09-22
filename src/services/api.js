@@ -405,6 +405,9 @@ export const contentAPI = {
   uploadHomepageImage: (formData) =>
     api.post('/content/homepage/upload', formData),
 
+  uploadHomepageMedia: (formData) =>
+    api.post('/content/homepage/media-upload', formData),
+
   updateHomepageTab: (tab, payload) =>
     api.put(
       '/content/homepage/settings/updateTab',
@@ -491,3 +494,4 @@ export const accessoryAPI = {
   update: (id, accessoryData) => api.put(/accessories/, accessoryData),
   delete: (id) => api.delete(/accessories/),
 }
+

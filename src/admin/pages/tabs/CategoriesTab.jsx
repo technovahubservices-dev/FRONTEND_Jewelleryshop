@@ -90,7 +90,7 @@ export default function CategoriesTab({ settings, updateSetting, toggleItem, del
                       label="Image"
                       value={val || ''}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
-                      fileInputRef={{ current: { handleUpload: handleFileUpload } }}
+                      fileInputRef={{ current: { handleUpload: handleFileUpload, useGenericMedia: true } }}
                     />
                   )},
                   { key: 'link', label: 'Category', component: (val, onChange) => {
@@ -140,3 +140,4 @@ export default function CategoriesTab({ settings, updateSetting, toggleItem, del
     </div>
   )
 }
+

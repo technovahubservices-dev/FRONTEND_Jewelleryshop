@@ -28,7 +28,7 @@ export default function TestimonialsTab({ settings, updateSetting, toggleItem, d
                       label="Image"
                       value={val || ''}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
-                      fileInputRef={{ current: { handleUpload: handleFileUpload } }}
+                      fileInputRef={{ current: { handleUpload: handleFileUpload, useGenericMedia: true } }}
                     />
                   )},
                 ]}
@@ -56,3 +56,4 @@ export default function TestimonialsTab({ settings, updateSetting, toggleItem, d
     </div>
   )
 }
+

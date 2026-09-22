@@ -116,7 +116,7 @@ export default function ContentManagement() {
           setError(payload.message)
         }
       } else {
-        const response = await contentAPI.uploadHomepageImage(formData)
+        const response = await (options.useGenericMedia ? contentAPI.uploadHomepageMedia(formData) : contentAPI.uploadHomepageImage(formData))
         const payload = (response.data && typeof response.data === 'object')
           ? response.data
           : {}
@@ -317,4 +317,5 @@ export default function ContentManagement() {
     </div>
   )
 }
+
 

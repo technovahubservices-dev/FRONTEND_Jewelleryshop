@@ -215,7 +215,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
               const file = e.target.files[0]
 
               if (file) {
-                const url = await fileInputRef.current.handleUpload(file)
+                const url = await fileInputRef.current.handleUpload(file, { useGenericMedia: fileInputRef.current.useGenericMedia })
 
                 if (url) {
                   setUploaded(true)
@@ -387,6 +387,7 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
     </div>
   )
 }
+
 
 
 

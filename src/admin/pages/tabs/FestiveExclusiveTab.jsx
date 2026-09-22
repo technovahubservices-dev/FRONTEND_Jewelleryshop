@@ -24,7 +24,7 @@ export default function FestiveExclusiveTab({ settings, updateSetting, toggleIte
                       label="Image"
                       value={val || ''}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
-                      fileInputRef={{ current: { handleUpload: handleFileUpload } }}
+                      fileInputRef={{ current: { handleUpload: handleFileUpload, useGenericMedia: true } }}
                     />
                   )},
                   { key: 'link', label: 'Link', placeholder: '/shop' },
@@ -53,3 +53,4 @@ export default function FestiveExclusiveTab({ settings, updateSetting, toggleIte
     </div>
   )
 }
+
