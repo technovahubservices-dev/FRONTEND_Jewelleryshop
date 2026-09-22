@@ -119,7 +119,7 @@ export const productAPI = {
     price:
       p.discountPrice > 0
         ? p.discountPrice
-        : Number(p.price || 0),
+        : p.price,
 
     originalPrice:
       p.price > 0 && p.discountPrice > 0
