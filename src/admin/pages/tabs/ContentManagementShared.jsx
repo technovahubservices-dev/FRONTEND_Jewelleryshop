@@ -334,6 +334,8 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
                   </option>
                 ))}
               </select>
+            ) : field.component ? (
+              field.component(item[field.key], (value) => onChange(index, field.key, value))
             ) : field.type === 'custom' ? (
               field.render(item, index, onChange)
             ) : (
@@ -387,6 +389,7 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
     </div>
   )
 }
+
 
 
 
