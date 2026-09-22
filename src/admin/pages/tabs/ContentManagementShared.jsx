@@ -103,6 +103,7 @@ export const PreviewModal = ({ isOpen, onClose, media }) => {
 }
 
 export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
+  const [uploaded, setUploaded] = useState(false)
   const safeValue = typeof value === 'string' ? value : ''
   const hasValue = safeValue.trim() !== ''
   const videoSrc = hasValue ? resolveVideoUrl(safeValue) : ''
@@ -110,30 +111,55 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-end gap-3">
       <div className="flex-1">
-        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">{label}</label>
+        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+          {label}
+        </label>
+
         <div className="flex flex-col sm:flex-row gap-3 min-w-0">
           <input
             type="text"
             value={safeValue}
-            onChange={(e) => onChange({ type: 'url', value: e.target.value })}
+            onChange={(e) => {
+              setUploaded(false)
+              onChange({ type: 'url', value: e.target.value })
+            }}
             className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
             placeholder="Enter video URL"
           />
+
           <input
             type="file"
             accept="video/*"
             onChange={async (e) => {
               const file = e.target.files[0]
+
               if (file) {
-                const url = await fileInputRef.current.handleUpload(file, { isVideo: true })
-                if (url) onChange({ type: 'url', value: url })
+                const url = await fileInputRef.current.handleUpload(file, {
+                  isVideo: true,
+                })
+
+                if (url) {
+                  setUploaded(true)
+                  onChange({ type: 'url', value: url })
+                }
               }
+
               e.target.value = ''
             }}
             className="text-xs w-full sm:w-auto max-w-full"
           />
+
+          {uploaded && (
+            <span className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded bg-green-100 text-green-700 text-xs font-medium whitespace-nowrap">
+              <span className="material-symbols-outlined text-sm">
+                check_circle
+              </span>
+              Uploaded
+            </span>
+          )}
         </div>
       </div>
+
       {hasValue && (
         <div className="w-16 h-16 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30 flex-shrink-0 flex items-center justify-center">
           {videoSrc ? (
@@ -144,10 +170,14 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
               playsInline
               preload="metadata"
               className="w-full h-full object-cover"
-              onError={(e) => { e.currentTarget.style.display = 'none' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+              }}
             />
           ) : (
-            <span className="material-symbols-outlined text-2xl text-on-surface-variant">play_circle</span>
+            <span className="material-symbols-outlined text-2xl text-on-surface-variant">
+              play_circle
+            </span>
           )}
         </div>
       )}
@@ -156,44 +186,72 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
 }
 
 export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
+  const [uploaded, setUploaded] = useState(false)
   const safeValue = typeof value === 'string' ? value : ''
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-end gap-3">
       <div className="flex-1">
-        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">{label}</label>
+        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+          {label}
+        </label>
+
         <div className="flex flex-col sm:flex-row gap-3 min-w-0">
           <input
             type="text"
             value={safeValue}
-            onChange={(e) => onChange({ type: 'url', value: e.target.value })}
+            onChange={(e) => {
+              setUploaded(false)
+              onChange({ type: 'url', value: e.target.value })
+            }}
             className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
             placeholder="Enter image URL"
           />
+
           <input
             type="file"
             accept="image/*"
             onChange={async (e) => {
               const file = e.target.files[0]
+
               if (file) {
                 const url = await fileInputRef.current.handleUpload(file)
-                if (url) onChange({ type: 'url', value: url })
+
+                if (url) {
+                  setUploaded(true)
+                  onChange({ type: 'url', value: url })
+                }
               }
+
               e.target.value = ''
             }}
             className="text-xs w-full sm:w-auto max-w-full"
           />
+
+          {uploaded && (
+            <span className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded bg-green-100 text-green-700 text-xs font-medium whitespace-nowrap">
+              <span className="material-symbols-outlined text-sm">
+                check_circle
+              </span>
+              Uploaded
+            </span>
+          )}
         </div>
       </div>
+
       {safeValue && safeValue.trim() !== '' && (
         <div className="w-24 h-24 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30 flex-shrink-0 flex flex-col items-center justify-center">
           <img
             src={resolveImageUrl(safeValue)}
             alt="preview"
             className="max-w-full max-h-full object-contain"
-            onError={(e) => { e.target.style.display = 'none'; }}
+            onError={(e) => {
+              e.target.style.display = 'none'
+            }}
           />
-          <span className="text-[10px] font-label-caps text-on-surface-variant mt-1">Preview</span>
+          <span className="text-[10px] font-label-caps text-on-surface-variant mt-1">
+            Preview
+          </span>
         </div>
       )}
     </div>
@@ -329,3 +387,6 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
     </div>
   )
 }
+
+
+
