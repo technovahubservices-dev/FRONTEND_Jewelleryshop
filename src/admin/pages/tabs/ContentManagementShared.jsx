@@ -198,7 +198,7 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
   )
 }
 
-export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
+export const DualImageInput = ({ label, value, onChange, fileInputRef, showUrlInput = true }) => {
   const [uploaded, setUploaded] = useState(false)
   const inputRef = useRef(null)
   const safeValue = typeof value === 'string' ? value : ''
@@ -211,16 +211,18 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef }) => {
         </label>
 
         <div className="flex flex-col sm:flex-row gap-3 min-w-0">
-          <input
-            type="text"
-            value={safeValue}
-            onChange={(e) => {
-              setUploaded(false)
-              onChange({ type: 'url', value: e.target.value })
-            }}
-            className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
-            placeholder="Enter image URL"
-          />
+          {showUrlInput && (
+            <input
+              type="text"
+              value={safeValue}
+              onChange={(e) => {
+                setUploaded(false)
+                onChange({ type: 'url', value: e.target.value })
+              }}
+              className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+              placeholder="Enter image URL"
+            />
+          )}
 
           <input
             ref={inputRef}
@@ -417,9 +419,3 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
     </div>
   )
 }
-
-
-
-
-
-

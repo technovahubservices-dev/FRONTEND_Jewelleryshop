@@ -89,6 +89,7 @@ export default function CategoriesTab({ settings, updateSetting, toggleItem, del
                     <DualImageInput
                       label="Image"
                       value={val || ''}
+                      showUrlInput={false}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
                       fileInputRef={{ current: { handleUpload: handleFileUpload, useGenericMedia: true } }}
                     />
