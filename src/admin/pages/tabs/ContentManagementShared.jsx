@@ -206,9 +206,11 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef, showUrlIn
   return (
     <div className="flex flex-col sm:flex-row sm:items-end gap-3">
       <div className="flex-1">
-        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-          {label}
-        </label>
+        {label && (
+          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+            {label}
+          </label>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 min-w-0">
           {showUrlInput && (
