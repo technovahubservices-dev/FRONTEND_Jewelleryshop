@@ -133,10 +133,17 @@ export default function ContentManagement() {
         }
       }
     } catch (err) {
-      console.error('Upload failed:', err)
-      const message = err.response?.data?.message || err.message || 'Failed to upload image'
-      setError(message)
-    }
+  console.error('Upload failed:', err)
+  console.error('Upload status:', err.response?.status)
+  console.error('Upload response:', err.response?.data)
+
+  const message =
+    err.response?.data?.message ||
+    err.message ||
+    'Failed to upload image'
+
+  setError(message)
+}
     return ''
   }
 
