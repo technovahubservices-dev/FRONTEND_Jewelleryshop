@@ -38,9 +38,25 @@ export default function TopAppBar({ onMenuClick }) {
   }, [])
 
   return (
-    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0 z-10 shadow-sm">
+    <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 flex-shrink-0 z-10 shadow-sm">
 
-      <div className="ml-auto flex items-center gap-5">
+      {/* Mobile Menu Button */}
+      <button
+        type="button"
+        onClick={onMenuClick}
+        aria-label="Open navigation menu"
+        className="md:hidden w-10 h-10 flex items-center justify-center rounded-md text-gray-600 hover:bg-emerald-50 hover:text-deep-emerald transition-colors"
+      >
+        <i className="fa-solid fa-bars text-lg"></i>
+      </button>
+
+      {/* Desktop left space */}
+      <div className="hidden md:block"></div>
+
+      {/* Right Section */}
+      <div className="ml-auto flex items-center gap-3 md:gap-5">
+
+        {/* Google Drive Status */}
         {!loading && (
           <div className="flex items-center gap-2 text-sm shrink-0">
             <span
@@ -51,10 +67,8 @@ export default function TopAppBar({ onMenuClick }) {
               }`}
             ></span>
 
-           
-
             <span
-              className={`font-medium ${
+              className={`font-medium hidden sm:inline ${
                 googleDriveConnected
                   ? 'text-emerald-600'
                   : 'text-amber-600'
@@ -65,14 +79,14 @@ export default function TopAppBar({ onMenuClick }) {
           </div>
         )}
 
+        {/* User */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="w-8 h-8 rounded-full bg-deep-emerald flex items-center justify-center text-white text-sm font-medium">
             {user?.name?.charAt(0) || 'A'}
           </div>
         </div>
+
       </div>
     </header>
   )
 }
-
-
