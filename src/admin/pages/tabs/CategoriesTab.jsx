@@ -90,6 +90,7 @@ export default function CategoriesTab({ settings, updateSetting, toggleItem, del
                       label="Image"
                       value={val || ''}
                       showUrlInput={false}
+                      showLabel={false}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
                       fileInputRef={{ current: { handleUpload: handleFileUpload, useGenericMedia: true } }}
                     />

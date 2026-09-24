@@ -294,7 +294,7 @@ export const Toast = ({ message, type, onClose }) => {
   if (!message) return null
   return (
     <div className={`fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-50 px-3 sm:px-4 py-3 rounded-lg shadow-lg font-body-md text-sm flex items-center gap-2 transition-all ${
-      type === 'success' ? 'bg-primary-container text-primary-container-fg' : 'bg-error-container text-error-container-fg'
+      type === 'success' ? 'bg-primary-container text-on-primary-container' : 'bg-error-container text-error-container-fg'
     }`}>
       <span className="material-symbols-outlined text-sm">
         {type === 'success' ? 'check_circle' : 'error'}
