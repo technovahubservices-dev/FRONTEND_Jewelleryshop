@@ -39,6 +39,25 @@ export default function ProductCard({ product }) {
 
   const currentImageUrl = resolveImageUrl(allImages[currentImageIndex] || image || '')
 
+  useEffect(() => {
+    setImgLoaded(false)
+
+    if (!currentImageUrl) {
+      setImgLoaded(true)
+      return
+    }
+
+    const img = new Image()
+    img.onload = () => setImgLoaded(true)
+    img.onerror = () => setImgLoaded(true)
+    img.src = currentImageUrl
+
+    return () => {
+      img.onload = null
+      img.onerror = null
+    }
+  }, [currentImageUrl])
+
   const handleWishlistToggle = (e) => {
     e.preventDefault()
     e.stopPropagation()
