@@ -90,104 +90,71 @@ export default function Home() {
     let mounted = true
 
     const fetchContent = async () => {
-      try {
-        setLoading(true)
+      setLoading(true)
 
-        const [
-          heroRes,
-          promoRes,
-          collectionRes,
-          settingsRes,
-          productsRes,
-        ] = await Promise.allSettled([
+      const handleRequest = async (request, onSuccess, errorLabel) => {
+        try {
+          const response = await request
+
+          if (!mounted) return
+
+          if (response?.data?.success) {
+            onSuccess(response.data.data)
+          }
+        } catch (error) {
+          console.error(errorLabel, error)
+        }
+      }
+
+      const requests = [
+        handleRequest(
           contentAPI.getActive('heroBanners'),
+          (data) => {
+            setHeroBanners(Array.isArray(data) ? data : [])
+          },
+          'Hero banners API failed:'
+        ),
+
+        handleRequest(
           contentAPI.getActive('promoBanners'),
+          (data) => {
+            setPromoBanners(Array.isArray(data) ? data : [])
+          },
+          'Promo banners API failed:'
+        ),
+
+        handleRequest(
           contentAPI.getActive('collections'),
+          (data) => {
+            setCollections(Array.isArray(data) ? data : [])
+          },
+          'Collections API failed:'
+        ),
+
+        handleRequest(
           contentAPI.getHomepageSettings(),
+          (data) => {
+            setHomepageSettings(data || {})
+          },
+          '[HOME] Homepage settings API failed:'
+        ),
+
+        handleRequest(
           productAPI.getAll(),
-        ])
+          (data) => {
+            const rawProducts = Array.isArray(data) ? data : []
+            const transformed = rawProducts.map(productAPI.transform)
 
-        if (!mounted) return
+            setProducts(transformed)
+          },
+          '[HOME] Products API failed:'
+        ),
+      ]
 
-        /* ---------------- HERO BANNERS ---------------- */
+      await Promise.allSettled(requests)
 
-        if (
-          heroRes.status === 'fulfilled' &&
-          heroRes.value?.data?.success
-        ) {
-          const data = heroRes.value.data.data
-
-          setHeroBanners(Array.isArray(data) ? data : [])
-        } else if (heroRes.status === 'rejected') {
-          console.error(
-            'Hero banners API failed:',
-            heroRes.reason
-          )
-        }
-
-        /* ---------------- PROMO BANNERS ---------------- */
-
-        if (
-          promoRes.status === 'fulfilled' &&
-          promoRes.value?.data?.success
-        ) {
-          const data = promoRes.value.data.data
-
-          setPromoBanners(Array.isArray(data) ? data : [])
-        }
-
-        /* ---------------- COLLECTIONS ---------------- */
-
-        if (
-          collectionRes.status === 'fulfilled' &&
-          collectionRes.value?.data?.success
-        ) {
-          const data = collectionRes.value.data.data
-
-          setCollections(Array.isArray(data) ? data : [])
-        }
-
-        /* ---------------- HOMEPAGE SETTINGS ---------------- */
-
-        if (
-          settingsRes.status === 'fulfilled' &&
-          settingsRes.value?.data?.success
-        ) {
-          const settings = settingsRes.value.data.data || {}
-
-          setHomepageSettings(settings)
-        } else if (settingsRes.status === 'rejected') {
-          console.error(
-            '[HOME] Homepage settings API failed:',
-            settingsRes.reason
-          )
-        }
-
-        /* ---------------- PRODUCTS ---------------- */
-
-        if (
-          productsRes.status === 'fulfilled' &&
-          productsRes.value?.data?.success
-        ) {
-          const rawProducts = Array.isArray(
-            productsRes.value.data.data
-          )
-            ? productsRes.value.data.data
-            : []
-
-          const transformed = rawProducts.map(productAPI.transform)
-
-          setProducts(transformed)
-        }
-      } catch (error) {
-        console.error(
-          '[HOME] Failed to fetch homepage content:',
-          error
-        )
-      } finally {
-        if (mounted) {
-          setLoading(false)
-        }
+      if (mounted) {
+        setLoading(false)
       }
     }
 
@@ -1363,25 +1330,3 @@ export default function Home() {
     </main>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
