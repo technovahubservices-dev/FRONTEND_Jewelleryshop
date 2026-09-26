@@ -194,7 +194,17 @@ export default function ContentManagement() {
     setError('')
     setSuccess('')
     try {
-      const response = await contentAPI.updateHomepageTab(activeTab, settings)
+      const tabPayload =
+  activeTab === 'announcement'
+    ? {
+        announcementText: settings.announcementText,
+        announcementActive: settings.announcementActive,
+        announcementBgColor: settings.announcementBgColor,
+        announcementTextColor: settings.announcementTextColor,
+      }
+    : settings
+
+const response = await contentAPI.updateHomepageTab(activeTab, tabPayload)
       const payload = (response.data && typeof response.data === 'object')
         ? response.data
         : {}
