@@ -345,8 +345,18 @@ export default function Settings() {
           Configure your store information and security.
         </p>
       </div>
-
       <div className="space-y-6">
+        {(successMessage || errorMessage) && (
+  <div
+    className={`rounded-md px-4 py-3 text-sm font-medium ${
+      errorMessage
+        ? 'bg-red-50 text-red-600 border border-red-200'
+        : 'bg-green-50 text-green-600 border border-green-200'
+    }`}
+  >
+    {errorMessage || successMessage}
+  </div>
+)}
 
         {/* Store Information */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
@@ -727,20 +737,7 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Notification */}
-      <div className="flex justify-end pt-6 border-t border-outline-variant/30">
-        {(successMessage || errorMessage) && (
-          <div
-            className={`mr-4 self-center rounded-md px-4 py-2 text-sm font-medium ${
-              errorMessage
-                ? 'bg-red-50 text-red-600 border border-red-200'
-                : 'bg-green-50 text-green-600 border border-green-200'
-            }`}
-          >
-            {errorMessage || successMessage}
-          </div>
-        )}
-      </div>
+
     </div>
   )
 }
