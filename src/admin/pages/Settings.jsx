@@ -450,11 +450,10 @@ if (!contactDescription) {
 
       <div className="flex justify-end pt-6 border-t border-outline-variant/30">
         {(successMessage || errorMessage) && (
-          <span className={`text-sm mr-4 self-center ${errorMessage ? 'text-red-600' : 'text-primary'}`}>
-            {errorMessage || successMessage}
-          </span>
+          <div className={`mr-4 self-center rounded-md px-4 py-2 text-sm font-medium ${errorMessage ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-600 border border-green-200'}`}>`r`n            {errorMessage || successMessage}`r`n          </div>
         )}
       </div>
     </div>
   )
 }
+
