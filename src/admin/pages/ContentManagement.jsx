@@ -190,6 +190,7 @@ export default function ContentManagement() {
   }
 
   const handleSaveTab = async () => {
+    console.log('SAVE BUTTON CLICKED')
     setSaving(true)
     setError('')
     setSuccess('')
