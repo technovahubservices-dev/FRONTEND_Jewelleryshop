@@ -5,6 +5,10 @@ const initialStoreInfo = {
   storeName: '',
   email: '',
   phone: '',
+  address: '',
+  instagramUrl: '',
+  instagramUsername: '',
+  contactDescription: '',
 }
 
 const initialPassword = {
@@ -57,6 +61,11 @@ export default function Settings() {
         storeName: String(data.storeName || ''),
         email: String(data.email || ''),
         phone: String(data.phone || ''),
+          address: String(data.address || ''),
+  instagramUrl: String(data.instagramUrl || ''),
+  instagramUsername: String(data.instagramUsername || ''),
+  contactDescription: String(data.contactDescription || ''),
+
       }
       setStoreInfo(info)
       setSavedStoreInfo(info)
@@ -94,12 +103,20 @@ export default function Settings() {
         storeName: storeName,
         email: String(storeInfo.email || '').trim(),
         phone: String(storeInfo.phone || '').trim(),
+        address: String(storeInfo.address || '').trim(),
+  instagramUrl: String(storeInfo.instagramUrl || '').trim(),
+  instagramUsername: String(storeInfo.instagramUsername || '').trim(),
+  contactDescription: String(storeInfo.contactDescription || '').trim(),
       })
       const data = response.data?.data || response.data || {}
       const info = {
         storeName: String(data.storeName || storeName),
         email: String(data.email || storeInfo.email || ''),
         phone: String(data.phone || storeInfo.phone || ''),
+         address: String(data.address || storeInfo.address || ''),
+  instagramUrl: String(data.instagramUrl || storeInfo.instagramUrl || ''),
+  instagramUsername: String(data.instagramUsername || storeInfo.instagramUsername || ''),
+  contactDescription: String(data.contactDescription || storeInfo.contactDescription || ''),
       }
       setStoreInfo(info)
       setSavedStoreInfo(info)
@@ -240,6 +257,70 @@ export default function Settings() {
                 <span className="text-sm font-body-md text-on-surface">{storeInfo.phone || '—'}</span>
               )}
             </div>
+            <div className="flex flex-col gap-2 py-3 last:pb-0">
+  <label className="font-body-md text-sm text-on-surface-variant">Address</label>
+  {storeInfoEdit ? (
+    <textarea
+      name="address"
+      value={storeInfo.address}
+      onChange={handleStoreInfoChange}
+      rows="3"
+      className="px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+    />
+  ) : (
+    <span className="text-sm font-body-md text-on-surface whitespace-pre-line">
+      {storeInfo.address || '—'}
+    </span>
+  )}
+</div>
+<div className="flex flex-col gap-2 py-3 last:pb-0">
+  <label className="font-body-md text-sm text-on-surface-variant">Instagram URL</label>
+  {storeInfoEdit ? (
+    <input
+      type="url"
+      name="instagramUrl"
+      value={storeInfo.instagramUrl}
+      onChange={handleStoreInfoChange}
+      className="px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+    />
+  ) : (
+    <span className="text-sm font-body-md text-on-surface">
+      {storeInfo.instagramUrl || '—'}
+    </span>
+  )}
+</div>
+<div className="flex flex-col gap-2 py-3 last:pb-0">
+  <label className="font-body-md text-sm text-on-surface-variant">Instagram Username</label>
+  {storeInfoEdit ? (
+    <input
+      type="text"
+      name="instagramUsername"
+      value={storeInfo.instagramUsername}
+      onChange={handleStoreInfoChange}
+      className="px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+    />
+  ) : (
+    <span className="text-sm font-body-md text-on-surface">
+      {storeInfo.instagramUsername || '—'}
+    </span>
+  )}
+</div>
+<div className="flex flex-col gap-2 py-3 last:pb-0">
+  <label className="font-body-md text-sm text-on-surface-variant">Contact Description</label>
+  {storeInfoEdit ? (
+    <textarea
+      name="contactDescription"
+      value={storeInfo.contactDescription}
+      onChange={handleStoreInfoChange}
+      rows="4"
+      className="px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+    />
+  ) : (
+    <span className="text-sm font-body-md text-on-surface">
+      {storeInfo.contactDescription || '—'}
+    </span>
+  )}
+</div>
             <div className="flex justify-end pt-4 gap-3">
               {storeInfoEdit ? (
                 <>
