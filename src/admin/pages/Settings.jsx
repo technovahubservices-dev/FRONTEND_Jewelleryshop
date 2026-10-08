@@ -96,6 +96,12 @@ export default function Settings() {
       showError('Store Name is required')
       return
     }
+    const contactDescription = String(storeInfo.contactDescription || '').trim()
+
+if (!contactDescription) {
+  showError('Contact Description is required')
+  return
+}
     setStoreInfoSaving(true)
     showError('')
     try {
