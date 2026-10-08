@@ -91,53 +91,97 @@ export default function Settings() {
   }
 
   const handleSaveStoreInfo = async () => {
-    const storeName = String(storeInfo.storeName || '').trim()
-    if (!storeName) {
-      showError('Store Name is required')
-      return
-    }
-    const contactDescription = String(storeInfo.contactDescription || '').trim()
+  const storeName = String(storeInfo.storeName || '').trim()
+  const email = String(storeInfo.email || '').trim()
+  const phone = String(storeInfo.phone || '').trim()
+  const address = String(storeInfo.address || '').trim()
+  const instagramUrl = String(storeInfo.instagramUrl || '').trim()
+  const instagramUsername = String(storeInfo.instagramUsername || '').trim()
+  const contactDescription = String(storeInfo.contactDescription || '').trim()
 
-if (!contactDescription) {
-  showError('Contact Description is required')
-  return
-}
-    setStoreInfoSaving(true)
-    showError('')
-    try {
-      const response = await adminSettingsAPI.update({
-        storeName: storeName,
-        email: String(storeInfo.email || '').trim(),
-        phone: String(storeInfo.phone || '').trim(),
-        address: String(storeInfo.address || '').trim(),
-  instagramUrl: String(storeInfo.instagramUrl || '').trim(),
-  instagramUsername: String(storeInfo.instagramUsername || '').trim(),
-  contactDescription: String(storeInfo.contactDescription || '').trim(),
-      })
-      const data = response.data?.data || response.data || {}
-      const info = {
-        storeName: String(data.storeName || storeName),
-        email: String(data.email || storeInfo.email || ''),
-        phone: String(data.phone || storeInfo.phone || ''),
-         address: String(data.address || storeInfo.address || ''),
-  instagramUrl: String(data.instagramUrl || storeInfo.instagramUrl || ''),
-  instagramUsername: String(data.instagramUsername || storeInfo.instagramUsername || ''),
-  contactDescription: String(data.contactDescription || storeInfo.contactDescription || ''),
-      }
-      setStoreInfo(info)
-      setSavedStoreInfo(info)
-      setStoreInfoEdit(false)
-      showMessage('Store information saved successfully')
-    } catch (error) {
-      const message = error.response?.status === 401
-        ? 'Your admin session has expired. Please log in again.'
-        : error.response?.data?.message || 'Failed to save store information.'
-      showError(message)
-    } finally {
-      setStoreInfoSaving(false)
-    }
+  // Validate all required fields
+  if (!storeName) {
+    showError('Store Name is required')
+    return
   }
 
+  if (!email) {
+    showError('Email is required')
+    return
+  }
+
+  if (!phone) {
+    showError('Phone is required')
+    return
+  }
+
+  if (!address) {
+    showError('Address is required')
+    return
+  }
+
+  if (!instagramUrl) {
+    showError('Instagram URL is required')
+    return
+  }
+
+  if (!instagramUsername) {
+    showError('Instagram Username is required')
+    return
+  }
+
+  if (!contactDescription) {
+    showError('Contact Description is required')
+    return
+  }
+
+  setStoreInfoSaving(true)
+  showError('')
+
+  try {
+    const response = await adminSettingsAPI.update({
+      storeName,
+      email,
+      phone,
+      address,
+      instagramUrl,
+      instagramUsername,
+      contactDescription,
+    })
+
+    const data = response.data?.data || response.data || {}
+
+    const info = {
+      storeName: String(data.storeName || storeName),
+      email: String(data.email || email),
+      phone: String(data.phone || phone),
+      address: String(data.address || address),
+      instagramUrl: String(data.instagramUrl || instagramUrl),
+      instagramUsername: String(
+        data.instagramUsername || instagramUsername
+      ),
+      contactDescription: String(
+        data.contactDescription || contactDescription
+      ),
+    }
+
+    setStoreInfo(info)
+    setSavedStoreInfo(info)
+    setStoreInfoEdit(false)
+
+    showMessage('Store information saved successfully')
+  } catch (error) {
+    const message =
+      error.response?.status === 401
+        ? 'Your admin session has expired. Please log in again.'
+        : error.response?.data?.message ||
+          'Failed to save store information.'
+
+    showError(message)
+  } finally {
+    setStoreInfoSaving(false)
+  }
+}
   const validatePassword = () => {
     if (!password.currentPassword) {
       return 'Current password is required'
