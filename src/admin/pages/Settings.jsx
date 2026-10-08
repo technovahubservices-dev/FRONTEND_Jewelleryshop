@@ -207,6 +207,9 @@ export default function Settings() {
       setStoreInfoEdit(false)
 
       showMessage('Store information saved successfully')
+      setTimeout(() => {
+  setSuccessMessage('')
+}, 3000)
     } catch (error) {
       const message =
         error.response?.status === 401
