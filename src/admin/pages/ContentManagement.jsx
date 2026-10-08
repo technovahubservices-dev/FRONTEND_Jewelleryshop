@@ -247,86 +247,151 @@ const response = await contentAPI.updateHomepageTab(activeTab, tabPayload)
     )
   }
 
-  return (
+    return (
     <div className="min-h-screen bg-surface-container-low w-full">
-      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4">
-        <div className="p-2">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-playfair text-deep-emerald font-bold mb-1">Content Management</h1>
-              <p className="text-sm text-on-surface-variant">Manage homepage configuration via tabbed interface.</p>
-            </div>
+      <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="w-full max-w-[1600px] mx-auto">
+          {/* Page Header */}
+          <div className="mb-5 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl font-playfair text-deep-emerald font-bold mb-1">
+              Content Management
+            </h1>
+            <p className="text-sm text-on-surface-variant">
+              Manage homepage configuration and content sections.
+            </p>
           </div>
 
-          <div className="border-b border-outline-variant/30 mb-6 overflow-x-auto">
-            <nav className="flex gap-1 sm:gap-2 min-w-max">
-              {TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id)
-                    setError('')
-                    setSuccess('')
-                  }}
-                  className={`flex items-center gap-2 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 font-label-caps text-label-caps text-xs sm:text-sm rounded-t-lg border-b-2 transition-all whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'text-deep-emerald border-deep-emerald bg-surface-white'
-                      : 'text-on-surface-variant border-transparent hover:text-deep-emerald hover:bg-surface-container-low'
-                  }`}
-                >
-                  <span className="material-symbols-outlined text-base sm:text-lg">{tab.icon}</span>
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
+          {/* Error Message */}
           {error && (
-            <div className="p-3 sm:p-4 bg-error-container/10 border border-error-container/20 text-error rounded-lg text-sm mb-4 flex items-start sm:items-center gap-2">
-              <span className="material-symbols-outlined text-sm">error</span>
-              {error}
+            <div className="p-3 sm:p-4 bg-error-container/10 border border-error-container/20 text-error rounded-lg text-sm mb-5 flex items-start sm:items-center gap-2">
+              <span className="material-symbols-outlined text-sm">
+                error
+              </span>
+              <span>{error}</span>
             </div>
           )}
 
-          <div className="bg-surface-white p-3 sm:p-4 md:p-6 rounded-xl border border-outline-variant/30 mb-24">
-            {ActiveTabComponent && (
-              <ActiveTabComponent
-                settings={settings}
-                updateSetting={updateSetting}
-                toggleItem={toggleItem}
-                deleteItem={confirmDeleteItem}
-                addItem={addItem}
-                handleFileUpload={handleFileUpload}
-                onPreview={handlePreview}
-              />
-            )}
-          </div>
+          {/* Main Content Layout */}
+          <div className="flex flex-col lg:flex-row gap-5 lg:gap-6 items-start">
 
-          <div className="fixed bottom-0 left-0 right-0 bg-surface-white border-t border-outline-variant/50 px-3 sm:px-4 md:px-6 py-3 sm:py-4 shadow-lg z-40">
-            <div className="max-w-7xl mx-auto flex justify-stretch sm:justify-end">
-              <button
-                onClick={handleSaveTab}
-                disabled={saving}
-                className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 bg-deep-emerald text-surface-white font-label-caps text-label-caps text-sm rounded-lg transition-all duration-200 hover:bg-deep-emerald/90 active:scale-95 shadow-sm disabled:opacity-50"
-              >
-                {saving ? (
-                  <>
-                    <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-sm">save</span>
-                    Save Active Module Changes
-                  </>
-                )}
-              </button>
-            </div>
+            {/* Left Navigation */}
+            <aside className="w-full lg:w-64 xl:w-72 flex-shrink-0">
+              <div className="bg-surface-white border border-outline-variant/30 rounded-xl p-2 shadow-sm">
+                <div className="px-3 py-3 border-b border-outline-variant/20 mb-2">
+                  <p className="text-xs font-label-caps text-on-surface-variant uppercase tracking-wide">
+                    Content Sections
+                  </p>
+                </div>
+
+                <nav className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0">
+                  {TABS.map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id)
+                        setError('')
+                        setSuccess('')
+                      }}
+                      className={`flex-shrink-0 lg:w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left transition-all duration-200 ${
+                        activeTab === tab.id
+                          ? 'bg-deep-emerald text-surface-white shadow-sm'
+                          : 'text-on-surface-variant hover:bg-surface-container-low hover:text-deep-emerald'
+                      }`}
+                    >
+                      <span
+                        className={`material-symbols-outlined text-[20px] ${
+                          activeTab === tab.id
+                            ? 'text-surface-white'
+                            : 'text-on-surface-variant'
+                        }`}
+                      >
+                        {tab.icon}
+                      </span>
+
+                      <span className="font-label-caps text-xs sm:text-sm whitespace-nowrap">
+                        {tab.label}
+                      </span>
+                    </button>
+                  ))}
+                </nav>
+              </div>
+            </aside>
+
+            {/* Right Content Area */}
+            <main className="flex-1 min-w-0 w-full">
+              <div className="bg-surface-white border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
+
+                {/* Active Section Header */}
+                <div className="px-4 sm:px-6 py-4 border-b border-outline-variant/20 bg-surface-container-low/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-deep-emerald/10 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-deep-emerald text-xl">
+                        {TABS.find((tab) => tab.id === activeTab)?.icon}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-playfair text-deep-emerald font-semibold">
+                        {TABS.find((tab) => tab.id === activeTab)?.label}
+                      </h2>
+                      <p className="text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                        Manage this homepage section.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tab Content */}
+                <div className="p-4 sm:p-6 lg:p-7 mb-24">
+                  {ActiveTabComponent && (
+                    <ActiveTabComponent
+                      settings={settings}
+                      updateSetting={updateSetting}
+                      toggleItem={toggleItem}
+                      deleteItem={confirmDeleteItem}
+                      addItem={addItem}
+                      handleFileUpload={handleFileUpload}
+                      onPreview={handlePreview}
+                    />
+                  )}
+                </div>
+              </div>
+            </main>
           </div>
         </div>
       </div>
 
-      <Toast message={success} type="success" onClose={() => setSuccess('')} />
+      {/* Fixed Save Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-surface-white border-t border-outline-variant/50 px-3 sm:px-4 md:px-6 py-3 sm:py-4 shadow-lg z-40">
+        <div className="w-full max-w-[1600px] mx-auto flex justify-stretch sm:justify-end">
+          <button
+            onClick={handleSaveTab}
+            disabled={saving}
+            className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 sm:px-8 py-3 bg-deep-emerald text-surface-white font-label-caps text-label-caps text-sm rounded-lg transition-all duration-200 hover:bg-deep-emerald/90 active:scale-95 shadow-sm disabled:opacity-50"
+          >
+            {saving ? (
+              <>
+                <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                Saving...
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-sm">
+                  save
+                </span>
+                Save Active Module Changes
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      <Toast
+        message={success}
+        type="success"
+        onClose={() => setSuccess('')}
+      />
+
       <PreviewModal
         isOpen={!!previewMedia}
         onClose={() => setPreviewMedia(null)}
