@@ -334,9 +334,9 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {fields.map((field) => (
-          <div key={field.key} className={field.fullWidth ? 'sm:col-span-2 xl:col-span-3' : ''}>
+          <div key={field.key} className={field.fullWidth ? 'md:col-span-2' : ''}>
             <label className="block font-label-caps text-xs text-on-surface-variant mb-1">{field.label}</label>
             {field.type === 'textarea' ? (
               <textarea
