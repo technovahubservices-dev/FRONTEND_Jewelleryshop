@@ -124,9 +124,24 @@ export default function Footer() {
 
           {/* Footer Bottom */}
           <div className="w-full mt-8 md:mt-10 pt-4 md:pt-5 border-t border-surface-variant flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-sm text-on-surface-variant">
-            <p>
-              &copy; 2024 JKR. All Rights Reserved.
-            </p>
+           
+<p>
+  &copy; 2024 JKR. All Rights Reserved.
+</p>
+
+<p>
+  Powered by{' '}
+  <a
+    href="https://www.technovahub.in/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="hover:text-deep-emerald transition-colors font-medium"
+  >
+    TechnovaHub
+  </a>
+</p>
+
+
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
               <Link className="hover:text-deep-emerald transition-colors" to="/account">
