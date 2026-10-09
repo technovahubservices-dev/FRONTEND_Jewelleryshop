@@ -85,7 +85,7 @@ export default function TestimonialSection({ title, testimonials: propTestimonia
   const totalSlides = Math.max(1, Math.ceil(testimonials.length / itemsPerSlide))
 
   return (
-    <section className="w-full bg-[#173B2D] py-8 md:py-6">
+    <section id="testimonials" className="w-full bg-[#173B2D] py-8 md:py-6">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="text-center mb-16">
           <h2 className="font-playfair text-2xl md:text-3xl font-bold text-[#FDFBF7] mb-4">
