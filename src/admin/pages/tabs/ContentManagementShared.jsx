@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+﻿import { useRef, useState } from 'react'
 import { resolveImageUrl, resolveVideoUrl } from '../../../utils/apiUrl'
 
 const getVideoSourceType = (url) => {
@@ -116,7 +116,7 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
           {label}
         </label>
 
-        <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+        <div className="flex flex-col lg:flex-row gap-3 min-w-0">
           <input
             type="text"
             value={safeValue}
@@ -124,7 +124,7 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
               setUploaded(false)
               onChange({ type: 'url', value: e.target.value })
             }}
-            className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+            className="w-full min-w-0 lg:flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
             placeholder="Enter video URL"
           />
 
@@ -212,7 +212,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef, showUrlIn
           </label>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-3 min-w-0">
+        <div className="flex flex-col lg:flex-row gap-3 min-w-0">
           {showUrlInput && (
             <input
               type="text"
@@ -221,7 +221,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef, showUrlIn
                 setUploaded(false)
                 onChange({ type: 'url', value: e.target.value })
               }}
-              className="flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
+              className="w-full min-w-0 lg:flex-1 px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md"
               placeholder="Enter image URL"
             />
           )}
