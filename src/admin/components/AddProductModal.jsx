@@ -748,7 +748,7 @@ export default function AddProductModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Price (â‚¹)
+                Price
               </label>
 
               <input
@@ -771,7 +771,7 @@ export default function AddProductModal({
 
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Discount Price (â‚¹)
+                Discount Price
               </label>
 
               <input
