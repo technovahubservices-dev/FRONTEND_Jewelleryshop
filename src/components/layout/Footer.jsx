@@ -21,7 +21,13 @@ export default function Footer() {
               </p>
 
               <div className="flex items-center gap-5 text-deep-emerald opacity-80 hover:opacity-100 transition-opacity">
-                <a href="mailto:jayasrajendran@gmail.com" aria-label="Email" className="hover:text-primary transition-colors">
+                <a
+  href="https://mail.google.com/mail/?view=cm&fs=1&to=jayasrajendran@gmail.com"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Email"
+  className="hover:text-primary transition-colors"
+>
                   <span className="material-symbols-outlined">mail</span>
                 </a>
 
@@ -76,7 +82,13 @@ export default function Footer() {
 
                 <p>
                   <span className="font-semibold">Email:</span><br />
-                  <a href="mailto:jayasrajendran@gmail.com" className="hover:text-primary transition-colors break-words">
+                  <a
+  href="https://mail.google.com/mail/?view=cm&fs=1&to=jayasrajendran@gmail.com"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Email"
+  className="hover:text-primary transition-colors"
+>
                     jayasrajendran@gmail.com
                   </a>
                 </p>
