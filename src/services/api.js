@@ -111,7 +111,7 @@ export const productAPI = {
     category: p.category,
     subcategory: p.subcategory || '',
     metal: p.metal || '',
-    collection: p.collection || '',
+    collection: p.jewelleryCollection || p.collection || '',
     occasion: p.occasion || '',
     bridal: p.bridal || false,
     wedding: p.wedding || false,

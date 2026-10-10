@@ -35,13 +35,26 @@ export default function Shop() {
           page: currentPage,
           limit: productsPerPage,
         }
-        searchParams.forEach((value, key) => {
-          if (key === 'category' || key === 'subcategory' || key === 'collection' || key === 'metal') {
-            params[key] = value
-          } else if (key === 'bridal' || key === 'wedding' || key === 'sale') {
-            params[key] = value === 'true'
-          }
-        })
+
+searchParams.forEach((value, key) => {
+  if (
+    key === 'category' ||
+    key === 'subcategory' ||
+    key === 'collection' ||
+    key === 'occasion' ||
+    key === 'metal'
+  ) {
+    params[key] = value
+  } else if (
+    key === 'bridal' ||
+    key === 'wedding' ||
+    key === 'sale' ||
+    key === 'isNewArrival' ||
+    key === 'isBestSeller'
+  ) {
+    params[key] = value === 'true'
+  }
+})
         const response = await productAPI.getAll(params)
         if (response.data.success) {
           const transformed = response.data.data.map(productAPI.transform)
@@ -213,15 +226,21 @@ export default function Shop() {
     filters.metal.length +
     (filters.priceRange[0] > 0 ? 1 : 0) + (filters.priceRange[1] < 10000 ? 1 : 0)
 
-  const handleCollectionClick = (collectionName) => {
-    if (collectionName === 'New Arrival') {
-      setSearchParams(new URLSearchParams({ collection: 'New Arrival' }))
-    } else if (collectionName === 'Best Seller') {
-      setSearchParams(new URLSearchParams({ collection: 'Best Seller' }))
-    } else {
-      setSearchParams(new URLSearchParams({ collection: collectionName }))
-    }
+
+const handleCollectionClick = (collectionName) => {
+  if (collectionName === 'New Arrival') {
+    setSearchParams(new URLSearchParams({ isNewArrival: 'true' }))
+  } else if (collectionName === 'Best Seller') {
+    setSearchParams(new URLSearchParams({ isBestSeller: 'true' }))
+  } else if (
+    collectionName === 'Bridal' ||
+    collectionName === 'Wedding'
+  ) {
+    setSearchParams(new URLSearchParams({ occasion: collectionName }))
+  } else {
+    setSearchParams(new URLSearchParams({ collection: collectionName }))
   }
+}
 
   return (
     <main className="flex-grow w-full px-2 md:px-4 py-3 md:py-5">
@@ -275,28 +294,18 @@ export default function Shop() {
               >
                 All Jewellery
               </button>
-              {collections.slice(0, 8).map((collection) => (
-                <button
-                  key={collection._id || collection.id}
-                  onClick={() => handleCollectionClick(collection.name || collection.title)}
-                  className={`flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-label-caps text-label-caps transition-all whitespace-nowrap border border-outline-variant bg-surface-container-low hover:bg-surface-container hover:text-deep-emerald`}
-                >
-                  {collection.name || collection.title}
-                </button>
-              ))}
-              {!collectionsLoading && collections.length === 0 && (
-                <>
-                  {COLLECTION_ORDER.map((coll) => (
-                    <button
-                      key={coll}
-                      onClick={() => handleCollectionClick(coll)}
-                      className={`flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-label-caps text-label-caps transition-all whitespace-nowrap border border-outline-variant bg-surface-container-low hover:bg-surface-container hover:text-deep-emerald`}
-                    >
-                      {coll}
-                    </button>
-                  ))}
-                </>
-              )}
+
+{COLLECTION_ORDER.map((coll) => (
+  <button
+    key={coll}
+    onClick={() => handleCollectionClick(coll)}
+    className="flex-shrink-0 px-5 py-2.5 rounded-full text-xs font-label-caps text-label-caps transition-all whitespace-nowrap border border-outline-variant bg-surface-container-low hover:bg-surface-container hover:text-deep-emerald"
+  >
+    {coll}
+  </button>
+))}
+
+
             </div>
           </div>
 
