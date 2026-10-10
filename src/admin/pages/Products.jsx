@@ -29,7 +29,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
       setLoading(true);
       setError('');
       try {
-        const response = await productAPI.getAll();
+        const response = await productAPI.getAll({ status: 'all' });
         if (response.data.success) {
           setProducts(response.data.data);
           setFilteredProducts(response.data.data);
