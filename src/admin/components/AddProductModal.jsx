@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { productAPI, categoryAPI, accessoryAPI } from '../../services/api';
 import { resolveImageUrl } from '../../utils/apiUrl';
 
@@ -42,7 +42,7 @@ const initialFormState = {
   category: '',
   subcategory: '',
   metal: '',
-  collection: '',
+  jewelleryCollection: '',
   bridal: false,
   wedding: false,
   status: 'active',
@@ -71,7 +71,7 @@ export default function AddProductModal({
           category: product.category || '',
         subcategory: product.subcategory || '',
           metal: product.metal || '',
-          collection: product.collection || '',
+          jewelleryCollection: product.jewelleryCollection || product.collection || '',
           bridal: product.bridal || false,
           wedding: product.wedding || false,
           status: product.status || 'active',
@@ -116,7 +116,7 @@ export default function AddProductModal({
           );
         }
       } catch (err) {
-        // Silently fail — category dropdown will remain available
+        // Silently fail â€” category dropdown will remain available
       }
     };
 
@@ -154,7 +154,7 @@ export default function AddProductModal({
         category: product.category || '',
         subcategory: product.subcategory || '',
         metal: product.metal || '',
-        collection: product.collection || '',
+        jewelleryCollection: product.jewelleryCollection || product.collection || '',
         bridal: product.bridal || false,
         wedding: product.wedding || false,
         status: product.status || 'active',
@@ -748,7 +748,7 @@ export default function AddProductModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Price (₹)
+                Price (â‚¹)
               </label>
 
               <input
@@ -771,7 +771,7 @@ export default function AddProductModal({
 
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Discount Price (₹)
+                Discount Price (â‚¹)
               </label>
 
               <input
@@ -862,8 +862,8 @@ export default function AddProductModal({
               </label>
 
               <select
-                name="collection"
-                value={formData.collection}
+                name="jewelleryCollection"
+                value={formData.jewelleryCollection}
                 onChange={handleInputChange}
                 className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
               >
@@ -1203,6 +1203,7 @@ export default function AddProductModal({
     </div>
   );
 }
+
 
 
 
