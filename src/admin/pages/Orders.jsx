@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
-import { orderAPI } from '../../services/api'
+import { adminOrderAPI } from '../../services/api'
 import { formatDateTime, formatCurrency, formatDate } from '../../utils/formatters'
 import { resolveImageUrl } from '../../utils/apiUrl'
 import { exportToExcel } from '../../utils/excelExport'
@@ -47,6 +47,15 @@ const ORDER_WORKFLOW = {
   cancelled: [],
 }
 
+const getOrderId = (order) => order?._id || order?.id
+
+const getOrderFormState = (order) => ({
+  status: order?.status || 'new',
+  paymentStatus: order?.paymentStatus || 'pending',
+  shippingStatus: order?.shippingStatus || 'not_shipped',
+  note: '',
+})
+
 export default function Orders() {
   const { isAdmin } = useAuth()
   const navigate = useNavigate()
@@ -80,7 +89,7 @@ export default function Orders() {
     setLoading(true)
     setError('')
     try {
-      const response = await orderAPI.getAll()
+      const response = await adminOrderAPI.getAll()
       if (response.data.success) {
         setOrders(response.data.data || [])
       } else {
@@ -146,12 +155,7 @@ export default function Orders() {
 
   const handleViewOrder = (order) => {
     setViewOrder(order)
-    setUpdateForm({
-      status: order.status || 'new',
-      paymentStatus: order.paymentStatus || 'pending',
-      shippingStatus: order.shippingStatus || 'not_shipped',
-      note: '',
-    })
+    setUpdateForm(getOrderFormState(order))
   }
 
   const handleUpdateOrder = async () => {
@@ -159,11 +163,28 @@ export default function Orders() {
     setUpdating(true)
     setError('')
     try {
+      const currentFormState = getOrderFormState(viewOrder)
+      const nextAllowedStatuses = ORDER_WORKFLOW[currentFormState.status] || []
       const payload = {}
-      if (updateForm.status !== viewOrder.status) payload.status = updateForm.status
-      if (updateForm.paymentStatus !== viewOrder.paymentStatus) payload.paymentStatus = updateForm.paymentStatus
-      if (updateForm.shippingStatus !== viewOrder.shippingStatus) payload.shippingStatus = updateForm.shippingStatus
-      if (updateForm.note) payload.note = updateForm.note
+
+      if (updateForm.status !== currentFormState.status) {
+        if (!nextAllowedStatuses.includes(updateForm.status)) {
+          setError('Invalid order status transition')
+          setUpdating(false)
+          return
+        }
+        payload.status = updateForm.status
+      }
+
+      if (updateForm.paymentStatus !== currentFormState.paymentStatus) {
+        payload.paymentStatus = updateForm.paymentStatus
+      }
+
+      if (updateForm.shippingStatus !== currentFormState.shippingStatus) {
+        payload.shippingStatus = updateForm.shippingStatus
+      }
+
+      if (updateForm.note.trim()) payload.note = updateForm.note.trim()
 
       if (Object.keys(payload).length === 0) {
         setError('No changes to update')
@@ -171,13 +192,24 @@ export default function Orders() {
         return
       }
 
-      const response = await orderAPI.updateStatus(viewOrder._id || viewOrder.id, payload)
+      const response = await adminOrderAPI.update(getOrderId(viewOrder), payload)
       if (response.data.success) {
+        const updatedOrder = response.data.data
+        if (!updatedOrder) {
+          setError('Order updated, but no updated order was returned')
+          return
+        }
+
         setSuccessMessage('Order updated successfully')
         setError('')
         setTimeout(() => setSuccessMessage(''), 3000)
-        setViewOrder(response.data.data)
-        setOrders(orders.map(o => (o._id || o.id) === (viewOrder._id || viewOrder.id) ? response.data.data : o))
+        setViewOrder(updatedOrder)
+        setUpdateForm(getOrderFormState(updatedOrder))
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            getOrderId(order) === getOrderId(updatedOrder) ? updatedOrder : order
+          )
+        )
       } else {
         setError(response.data.message || 'Failed to update order')
       }
@@ -195,7 +227,7 @@ export default function Orders() {
   const handleDeleteConfirm = async () => {
     if (!deleteConfirmId) return
     try {
-      await orderAPI.delete(deleteConfirmId)
+      await adminOrderAPI.delete(deleteConfirmId)
       setOrders(orders.filter(o => (o._id || o.id) !== deleteConfirmId))
       setSuccessMessage('Order deleted successfully')
       setError('')
@@ -322,7 +354,8 @@ export default function Orders() {
     )
   }
 
-  const allowedNextStatuses = viewOrder ? (ORDER_WORKFLOW[viewOrder.status] || []) : []
+  const currentOrderStatus = viewOrder ? getOrderFormState(viewOrder).status : ''
+  const allowedNextStatuses = currentOrderStatus ? (ORDER_WORKFLOW[currentOrderStatus] || []) : []
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -689,12 +722,12 @@ export default function Orders() {
                       className="w-full px-4 py-2.5 border border-outline-variant rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md appearance-none"
                     >
                       {ORDER_STATES.filter(s =>
-                        s.value === viewOrder.status || allowedNextStatuses.includes(s.value)
+                        s.value === currentOrderStatus || allowedNextStatuses.includes(s.value)
                       ).map((s) => (
                         <option key={s.value} value={s.value}>{s.label}</option>
                       ))}
                     </select>
-                    {allowedNextStatuses.length > 0 && updateForm.status === viewOrder.status && (
+                    {allowedNextStatuses.length > 0 && updateForm.status === currentOrderStatus && (
                       <p className="text-xs text-on-surface-variant mt-1">Next allowed: {allowedNextStatuses.map(s => ORDER_STATES.find(os => os.value === s)?.label).join(', ')}</p>
                     )}
                   </div>
