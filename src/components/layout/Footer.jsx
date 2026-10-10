@@ -156,11 +156,11 @@ export default function Footer() {
 
 
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              <Link className="hover:text-deep-emerald transition-colors" to="/account">
+              <Link className="hover:text-deep-emerald transition-colors" to="/privacy-policy">
                 Privacy Policy
               </Link>
 
-              <Link className="hover:text-deep-emerald transition-colors" to="/account">
+              <Link className="hover:text-deep-emerald transition-colors" to="/terms-of-service">
                 Terms of Service
               </Link>
             </div>
