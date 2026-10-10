@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react'
-import { contentAPI } from '../../services/api'
+import { useState } from 'react'
 
 const DEFAULT_POLICY_SECTIONS = [
   {
@@ -47,29 +46,11 @@ const DEFAULT_POLICY_SECTIONS = [
 ]
 
 export default function JewelleryPolicy() {
-  const [policyContent, setPolicyContent] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState(null)
 
-  useEffect(() => {
-    const fetchPolicy = async () => {
-      try {
-        const response = await contentAPI.getActive('storePolicy')
-        if (response.data?.success && response.data.data) {
-          setPolicyContent(response.data.data)
-        }
-      } catch (err) {
-        // Silently fall back to defaults
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchPolicy()
-  }, [])
-
-  const sections = policyContent?.sections || DEFAULT_POLICY_SECTIONS
-  const sectionTitle = policyContent?.title || 'Our Jewellery Policy'
-  const sectionDescription = policyContent?.description || 'Your satisfaction and trust are our priority. We stand behind the quality and craftsmanship of every piece we create.'
+  const sections = DEFAULT_POLICY_SECTIONS
+  const sectionTitle = 'Our Jewellery Policy'
+  const sectionDescription = 'Your satisfaction and trust are our priority. We stand behind the quality and craftsmanship of every piece we create.'
 
   const toggleSection = (id) => {
     setExpandedId(expandedId === id ? null : id)
