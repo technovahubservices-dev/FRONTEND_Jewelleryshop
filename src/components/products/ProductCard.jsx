@@ -47,15 +47,7 @@ export default function ProductCard({ product }) {
       return
     }
 
-    const img = new Image()
-    img.onload = () => setImgLoaded(true)
-    img.onerror = () => setImgLoaded(true)
-    img.src = currentImageUrl
 
-    return () => {
-      img.onload = null
-      img.onerror = null
-    }
   }, [currentImageUrl])
 
   const handleWishlistToggle = (e) => {
@@ -211,11 +203,11 @@ export default function ProductCard({ product }) {
           {/* Pricing */}
           <div className="mb-4">
             <span className="font-headline-md text-lg text-deep-emerald">
-              ₹ {price.toLocaleString('en-IN')}
+              â‚¹ {price.toLocaleString('en-IN')}
             </span>
             {originalPrice && (
               <span className="ml-2 text-xs text-on-surface-variant line-through">
-                ₹ {originalPrice.toLocaleString('en-IN')}
+                â‚¹ {originalPrice.toLocaleString('en-IN')}
               </span>
             )}
           </div>
@@ -236,3 +228,5 @@ export default function ProductCard({ product }) {
     </Link>
   )
 }
+
+

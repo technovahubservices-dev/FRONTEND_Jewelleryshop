@@ -184,6 +184,8 @@ export default function ProductGallery({ images = [], video = '', productName = 
                   <img
                     src={thumbnailUrl}
                     alt={`${productName} thumbnail ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.src = 'https://placehold.co/400x400?text=No+Image'
@@ -245,6 +247,9 @@ export default function ProductGallery({ images = [], video = '', productName = 
               <img
                 src={resolveImageUrl(currentItem.src)}
                 alt={currentItem.alt || productName}
+                 loading="eager"
+                 fetchPriority="high"
+                 decoding="async"
                 onLoad={() => setMainImgLoaded(true)}
                 onError={(e) => {
                   e.target.src = 'https://placehold.co/600x800?text=No+Image'
@@ -476,6 +481,8 @@ export default function ProductGallery({ images = [], video = '', productName = 
                         <img
                           src={resolveImageUrl(item.src)}
                           alt={`Thumbnail ${idx + 1}`}
+                           loading="lazy"
+                           decoding="async"
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.src = 'https://placehold.co/400x400?text=No+Image'
@@ -493,3 +500,6 @@ export default function ProductGallery({ images = [], video = '', productName = 
     </>
   )
 }
+
+
+

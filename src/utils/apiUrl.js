@@ -52,7 +52,7 @@ const isGoogleDriveUrl = (url) => {
  * byte-range streaming, and returns proper error responses for invalid
  * or inaccessible file IDs.
  */
-const resolveGoogleDriveToProxyUrl = (url) => {
+const resolveGoogleDriveToProxyUrl = (url, type = '') => {
   if (!url || typeof url !== 'string') return ''
 
   const value = url.trim()
@@ -65,8 +65,8 @@ const resolveGoogleDriveToProxyUrl = (url) => {
   return getMediaUrl(`/api/upload/drive/${encodeURIComponent(fileId)}`)
 }
 
-const getGoogleDriveImageUrl = resolveGoogleDriveToProxyUrl
-const getGoogleDriveVideoUrl = resolveGoogleDriveToProxyUrl
+const getGoogleDriveImageUrl = (url) => resolveGoogleDriveToProxyUrl(url, 'image')
+const getGoogleDriveVideoUrl = (url) => resolveGoogleDriveToProxyUrl(url, 'video')
 
 export const getBackendOrigin = () => {
   const configuredUrl = stripTrailingSlash(import.meta.env.VITE_API_URL)
@@ -95,7 +95,7 @@ export const getApiBaseUrl = () => {
  * - Protocol-relative URLs (//) are returned as-is.
  * - Relative paths are prefixed with the backend origin.
  *
- * Google Drive conversion is NOT done here — use resolveImageUrl /
+ * Google Drive conversion is NOT done here â€” use resolveImageUrl /
  * resolveVideoUrl for that so image vs video formats can differ.
  */
 export const getMediaUrl = (path) => {
@@ -119,10 +119,10 @@ export const getMediaUrl = (path) => {
 /**
  * Single reusable media resolver for images.
  *
- * Combines getMediaUrl (relative → absolute backend URL) with
- * resolveGoogleDriveToProxyUrl (Google Drive share link → backend proxy URL).
+ * Combines getMediaUrl (relative â†’ absolute backend URL) with
+ * resolveGoogleDriveToProxyUrl (Google Drive share link â†’ backend proxy URL).
  *
- * Never creates direct Google Drive thumbnail URLs — all Drive content is
+ * Never creates direct Google Drive thumbnail URLs â€” all Drive content is
  * routed through the backend proxy at /api/upload/drive/:fileId.
  */
 export const resolveImageUrl = (path) => {
@@ -140,10 +140,10 @@ export const resolveImageUrl = (path) => {
 /**
  * Single reusable media resolver for videos.
  *
- * Combines getMediaUrl (relative → absolute backend URL) with
- * resolveGoogleDriveToProxyUrl (Google Drive share link → backend proxy URL).
+ * Combines getMediaUrl (relative â†’ absolute backend URL) with
+ * resolveGoogleDriveToProxyUrl (Google Drive share link â†’ backend proxy URL).
  *
- * Never creates direct Google Drive uc?export=view URLs — all Drive content
+ * Never creates direct Google Drive uc?export=view URLs â€” all Drive content
  * is routed through the backend proxy at /api/upload/drive/:fileId.
  */
 export const resolveVideoUrl = (path) => {
@@ -157,3 +157,4 @@ export const resolveVideoUrl = (path) => {
     return typeof path === 'string' ? path : ''
   }
 }
+
