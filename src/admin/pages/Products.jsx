@@ -28,7 +28,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
     const [categories, setCategories] = useState([]);
 
-    const [categoriesLoading, setCategoriesLoading] = useState(true);
+    const [categoriesLoading, setCategoriesLoading] = useState(false);
 
     const [categoriesError, setCategoriesError] = useState('');
 
@@ -60,6 +60,10 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
       const fetchCategories = async () => {
 
+        setCategoriesLoading(true);
+
+        setCategoriesError('');
+
         try {
 
           const response = await categoryAPI.getAll();
@@ -74,7 +78,13 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
         } catch {
 
-          if (!cancelled) setCategoriesError('Failed to fetch categories. Reload the page to try again.');
+          if (!cancelled) {
+
+            setCategories([]);
+
+            setCategoriesError('Failed to fetch categories. Reload the page to try again.');
+
+          }
 
         } finally {
 
@@ -678,7 +688,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
                   aria-busy={categoriesLoading}
 
-                  disabled={categoriesLoading || !!categoriesError}
+                  disabled={categoriesLoading}
 
                   onChange={(e) => setCategoryFilter(e.target.value)}
 

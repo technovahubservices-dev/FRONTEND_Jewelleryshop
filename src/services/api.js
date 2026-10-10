@@ -283,6 +283,25 @@ export const orderAPI = {
     }),
 }
 
+export const adminOrderAPI = {
+  getAll: (params) =>
+    api.get('/admin/orders', { params }),
+
+  getById: (id) =>
+    api.get(`/admin/orders/${id}`),
+
+  update: (id, data) =>
+    api.put(`/admin/orders/${id}`, data),
+
+  delete: (id) =>
+    api.delete(`/admin/orders/${id}`),
+
+  downloadInvoice: (id) =>
+    api.get(`/admin/orders/${id}/invoice`, {
+      responseType: 'blob',
+    }),
+}
+
 /* =========================
    Dashboard
 ========================= */
