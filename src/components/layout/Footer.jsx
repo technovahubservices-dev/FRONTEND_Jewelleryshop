@@ -21,19 +21,19 @@ export default function Footer() {
               </p>
 
               <div className="flex items-center gap-5 text-deep-emerald opacity-80 hover:opacity-100 transition-opacity">
-                <a href="mailto:kruthikajewellery@gmail.com" aria-label="Email" className="hover:text-primary transition-colors">
+                <a href="mailto:jayasrajendran@gmail.com" aria-label="Email" className="hover:text-primary transition-colors">
                   <span className="material-symbols-outlined">mail</span>
                 </a>
 
-                <a href="https://www.instagram.com/kruthika_jewellery/" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
+                <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
                   <span className="material-symbols-outlined">photo_camera</span>
                 </a>
 
-                <a href="https://www.facebook.com/kruthikajewellery" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-primary transition-colors">
+                <a href="https://www.facebook.com/profile.php?id=100008219886814&mibextid=wwXIfr&rdid=nqlUbGshz91c4ie5&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1F4ik45JMu%2F%3Fmibextid%3DwwXIfr#" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-primary transition-colors">
                   <span className="material-symbols-outlined">thumb_up</span>
                 </a>
 
-                <a href="https://www.youtube.com/@kruthikajewellery" target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">
+                <a href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">
                   <span className="material-symbols-outlined">play_circle</span>
                 </a>
               </div>
@@ -69,15 +69,15 @@ export default function Footer() {
               <div className="space-y-3 text-sm leading-6 text-on-surface-variant">
                 <p>
                   <span className="font-semibold">WhatsApp (Messages Only):</span><br />
-                  <a href="https://wa.me/918951218527" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">
-                    +91 89512 18527
+                  <a href="https://wa.me/8056702132" target="_blank" rel="noreferrer" className="hover:text-primary transition-colors">
+                    +91 8056702132
                   </a>
                 </p>
 
                 <p>
                   <span className="font-semibold">Email:</span><br />
-                  <a href="mailto:kruthikajewellery@gmail.com" className="hover:text-primary transition-colors break-words">
-                    kruthikajewellery@gmail.com
+                  <a href="mailto:jayasrajendran@gmail.com" className="hover:text-primary transition-colors break-words">
+                    jayasrajendran@gmail.com
                   </a>
                 </p>
 
