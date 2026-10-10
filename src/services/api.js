@@ -508,9 +508,9 @@ export default api
 
 export const accessoryAPI = {
   getAll: () => api.get('/accessories'),
-  getById: (id) => api.get(/accessories/),
+  getById: (id) => api.get(`/accessories/${id}`),
   create: (accessoryData) => api.post('/accessories', accessoryData),
-  update: (id, accessoryData) => api.put(/accessories/, accessoryData),
-  delete: (id) => api.delete(/accessories/),
+  update: (id, accessoryData) => api.put(`/accessories/${id}`, accessoryData),
+  delete: (id) => api.delete(`/accessories/${id}`),
 }
 

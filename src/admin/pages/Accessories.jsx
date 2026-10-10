@@ -135,11 +135,16 @@ export default function Accessories() {
     }
   }
 
-  const filteredAccessories = accessories.filter(
-    (accessory) =>
-      accessory.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      accessory.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase()
+  const filteredAccessories = accessories.filter((accessory) => {
+    if (!normalizedSearchTerm) return true
+
+    return (
+      accessory.name?.toLowerCase().includes(normalizedSearchTerm) ||
+      accessory.slug?.toLowerCase().includes(normalizedSearchTerm) ||
+      accessory.description?.toLowerCase().includes(normalizedSearchTerm)
+    )
+  })
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
