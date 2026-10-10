@@ -12,7 +12,13 @@ export default function PrivacyPolicy() {
           <p>
             For privacy-related questions, please contact us at:
             <br />
-            <a href="mailto:jayasrajendran@gmail.com" className="underline underline-offset-4 hover:text-primary transition-colors break-words">
+            <a
+  href="https://mail.google.com/mail/?view=cm&fs=1&to=jayasrajendran@gmail.com"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Email"
+  className="hover:text-primary transition-colors"
+>
               jayasrajendran@gmail.com
             </a>
           </p>
