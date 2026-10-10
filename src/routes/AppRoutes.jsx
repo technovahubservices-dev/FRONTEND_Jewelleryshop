@@ -31,6 +31,8 @@ import ContentManagement from '../admin/pages/ContentManagement'
 import AdminSettings from '../admin/pages/Settings'
 import NotFound from '../pages/NotFound'
 import Contact from '../pages/Contact'
+import PrivacyPolicy from '../pages/PrivacyPolicy'
+import TermsOfService from '../pages/TermsOfService'
 import Quotations from '../admin/pages/Quotations'
 import CreateQuotation from '../admin/pages/CreateQuotation'
 import { useAuth } from '../context/AuthContext'
@@ -69,6 +71,8 @@ export default function AppRoutes() {
       <Route path="/blog" element={<Blog />} />     <Route path="/about" element={<About />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+      <Route path="/terms-of-service" element={<TermsOfService />} />
 
       {/* Account / User routes */}
        <Route path="/account" element={<Account />} />
