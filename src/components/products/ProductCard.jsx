@@ -203,11 +203,11 @@ export default function ProductCard({ product }) {
           {/* Pricing */}
           <div className="mb-4">
             <span className="font-headline-md text-lg text-deep-emerald">
-              â‚¹ {price.toLocaleString('en-IN')}
+              {'\u20b9'} {price.toLocaleString('en-IN')}
             </span>
             {originalPrice && (
               <span className="ml-2 text-xs text-on-surface-variant line-through">
-                â‚¹ {originalPrice.toLocaleString('en-IN')}
+                {'\u20b9'} {originalPrice.toLocaleString('en-IN')}
               </span>
             )}
           </div>
