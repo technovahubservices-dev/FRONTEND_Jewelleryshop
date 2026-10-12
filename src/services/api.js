@@ -507,27 +507,41 @@ export const storeAPI = {
 export default api
 
 export const accessoryAPI = {
-  getAll: (params) => api.get('/accessories', { params }),
-  getById: (id) => api.get(`/accessories/${id}`),
-  create: (accessoryData) => api.post('/accessories', accessoryData),
-  update: (id, accessoryData) => api.put(`/accessories/${id}`, accessoryData),
-  delete: (id) => api.delete(`/accessories/${id}`),
+  getAll: (params) => api.get('/accessories/categories', { params }),
+  getActive: () => api.get('/accessories/public/categories'),
+  getById: (id) => api.get(`/accessories/categories/${id}`),
+  create: (accessoryData) => api.post('/accessories/categories', accessoryData),
+  update: (id, accessoryData) => api.put(`/accessories/categories/${id}`, accessoryData),
+  delete: (id) => api.delete(`/accessories/categories/${id}`),
 }
 
 export const accessoryProductAPI = {
-  getAll: (params) =>
-    api.get('/accessory-products', { params }),
+  getAll: (params = {}) => {
+    const categoryId = params.categoryId || params.category
+    if (categoryId) {
+      return api.get(`/accessories/categories/${categoryId}/products`, { params })
+    }
+    return api.get('/accessories/products', { params })
+  },
 
   getById: (id) =>
-    api.get(`/accessory-products/${id}`),
+    api.get(`/accessories/products/${id}`),
 
-  create: (formData, config) =>
-    api.post('/accessory-products', formData, config),
+  create: (formData, config) => {
+    const categoryId = formData?.get?.('categoryId') || formData?.get?.('category')
+    return api.post(`/accessories/categories/${categoryId}/products`, formData, config)
+  },
 
   update: (id, formData, config) =>
-    api.put(`/accessory-products/${id}`, formData, config),
+    api.put(`/accessories/products/${id}`, formData, config),
 
   delete: (id) =>
-    api.delete(`/accessory-products/${id}`),
+    api.delete(`/accessories/products/${id}`),
+
+  getActiveByCategory: (categoryId, params) =>
+    api.get(`/accessories/public/categories/${categoryId}/products`, { params }),
+
+  getPublicById: (id) =>
+    api.get(`/accessories/public/products/${id}`),
 }
 

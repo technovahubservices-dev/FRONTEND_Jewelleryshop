@@ -178,6 +178,7 @@ export default function AccessoryProductModal({
       payload.append('description', formData.description.trim())
       payload.append('price', formData.price)
       payload.append('stockQuantity', formData.stockQuantity)
+      payload.append('stock', formData.stockQuantity)
       payload.append('status', formData.status)
       payload.append('category', categoryId)
       payload.append('categoryId', categoryId)

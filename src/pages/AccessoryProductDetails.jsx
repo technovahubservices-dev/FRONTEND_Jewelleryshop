@@ -21,7 +21,7 @@ export default function AccessoryProductDetails() {
       setLoading(true)
       setError('')
       try {
-        const response = await accessoryProductAPI.getById(id)
+        const response = await accessoryProductAPI.getPublicById(id)
         if (!response.data?.success || !response.data.data) {
           throw new Error(response.data?.message || 'Accessory product not found')
         }

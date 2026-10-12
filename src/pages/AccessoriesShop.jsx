@@ -22,7 +22,7 @@ export default function AccessoriesShop() {
       setLoading(true)
       setError('')
       try {
-        const response = await accessoryAPI.getAll()
+        const response = await accessoryAPI.getActive()
         if (!response.data?.success || !Array.isArray(response.data.data)) {
           throw new Error(response.data?.message || 'Failed to fetch accessory categories')
         }
@@ -48,12 +48,7 @@ export default function AccessoriesShop() {
       setError('')
       try {
         const categoryId = getRecordId(selectedCategory)
-        const response = await accessoryProductAPI.getAll({
-          category: categoryId,
-          categoryId,
-          status: 'active',
-          limit: 100,
-        })
+        const response = await accessoryProductAPI.getActiveByCategory(categoryId, { limit: 100 })
         if (!response.data?.success || !Array.isArray(response.data.data)) {
           throw new Error(response.data?.message || 'Failed to fetch accessory products')
         }
