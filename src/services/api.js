@@ -507,10 +507,27 @@ export const storeAPI = {
 export default api
 
 export const accessoryAPI = {
-  getAll: () => api.get('/accessories'),
+  getAll: (params) => api.get('/accessories', { params }),
   getById: (id) => api.get(`/accessories/${id}`),
   create: (accessoryData) => api.post('/accessories', accessoryData),
   update: (id, accessoryData) => api.put(`/accessories/${id}`, accessoryData),
   delete: (id) => api.delete(`/accessories/${id}`),
+}
+
+export const accessoryProductAPI = {
+  getAll: (params) =>
+    api.get('/accessory-products', { params }),
+
+  getById: (id) =>
+    api.get(`/accessory-products/${id}`),
+
+  create: (formData, config) =>
+    api.post('/accessory-products', formData, config),
+
+  update: (id, formData, config) =>
+    api.put(`/accessory-products/${id}`, formData, config),
+
+  delete: (id) =>
+    api.delete(`/accessory-products/${id}`),
 }
 

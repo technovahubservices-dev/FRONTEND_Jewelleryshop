@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext'
 import { useWishlist } from '../../context/WishlistContext'
 import AnnouncementBar from '../../pages/AnnouncementBar'
 import { accessoryAPI } from '../../services/api'
+import { getCategorySlug } from '../../utils/accessoryProducts'
 import logo from '../../assets/icons/logo.jpeg'
 
 export default function Header() {
@@ -39,7 +40,7 @@ export default function Header() {
     { name: 'Bangles', to: '/shop?category=Bangles' },
     { name: 'Earrings', to: '/shop?category=Earrings' },
     { name: 'Premium Bride', to: '/shop?bridal=true' },
-    { name: 'Accessories', to: '/shop' },
+    { name: 'Accessories', to: '/accessories' },
     { name: 'Contact us', to: '/contact' },
   ]
   const closeMobileMenu = () => {
@@ -120,6 +121,7 @@ export default function Header() {
               <div className="relative group">
                 <button
                   type="button"
+                  onClick={() => navigate('/accessories')}
                   className="relative whitespace-nowrap py-2 text-sm tracking-wide text-on-surface-variant hover:text-primary transition-colors duration-300"
                 >
                   Accessories
@@ -129,7 +131,7 @@ export default function Header() {
                   {accessories.map((accessory) => (
                     <NavLink
                       key={accessory._id || accessory.id || accessory.name}
-                      to={`/shop?subcategory=${encodeURIComponent(accessory.name)}`}
+                      to={`/accessories/${getCategorySlug(accessory)}`}
                       className="block px-5 py-2.5 text-sm text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-colors"
                     >
                       {accessory.name}
@@ -373,7 +375,7 @@ export default function Header() {
                       {accessories.map((accessory) => (
                         <NavLink
                           key={accessory._id || accessory.id || accessory.name}
-                          to={`/shop?subcategory=${encodeURIComponent(accessory.name)}`}
+                          to={`/accessories/${getCategorySlug(accessory)}`}
                           onClick={closeMobileMenu}
                           className="block py-2 px-2 text-sm text-on-surface-variant hover:text-deep-emerald"
                         >

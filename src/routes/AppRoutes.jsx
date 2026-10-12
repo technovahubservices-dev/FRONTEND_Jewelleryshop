@@ -2,6 +2,8 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Home from '../pages/Home'
 import Shop from '../pages/Shop'
 import ProductDetails from '../pages/ProductDetails'
+import AccessoriesShop from '../pages/AccessoriesShop'
+import AccessoryProductDetails from '../pages/AccessoryProductDetails'
 import Account from '../pages/Account'
 import Login from '../pages/Login'
 import Register from '../pages/Register'
@@ -65,6 +67,9 @@ export default function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/shop" element={<Shop />} />
       <Route path="/product/:id" element={<ProductDetails />} />
+      <Route path="/accessories" element={<AccessoriesShop />} />
+      <Route path="/accessories/:categorySlug" element={<AccessoriesShop />} />
+      <Route path="/accessory-product/:id" element={<AccessoryProductDetails />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/search" element={<Search />} />
