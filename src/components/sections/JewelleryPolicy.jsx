@@ -2,46 +2,28 @@ import { useState } from 'react'
 
 const DEFAULT_POLICY_SECTIONS = [
   {
-    id: 'authenticity',
-    title: 'Authenticity & Certification',
-    icon: 'verified',
-    content: 'Every piece in our collection comes with a certificate of authenticity and is hallmarked for guaranteed purity. We source our diamonds and precious metals from conflict-free, ethically certified suppliers.',
-  },
-  {
-    id: 'purity',
-    title: 'Gold Purity',
-    icon: 'diamond',
-    content: 'All our gold jewellery is crafted using hallmarked gold of certified purity — 22K, 18K, and 14K gold with HGE (High Gold Electroplated) finishing options. Each piece is stamped with its purity grade.',
-  },
-  {
     id: 'returns',
     title: 'Returns',
     icon: 'assignment_return',
-    content: 'We offer a 15-day return window from the date of delivery. Products must be in their original packaging with all tags attached and in resalable condition.',
+    content: 'Returns are not available for purchased products. Please review your order carefully before making a purchase.',
   },
   {
     id: 'exchange',
     title: 'Exchange',
     icon: 'swap_horiz',
-    content: 'Enjoy a hassle-free exchange within 30 days of purchase. Simply return the item in its original condition and choose your preferred replacement from our collection.',
-  },
-  {
-    id: 'warranty',
-    title: 'Warranty',
-    icon: 'shield',
-    content: 'All jewellery comes with a 1-year manufacturer warranty covering manufacturing defects. The warranty does not cover damage from normal wear, misuse, or accidental damage.',
+    content: 'Product exchanges are not available. Please ensure that you select the correct product before confirming your order.',
   },
   {
     id: 'shipping',
     title: 'Shipping',
     icon: 'local_shipping',
-    content: 'We offer free insured shipping on all orders above ₹4,999 across India. Delivery typically takes 3–7 business days. All packages are fully insured and tracked.',
+    content: 'We provide delivery across India. Delivery timelines may vary depending on your location and order details. Please ensure that your shipping address and contact information are accurate when placing your order.',
   },
   {
     id: 'care',
     title: 'Jewellery Care',
     icon: 'clean_hands',
-    content: 'To preserve your jewellery\'s brilliance: store separately in a soft pouch, avoid exposure to perfumes and lotions, clean gently with a soft cloth, and have it professionally serviced annually.',
+    content: 'To care for your covering and antique jewellery, keep it away from water, moisture, perfumes, lotions, and chemicals. Remove jewellery before bathing, swimming, or exercising. Store each piece separately in a dry, soft pouch or jewellery box. Clean gently with a soft, dry cloth and avoid excessive rubbing or rough handling.',
   },
 ]
 
