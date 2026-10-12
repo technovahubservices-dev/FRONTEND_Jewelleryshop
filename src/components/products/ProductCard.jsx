@@ -5,7 +5,7 @@ import { resolveImageUrl } from '../../utils/apiUrl'
 
 const FALLBACK_IMAGE = 'https://placehold.co/400x600?text=No+Image'
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, imagePriority = false }) {
   const {
     id,
     name,
@@ -137,8 +137,9 @@ export default function ProductCard({ product }) {
             } ${hasMultiple ? 'group-hover:scale-105' : ''}`}
             alt={name || 'Jewellery product'}
             src={displayedImageUrl}
-            loading="lazy"
-            decoding="async"
+            loading={imagePriority ? "eager" : "lazy"}
+fetchPriority={imagePriority ? "high" : "auto"}
+decoding="async"
             onLoad={() => {
               setImgLoaded(true)
             }}
