@@ -1,4 +1,4 @@
-const stripTrailingSlash = (value) => value?.replace(/\/+$/, '')
+﻿const stripTrailingSlash = (value) => value?.replace(/\/+$/, '')
 
 /**
  * Extract the Google Drive file ID from any common Drive URL format.
@@ -62,7 +62,8 @@ const resolveGoogleDriveToProxyUrl = (url, type = '') => {
   const fileId = getGoogleDriveFileId(value)
   if (!fileId) return value
 
-  return getMediaUrl(`/api/upload/drive/${encodeURIComponent(fileId)}`)
+  const mediaType = type === 'video' ? 'video' : 'image'
+  return getMediaUrl(`/api/upload/drive/${encodeURIComponent(fileId)}?type=${mediaType}`)
 }
 
 const getGoogleDriveImageUrl = (url) => resolveGoogleDriveToProxyUrl(url, 'image')
@@ -95,7 +96,7 @@ export const getApiBaseUrl = () => {
  * - Protocol-relative URLs (//) are returned as-is.
  * - Relative paths are prefixed with the backend origin.
  *
- * Google Drive conversion is NOT done here â€” use resolveImageUrl /
+ * Google Drive conversion is NOT done here Ã¢â‚¬â€ use resolveImageUrl /
  * resolveVideoUrl for that so image vs video formats can differ.
  */
 export const getMediaUrl = (path) => {
@@ -119,10 +120,10 @@ export const getMediaUrl = (path) => {
 /**
  * Single reusable media resolver for images.
  *
- * Combines getMediaUrl (relative â†’ absolute backend URL) with
- * resolveGoogleDriveToProxyUrl (Google Drive share link â†’ backend proxy URL).
+ * Combines getMediaUrl (relative Ã¢â€ â€™ absolute backend URL) with
+ * resolveGoogleDriveToProxyUrl (Google Drive share link Ã¢â€ â€™ backend proxy URL).
  *
- * Never creates direct Google Drive thumbnail URLs â€” all Drive content is
+ * Never creates direct Google Drive thumbnail URLs Ã¢â‚¬â€ all Drive content is
  * routed through the backend proxy at /api/upload/drive/:fileId.
  */
 export const resolveImageUrl = (path) => {
@@ -140,10 +141,10 @@ export const resolveImageUrl = (path) => {
 /**
  * Single reusable media resolver for videos.
  *
- * Combines getMediaUrl (relative â†’ absolute backend URL) with
- * resolveGoogleDriveToProxyUrl (Google Drive share link â†’ backend proxy URL).
+ * Combines getMediaUrl (relative Ã¢â€ â€™ absolute backend URL) with
+ * resolveGoogleDriveToProxyUrl (Google Drive share link Ã¢â€ â€™ backend proxy URL).
  *
- * Never creates direct Google Drive uc?export=view URLs â€” all Drive content
+ * Never creates direct Google Drive uc?export=view URLs Ã¢â‚¬â€ all Drive content
  * is routed through the backend proxy at /api/upload/drive/:fileId.
  */
 export const resolveVideoUrl = (path) => {
@@ -157,4 +158,5 @@ export const resolveVideoUrl = (path) => {
     return typeof path === 'string' ? path : ''
   }
 }
+
 
