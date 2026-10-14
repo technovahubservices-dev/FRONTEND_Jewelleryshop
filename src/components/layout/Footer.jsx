@@ -31,7 +31,7 @@ export default function Footer() {
                   <span className="material-symbols-outlined">mail</span>
                 </a>
 
-                <a href="https://www.instagram.com/" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
+                <a href="https://www.instagram.com/jkr_fashion_jewellery?dlrf=bnZxaTF6eXptNHV0" target="_blank" rel="noreferrer" aria-label="Instagram" className="hover:text-primary transition-colors">
                   <span className="material-symbols-outlined">photo_camera</span>
                 </a>
 
@@ -39,9 +39,7 @@ export default function Footer() {
                   <span className="material-symbols-outlined">thumb_up</span>
                 </a>
 
-                <a href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="YouTube" className="hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">play_circle</span>
-                </a>
+                
               </div>
             </div>
 
@@ -93,10 +91,7 @@ export default function Footer() {
                   </a>
                 </p>
 
-                <p>
-                  <span className="font-semibold">Business Hours:</span><br />
-                  10 am - 7 pm (Mon-Sat)
-                </p>
+                
               </div>
             </div>
 
