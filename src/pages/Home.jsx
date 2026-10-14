@@ -930,12 +930,7 @@ export default function Home() {
                 sublabel:
                   'Customer Rating',
               },
-              {
-                icon: 'verified',
-                label: 'Since 2017',
-                sublabel:
-                  'Trusted Legacy',
-              },
+              
               {
                 icon: 'shield',
                 label: '100% Secure',
@@ -954,12 +949,7 @@ export default function Home() {
                 sublabel:
                   'Best Quality',
               },
-              {
-                icon: 'local_shipping',
-                label: 'Global',
-                sublabel:
-                  'Worldwide Shipping',
-              },
+              
             ].map(
               (item, index) => (
                 <div
