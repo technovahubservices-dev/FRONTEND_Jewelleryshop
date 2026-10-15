@@ -260,6 +260,9 @@ export const orderAPI = {
       data
     ),
 
+  getPaymentStatus: (id) =>
+    api.get(`/orders/payment/status/${id}`),
+
   verifyPayment: (data) =>
     api.post(
       '/orders/payment/verify-payment',
