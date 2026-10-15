@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import QuotationPreviewModal from './components/QuotationPreviewModal'
+import AdminPagination from '../components/AdminPagination'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { quotationAPI, orderAPI } from '../../services/api'
 import {
@@ -30,7 +31,7 @@ export default function Quotations() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize] = useState(10)
+  const pageSize = 15
 
   const [viewQuotation, setViewQuotation] = useState(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
@@ -46,6 +47,7 @@ export default function Quotations() {
 
       if (location.state.action === 'create') {
         setQuotations((prev) => [q, ...prev])
+        setCurrentPage(1)
         setSuccessMessage('Quotation created successfully')
       } else if (location.state.action === 'update') {
         setQuotations((prev) =>
@@ -111,13 +113,17 @@ export default function Quotations() {
       return q.status === statusFilter
     })
 
-  const totalPages = Math.ceil(
+  const totalPages = Math.max(1, Math.ceil(
     filteredQuotations.length / pageSize
-  )
+  ))
 
   useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm, statusFilter])
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages)
+  }, [currentPage, totalPages])
 
   const paginatedQuotations = filteredQuotations.slice(
     (currentPage - 1) * pageSize,
@@ -858,45 +864,18 @@ export default function Quotations() {
               </tbody>
             </table>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between px-6 py-4 border-t border-outline-variant">
-                <button
-                  onClick={() =>
-                    setCurrentPage((page) =>
-                      Math.max(page - 1, 1)
-                    )
-                  }
-                  disabled={currentPage === 1}
-                  className="px-3 py-1.5 text-sm border border-outline-variant rounded disabled:opacity-40"
-                >
-                  Previous
-                </button>
-
-                <span className="text-sm text-on-surface-variant">
-                  Page {currentPage} of {totalPages}
-                </span>
-
-                <button
-                  onClick={() =>
-                    setCurrentPage((page) =>
-                      Math.min(
-                        page + 1,
-                        totalPages
-                      )
-                    )
-                  }
-                  disabled={
-                    currentPage === totalPages
-                  }
-                  className="px-3 py-1.5 text-sm border border-outline-variant rounded disabled:opacity-40"
-                >
-                  Next
-                </button>
-              </div>
-            )}
           </div>
         )}
       </div>
+
+      <AdminPagination
+        totalItems={filteredQuotations.length}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        itemLabel="quotations"
+        disabled={loading}
+      />
 
       {/* Shared Quotation Preview */}
       <QuotationPreviewModal

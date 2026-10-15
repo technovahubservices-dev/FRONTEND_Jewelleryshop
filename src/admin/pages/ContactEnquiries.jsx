@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { contactAPI } from '../../services/api'
 import { resolveImageUrl } from '../../utils/apiUrl'
 import { formatDateTime, formatDate } from '../../utils/formatters'
+import AdminPagination from '../components/AdminPagination'
 
 const CONTACT_STATUSES = [
   { value: 'new', label: 'New', color: 'bg-secondary-fixed/20', dot: 'bg-outline' },
@@ -29,6 +30,7 @@ export default function ContactEnquiries() {
   const [statuses, setStatuses] = useState([])
   const [viewEnquiry, setViewEnquiry] = useState(null)
   const [successMessage, setSuccessMessage] = useState('')
+  const requestSequence = useRef(0)
 
   const currentPage = Number(searchParams.get('page') || 1)
   const currentSearch = searchParams.get('search') || ''
@@ -36,9 +38,10 @@ export default function ContactEnquiries() {
   const currentStartDate = searchParams.get('startDate') || ''
   const currentEndDate = searchParams.get('endDate') || ''
 
-  const itemsPerPage = 20
+  const itemsPerPage = 15
 
   const fetchEnquiries = async () => {
+    const requestId = ++requestSequence.current
     setLoading(true)
     setError('')
     try {
@@ -52,6 +55,7 @@ export default function ContactEnquiries() {
       if (currentEndDate) params.endDate = currentEndDate
 
       const response = await contactAPI.getAll(params)
+      if (requestId !== requestSequence.current) return
       if (response.data.success) {
         setEnquiries(response.data.data || [])
         setTotal(response.data.total || 0)
@@ -61,9 +65,11 @@ export default function ContactEnquiries() {
         setError(response.data.message || 'Failed to fetch enquiries')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch enquiries')
+      if (requestId === requestSequence.current) {
+        setError(err.response?.data?.message || 'Failed to fetch enquiries')
+      }
     } finally {
-      setLoading(false)
+      if (requestId === requestSequence.current) setLoading(false)
     }
   }
 
@@ -79,6 +85,7 @@ export default function ContactEnquiries() {
 
   useEffect(() => {
     fetchEnquiries()
+    return () => { requestSequence.current += 1 }
   }, [currentPage, currentSearch, currentStatus, currentStartDate, currentEndDate])
 
   useEffect(() => {
@@ -115,6 +122,10 @@ export default function ContactEnquiries() {
     newParams.page = page
     setSearchParams(newParams)
   }
+
+  useEffect(() => {
+    if (!loading && currentPage > pages) handlePageChange(pages)
+  }, [currentPage, pages, loading])
 
   const handleDateFilter = (e) => {
     const { name, value } = e.target
@@ -318,48 +329,14 @@ export default function ContactEnquiries() {
         )}
       </div>
 
-      {pages > 1 && (
-        <div className="flex items-center justify-between bg-white px-4 py-3 rounded-xl border border-gray-100 shadow-sm">
-          <div className="text-sm text-on-surface-variant">
-            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, total)} of {total} enquiries
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage <= 1 || loading}
-              className="px-3 py-1.5 text-xs font-label-caps text-on-surface-variant hover:text-deep-emerald bg-surface-container-low rounded disabled:opacity-50 transition-colors"
-            >
-              Previous
-            </button>
-            {Array.from({ length: Math.min(5, pages) }, (_, i) => {
-              const pageNum = i + 1
-              if (pageNum === currentPage) {
-                return (
-                  <span key={pageNum} className="px-3 py-1.5 bg-deep-emerald text-surface-white text-xs rounded font-label-caps">
-                    {pageNum}
-                  </span>
-                )
-              }
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => handlePageChange(pageNum)}
-                  className="px-3 py-1.5 text-xs font-label-caps text-on-surface-variant hover:text-deep-emerald bg-surface-container-low rounded transition-colors"
-                >
-                  {pageNum}
-                </button>
-              )
-            })}
-            <button
-              onClick={() => handlePageChange(Math.min(pages, currentPage + 1))}
-              disabled={currentPage >= pages || loading}
-              className="px-3 py-1.5 text-xs font-label-caps text-on-surface-variant hover:text-deep-emerald bg-surface-container-low rounded disabled:opacity-50 transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
-      )}
+      <AdminPagination
+        totalItems={total}
+        currentPage={currentPage}
+        pageSize={itemsPerPage}
+        onPageChange={handlePageChange}
+        itemLabel="enquiries"
+        disabled={loading}
+      />
 
       {viewEnquiry && (
         <div

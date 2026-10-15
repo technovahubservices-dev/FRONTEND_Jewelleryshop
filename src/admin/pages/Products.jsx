@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { productAPI, categoryAPI } from '../../services/api';
 import AddProductModal from '../components/AddProductModal';
+import AdminPagination from '../components/AdminPagination';
 import { exportToExcel } from '../../utils/excelExport';
 import { resolveImageUrl } from '../../utils/apiUrl';
 
@@ -9,8 +10,6 @@ import { resolveImageUrl } from '../../utils/apiUrl';
   export default function Products() {
 
     const [products, setProducts] = useState([]);
-
-    const [filteredProducts, setFilteredProducts] = useState([]);
 
     const [loading, setLoading] = useState(true);
 
@@ -36,6 +35,14 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
     const [statusFilter, setStatusFilter] = useState('all');
 
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const [totalProducts, setTotalProducts] = useState(0);
+
+    const pageSize = 15;
+
+    const filteredProducts = products;
+
     const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const [selectedProducts, setSelectedProducts] = useState([]);
@@ -50,7 +57,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
       return () => { productRequest.current += 1; };
 
-    }, [categoryFilter]);
+    }, [categoryFilter, searchTerm, statusFilter, currentPage]);
 
 
 
@@ -112,37 +119,27 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
       try {
 
-        const params = { status: 'all', limit: 100, ...(categoryFilter !== 'all' ? { category: categoryFilter } : {}) };
-
-        const loadedProducts = [];
-
-        let page = 1;
-
-        let pages = 1;
-
-        do {
-
-          const response = await productAPI.getAll({ ...params, page });
-
-          if (request !== productRequest.current) return;
-
-          if (!response.data.success) throw new Error(response.data.message || 'Failed to fetch products');
-
-          loadedProducts.push(...response.data.data);
-
-          pages = response.data.pages || 1;
-
-          page += 1;
-
-        } while (page <= pages);
-
-        setProducts(loadedProducts);
+        const params = {
+          page: currentPage,
+          limit: pageSize,
+          status: statusFilter,
+          ...(searchTerm.trim() ? { search: searchTerm.trim() } : {}),
+          ...(categoryFilter !== 'all' ? { category: categoryFilter } : {}),
+        };
+        const response = await productAPI.getAll(params);
+        if (request !== productRequest.current) return;
+        if (!response.data.success) throw new Error(response.data.message || 'Failed to fetch products');
+        const nextProducts = response.data.data || [];
+        setProducts(nextProducts);
+        setTotalProducts(Number(response.data.total ?? nextProducts.length));
 
       } catch (err) {
 
         if (request === productRequest.current) {
 
           setProducts([]);
+
+          setTotalProducts(0);
 
           setError(err.response?.data?.message || err.message || 'Failed to fetch products');
 
@@ -156,45 +153,15 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
     };
 
-
+    const totalPages = Math.max(1, Math.ceil(totalProducts / pageSize));
 
     useEffect(() => {
+      if (currentPage > totalPages) setCurrentPage(totalPages);
+    }, [currentPage, totalPages]);
 
-      let result = [...products];
-
-
-
-      if (searchTerm.trim()) {
-
-        const term = searchTerm.toLowerCase();
-
-        result = result.filter(
-
-          (p) =>
-
-            p.name?.toLowerCase().includes(term) ||
-
-            p.sku?.toLowerCase().includes(term) ||
-
-            p.description?.toLowerCase().includes(term)
-
-        );
-
-      }
-
-
-
-      if (statusFilter !== 'all') {
-
-        result = result.filter((p) => p.status === statusFilter);
-
-      }
-
-
-
-      setFilteredProducts(result);
-
-    }, [searchTerm, statusFilter, products]);
+    useEffect(() => {
+      setSelectedProducts([]);
+    }, [currentPage, searchTerm, categoryFilter, statusFilter]);
 
 
 
@@ -234,7 +201,8 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
         await productAPI.delete(deleteConfirmId);
 
-        setProducts(products.filter((p) => p._id !== deleteConfirmId));
+        setProducts((prev) => prev.filter((p) => p._id !== deleteConfirmId));
+        setTotalProducts((total) => Math.max(0, total - 1));
 
         setDeleteConfirmId(null);
 
@@ -288,9 +256,8 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
         await Promise.all(selectedProducts.map((id) => productAPI.delete(id)));
 
-        setProducts(products.filter((p) => !selectedProducts.includes(p._id)));
-
-        setFilteredProducts(filteredProducts.filter((p) => !selectedProducts.includes(p._id)));
+        setProducts((prev) => prev.filter((p) => !selectedProducts.includes(p._id)));
+        setTotalProducts((total) => Math.max(0, total - selectedProducts.length));
 
         setSelectedProducts([]);
 
@@ -328,7 +295,9 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
       setError('');
 
-      fetchProducts();
+      setCurrentPage(1);
+
+      if (currentPage === 1) fetchProducts();
 
     };
 
@@ -342,27 +311,36 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
       setStatusFilter('all');
 
+      setCurrentPage(1);
+
     };
 
 
 
-    const handleDownloadExcel = () => {
-
-      if (!filteredProducts.length) {
-
-        setError('No products available to export')
-
-        setSuccessMessage('')
-
-        return
-
-      }
-
-
-
+    const handleDownloadExcel = async () => {
       try {
+        const params = {
+          page: 1,
+          limit: 100,
+          status: statusFilter,
+          ...(searchTerm.trim() ? { search: searchTerm.trim() } : {}),
+          ...(categoryFilter !== 'all' ? { category: categoryFilter } : {}),
+        };
+        const response = await productAPI.getAll(params);
+        const exportProducts = response.data.data || [];
+        const pagesToExport = Number(response.data.pages) || 1;
+        for (let page = 2; page <= pagesToExport; page += 1) {
+          const nextPage = await productAPI.getAll({ ...params, page });
+          exportProducts.push(...(nextPage.data.data || []));
+        }
 
-        const exportData = filteredProducts.map((product) => ({
+        if (!exportProducts.length) {
+          setError('No products available to export');
+          setSuccessMessage('');
+          return;
+        }
+
+        const exportData = exportProducts.map((product) => ({
 
           'Product Name': product.name || '',
 
@@ -666,7 +644,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
                 value={searchTerm}
 
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
 
                 placeholder="Search products..."
 
@@ -690,7 +668,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
                   disabled={categoriesLoading}
 
-                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
 
                 >
 
@@ -716,7 +694,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
                   value={statusFilter}
 
-                  onChange={(e) => setStatusFilter(e.target.value)}
+                  onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
 
                 >
 
@@ -748,7 +726,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
                 <span className="font-semibold text-deep-emerald">
 
-                  {filteredProducts.length}
+                  {totalProducts}
 
                 </span>{' '}
 
@@ -1112,23 +1090,20 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
                 </div>
 
-                <div className="bg-surface-container-low px-6 py-4 border-t border-outline-variant flex items-center justify-between">
-
-                  <span className="text-xs font-body-md text-on-surface-variant">
-
-                    Showing 1 to {filteredProducts.length} of{' '}
-
-                    {filteredProducts.length} entries
-
-                  </span>
-
-                </div>
-
               </>
 
             )}
 
           </div>
+
+          <AdminPagination
+            totalItems={totalProducts}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            itemLabel="products"
+            disabled={loading}
+          />
 
 
 

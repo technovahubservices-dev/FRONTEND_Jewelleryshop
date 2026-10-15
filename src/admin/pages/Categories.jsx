@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { categoryAPI } from '../../services/api'
+import AdminPagination from '../components/AdminPagination'
 
 export default function Categories() {
   const [categories, setCategories] = useState([])
@@ -11,6 +12,8 @@ export default function Categories() {
   const [formData, setFormData] = useState({ name: '', description: '', isActive: true })
   const [searchTerm, setSearchTerm] = useState('')
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 15
 
   useEffect(() => {
     fetchCategories()
@@ -80,6 +83,7 @@ export default function Categories() {
       setIsModalOpen(false)
       setEditingCategory(null)
       setFormData({ name: '', description: '', isActive: true })
+      setCurrentPage(1)
       fetchCategories()
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save category')
@@ -109,9 +113,19 @@ export default function Categories() {
 
   const filteredCategories = categories.filter(
     (c) =>
-      c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      c.name?.toLowerCase().includes(searchTerm.trim().toLowerCase()) ||
+      c.description?.toLowerCase().includes(searchTerm.trim().toLowerCase())
   )
+  const totalPages = Math.max(1, Math.ceil(filteredCategories.length / pageSize))
+  const pageCategories = filteredCategories.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages)
+  }, [currentPage, totalPages])
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -198,7 +212,7 @@ export default function Categories() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant/50 font-body-md text-sm">
-                    {filteredCategories.map((category) => (
+                    {pageCategories.map((category) => (
                       <tr key={category._id} className="table-row-hover bg-surface-white group">
                         <td className="py-4 px-4">
                           <span className="font-medium text-deep-emerald">{category.name}</span>
@@ -249,14 +263,18 @@ export default function Categories() {
                 </table>
               </div>
 
-              <div className="bg-surface-container-low px-6 py-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="text-xs font-body-md text-on-surface-variant">
-                  Showing 1 to {filteredCategories.length} of {filteredCategories.length} entries
-                </span>
-              </div>
             </>
           )}
       </div>
+
+      <AdminPagination
+        totalItems={filteredCategories.length}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        onPageChange={setCurrentPage}
+        itemLabel="categories"
+        disabled={loading}
+      />
 
       {isModalOpen && (
         <div
