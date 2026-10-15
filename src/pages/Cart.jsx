@@ -44,7 +44,7 @@ export default function Cart() {
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
           {items.map((item) => (
-            <div key={item.id} className="bg-surface-white border border-outline-variant rounded-lg p-4 flex gap-4 items-center">
+            <div key={item.id} className="bg-surface-white border border-outline-variant rounded-lg p-3 sm:p-4 flex flex-wrap sm:flex-nowrap gap-3 sm:gap-4 items-center min-w-0">
               <div className="w-20 h-20 flex-shrink-0 bg-surface-container-low rounded overflow-hidden">
                 <img
                   src={resolveImageUrl(item.image)}
@@ -54,7 +54,7 @@ export default function Cart() {
                 />
               </div>
 
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 basis-[calc(100%-6rem)] sm:basis-0">
                 <h3 className="font-body-md text-body-md text-primary font-medium truncate">{item.name}</h3>
                 {item.SKU && (
                   <p className="text-xs text-on-surface-variant mt-1">SKU: {item.SKU}</p>

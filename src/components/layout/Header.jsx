@@ -62,7 +62,7 @@ export default function Header() {
       {/* =====================================================
           DESKTOP HEADER
       ===================================================== */}
-      <div className="hidden md:block sticky top-0 z-50 w-full bg-white border-t border-b border-outline-variant">
+      <div className="hidden xl:block sticky top-0 z-50 w-full bg-white border-t border-b border-outline-variant">
         <div className="w-full px-6 lg:px-10 xl:px-16">
           <div className="relative min-h-[82px] flex items-center justify-between gap-4">
 
@@ -253,7 +253,7 @@ export default function Header() {
       {/* =====================================================
           MOBILE HEADER
       ===================================================== */}
-      <div className="md:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant shadow-sm">
+      <div className="xl:hidden sticky top-0 z-40 bg-surface border-b border-outline-variant shadow-sm">
         <div className="relative h-[64px] px-4 flex items-center justify-between">
 
           {/* Menu */}
@@ -336,7 +336,7 @@ export default function Header() {
       ===================================================== */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 xl:hidden"
           onClick={closeMobileMenu}
         />
       )}
@@ -345,7 +345,7 @@ export default function Header() {
           MOBILE DRAWER
       ===================================================== */}
       <nav
-        className={`fixed top-0 left-0 h-full w-[82%] max-w-sm bg-surface shadow-xl z-50 md:hidden transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full w-[min(82%,24rem)] max-w-full bg-surface shadow-xl z-50 xl:hidden transform transition-transform duration-300 ease-in-out ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

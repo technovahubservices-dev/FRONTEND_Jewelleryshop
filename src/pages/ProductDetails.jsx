@@ -93,8 +93,8 @@ export default function ProductDetails() {
   return (
     <main className="flex-grow w-full max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-16">
       {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex text-sm text-on-surface-variant mb-8 font-body-md">
-        <ol className="inline-flex items-center space-x-1 md:space-x-3">
+      <nav aria-label="Breadcrumb" className="flex max-w-full overflow-x-auto text-sm text-on-surface-variant mb-8 font-body-md">
+        <ol className="inline-flex min-w-max items-center space-x-1 md:space-x-3">
           <li className="inline-flex items-center">
             <Link className="hover:text-primary transition-colors" to="/">Home</Link>
           </li>
@@ -131,7 +131,7 @@ export default function ProductDetails() {
       {/* Product Hero Section (Bento/Asymmetric Layout) */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-24">
         {/* Image Gallery (Left - 7 cols) */}
-        <div className="md:col-span-7">
+        <div className="min-w-0 md:col-span-7">
           <ProductGallery
             images={product.images}
             video={product.video}
@@ -139,13 +139,13 @@ export default function ProductDetails() {
           />
         </div>
         {/* Product Info (Right - 5 cols) */}
-        <div className="md:col-span-5 flex flex-col justify-center px-2 md:px-6 py-4 md:py-0">
+        <div className="min-w-0 md:col-span-5 flex flex-col justify-center px-0 sm:px-2 md:px-6 py-4 md:py-0">
           <div className="mb-2">
             <span className="text-xs font-label-caps tracking-widest text-on-surface-variant uppercase">{product.category}</span>
           </div>
           <h1 className="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-primary mb-4">{product.name}</h1>
           {/* Ratings & SKU */}
-          <div className="flex items-center justify-between mb-6 pb-6 border-b border-outline-variant/30">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-6 pb-6 border-b border-outline-variant/30">
             <div className="flex items-center gap-1 text-regal-gold">
               <span className="material-symbols-outlined filled text-lg">star</span>
               <span className="material-symbols-outlined filled text-lg">star</span>
@@ -158,7 +158,7 @@ export default function ProductDetails() {
           </div>
            {/* Price */}
            <div className="mb-8">
-             <div className="flex items-baseline gap-4">
+             <div className="flex flex-wrap items-baseline gap-2 sm:gap-4">
                {product.originalPrice ? (
                  <>
                    <span className="text-3xl font-headline-md text-primary">₹ {product.price.toLocaleString('en-IN')}</span>

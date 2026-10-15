@@ -262,13 +262,13 @@ const handleCollectionClick = (collectionName) => {
                 <h1 className="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-deep-emerald">Fine Jewellery Collection</h1>
                 <p className="text-on-surface-variant mt-2 max-w-2xl">Discover our exquisite range of handcrafted pieces, designed to celebrate every moment with timeless elegance.</p>
               </div>
-              <div className="flex items-center space-x-4">
-                <span className="text-on-surface-variant">Showing {Math.min(filteredProducts.length, (currentPage - 1) * productsPerPage + 1)}-{Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts} Items</span>
+              <div className="flex w-full flex-wrap items-center gap-3 md:w-auto md:gap-4">
+                <span className="min-w-0 text-sm text-on-surface-variant">Showing {Math.min(filteredProducts.length, (currentPage - 1) * productsPerPage + 1)}-{Math.min(currentPage * productsPerPage, totalProducts)} of {totalProducts} Items</span>
                 <div className="relative">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none bg-transparent border border-outline-variant rounded-none py-2 pl-4 pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald cursor-pointer"
+                    className="max-w-full appearance-none bg-transparent border border-outline-variant rounded-none py-2 pl-3 sm:pl-4 pr-8 sm:pr-10 text-sm focus:outline-none focus:ring-1 focus:ring-deep-emerald focus:border-deep-emerald cursor-pointer"
                   >
                     <option value="recommended">Sort by: Recommended</option>
                     <option value="price">Price: Low to High</option>
@@ -477,7 +477,7 @@ const handleCollectionClick = (collectionName) => {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
+                  <div className="grid min-w-0 grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                     {filteredProducts.map((product, index) => (
   <ProductCard
     key={product.id}
