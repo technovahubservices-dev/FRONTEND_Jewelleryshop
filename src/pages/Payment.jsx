@@ -105,6 +105,7 @@ export default function Payment() {
     navigate('/checkout', {
       replace: true,
       state: {
+        paymentCancelled: true,
         error: 'Payment was cancelled. Your cart is saved; check the payment status before trying again.',
         orderId,
         paymentMethod,
