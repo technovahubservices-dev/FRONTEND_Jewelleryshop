@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { orderAPI } from '../services/api'
 import { useAuth } from '../context/AuthContext'
+import { useCart } from '../context/CartContext'
 
 export default function Payment() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const { isAuthenticated } = useAuth()
+  const { clearCart } = useCart()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [processing, setProcessing] = useState(false)
@@ -14,6 +17,7 @@ export default function Payment() {
 
   const orderId = searchParams.get('orderId')
   const paymentMethod = searchParams.get('method') || 'card'
+  const locationStateCheckoutKey = location.state?.checkoutKey
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -27,8 +31,28 @@ export default function Payment() {
       return
     }
 
-    loadRazorpayScript()
-  }, [orderId, paymentMethod, isAuthenticated, navigate])
+    let active = true
+    orderAPI.getById(orderId).then((response) => {
+      if (!active) return
+      const order = response.data?.data
+      if (order?.isPaid || order?.paymentStatus === 'paid') {
+        clearCart()
+        sessionStorage.removeItem('jkr_checkout_idempotency')
+        navigate('/order-confirmation', {
+          replace: true,
+          state: { orderId: order._id, paymentStatus: 'paid' },
+        })
+        return
+      }
+      loadRazorpayScript()
+    }).catch((err) => {
+      if (!active) return
+      setError(err.response?.data?.message || 'Unable to verify the current payment status.')
+      setLoading(false)
+    })
+
+    return () => { active = false }
+  }, [orderId, paymentMethod, isAuthenticated, navigate, clearCart])
 
   const loadRazorpayScript = () => {
     if (document.getElementById('razorpay-script')) {
@@ -94,6 +118,9 @@ export default function Payment() {
     }
 
     const razorpay = new window.Razorpay(options)
+    razorpay.on('payment.failed', (response) => {
+      setError(response.error?.description || 'Payment failed. Your cart is still saved.')
+    })
     razorpay.open()
   }
 
@@ -107,7 +134,12 @@ export default function Payment() {
         signature: response.razorpay_signature,
       })
 
-      if (verifyResponse.data.success) {
+      if (
+        verifyResponse.data.success &&
+        (verifyResponse.data.data?.isPaid || verifyResponse.data.data?.paymentStatus === 'paid')
+      ) {
+        clearCart()
+        sessionStorage.removeItem('jkr_checkout_idempotency')
         navigate('/order-confirmation', {
           state: {
             orderId: verifyResponse.data.data._id,
@@ -118,7 +150,22 @@ export default function Payment() {
         setError(verifyResponse.data.message || 'Payment verification failed')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Payment verification failed')
+      try {
+        const statusResponse = await orderAPI.getById(orderId)
+        const order = statusResponse.data?.data
+        if (order?.isPaid || order?.paymentStatus === 'paid') {
+          clearCart()
+          sessionStorage.removeItem('jkr_checkout_idempotency')
+          navigate('/order-confirmation', {
+            replace: true,
+            state: { orderId: order._id, paymentStatus: 'paid' },
+          })
+          return
+        }
+      } catch {
+        // An unreachable status endpoint is not evidence that payment succeeded.
+      }
+      setError(err.response?.data?.message || 'Payment verification is pending. Your cart is still saved.')
     } finally {
       setProcessing(false)
     }
@@ -129,6 +176,8 @@ export default function Payment() {
       state: {
         error: 'Payment was cancelled. You can retry or choose a different payment method.',
         orderId,
+        paymentMethod,
+        checkoutKey: locationStateCheckoutKey,
       },
     })
   }
@@ -176,6 +225,12 @@ export default function Payment() {
             </button>
             <Link
               to="/checkout"
+              state={{
+                orderId,
+                paymentMethod,
+                checkoutKey: locationStateCheckoutKey,
+                error: 'Payment is not confirmed yet. Your cart is still saved.',
+              }}
               className="px-6 py-3 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-label-caps rounded hover:bg-surface-container-low transition-colors"
             >
               Back to Checkout

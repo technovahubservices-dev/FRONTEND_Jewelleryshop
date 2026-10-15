@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react'
+import { createContext, useState, useEffect, useContext, useCallback } from 'react'
 
 const CartContext = createContext()
 
@@ -65,9 +65,9 @@ export const CartProvider = ({ children }) => {
     )
   }
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([])
-  }
+  }, [])
 
   const getItemCount = () =>
     items.reduce((sum, item) => sum + item.quantity, 0)

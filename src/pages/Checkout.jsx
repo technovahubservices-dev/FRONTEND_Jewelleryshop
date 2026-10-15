@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useEffect, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { userAPI, orderAPI } from '../services/api'
@@ -19,6 +19,7 @@ const initialAddressForm = {
 export default function Checkout() {
   const { items, subtotal, clearCart, itemCount } = useCart()
   const { isAuthenticated, user } = useAuth()
+  const location = useLocation()
   const navigate = useNavigate()
 
   const [addresses, setAddresses] = useState([])
@@ -31,9 +32,32 @@ export default function Checkout() {
   const [addressFormError, setAddressFormError] = useState('')
   const [addressFormSaving, setAddressFormSaving] = useState(false)
 
-  const [paymentMethod, setPaymentMethod] = useState('cod')
-  const [error, setError] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState(location.state?.paymentMethod || 'cod')
+  const [error, setError] = useState(location.state?.error || '')
   const [orderSubmissionSuccess, setOrderSubmissionSuccess] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submissionLock = useRef(false)
+  const getIdempotencyKey = () => {
+    const cartSignature = JSON.stringify({
+      userId: user?._id,
+      addressId: selectedAddressId,
+      paymentMethod,
+      items: items.map(({ id, quantity, price }) => ({ id, quantity, price })),
+    })
+    try {
+      const savedAttempts = JSON.parse(sessionStorage.getItem('jkr_checkout_idempotency') || '{}')
+      const key = (location.state?.paymentMethod === paymentMethod ? location.state?.checkoutKey : null) ||
+        savedAttempts[cartSignature] ||
+        `checkout_${Date.now()}_${Math.random().toString(36).slice(2)}`
+      sessionStorage.setItem('jkr_checkout_idempotency', JSON.stringify({
+        ...savedAttempts,
+        [cartSignature]: key,
+      }))
+      return key
+    } catch {
+      return location.state?.checkoutKey || `checkout_${Date.now()}_${Math.random().toString(36).slice(2)}`
+    }
+  }
 
   const TAX_RATE = 0.05
   const SHIPPING_FEE = 0
@@ -52,7 +76,24 @@ export default function Checkout() {
     }
 
     fetchAddresses()
-  }, [isAuthenticated, itemCount, navigate, orderSubmissionSuccess])
+
+    if (location.state?.orderId && !orderSubmissionSuccess) {
+      orderAPI.getById(location.state.orderId).then((response) => {
+        const order = response.data?.data
+        if (order?.isPaid || order?.paymentStatus === 'paid') {
+          clearCart()
+          sessionStorage.removeItem('jkr_checkout_idempotency')
+          setOrderSubmissionSuccess(true)
+          navigate('/order-confirmation', {
+            replace: true,
+            state: { orderId: order._id, paymentStatus: 'paid' },
+          })
+        }
+      }).catch(() => {
+        // Keep the cart and checkout available if payment status cannot be verified.
+      })
+    }
+  }, [isAuthenticated, itemCount, navigate, orderSubmissionSuccess, location.state?.orderId, clearCart])
 
   const fetchAddresses = async () => {
     setAddressesLoading(true)
@@ -107,16 +148,37 @@ export default function Checkout() {
   }
 
   const handlePlaceOrder = async () => {
+    if (submissionLock.current) return
+    submissionLock.current = true
+    setIsSubmitting(true)
     setError('')
 
     if (!selectedAddressId) {
       setError('Please select a shipping address')
+      submissionLock.current = false
+      setIsSubmitting(false)
       return
     }
 
     const selectedAddress = addresses.find((a) => a._id === selectedAddressId)
     if (!selectedAddress) {
       setError('Selected address not found')
+      submissionLock.current = false
+      setIsSubmitting(false)
+      return
+    }
+
+    const resumedOrderId = location.state?.orderId
+    if (
+      paymentMethod !== 'cod' &&
+      resumedOrderId &&
+      location.state?.paymentMethod === paymentMethod
+    ) {
+      navigate(`/payment?orderId=${resumedOrderId}&method=${paymentMethod}`, {
+        state: { checkoutKey: location.state?.checkoutKey },
+      })
+      submissionLock.current = false
+      setIsSubmitting(false)
       return
     }
 
@@ -138,6 +200,7 @@ export default function Checkout() {
       quantity: item.quantity,
     }))
 
+    const checkoutKey = getIdempotencyKey()
     try {
       const response = await orderAPI.create({
         items: orderItems,
@@ -147,14 +210,15 @@ export default function Checkout() {
         taxPrice: taxAmount,
         shippingPrice: SHIPPING_FEE,
         totalPrice: grandTotal,
-        idempotencyKey: `cart_${Date.now()}`,
+        idempotencyKey: checkoutKey,
       })
 
       if (response.data.success) {
         const order = response.data.data
 
         if (paymentMethod === 'cod') {
-           clearCart()
+          clearCart()
+          sessionStorage.removeItem('jkr_checkout_idempotency')
           setOrderSubmissionSuccess(true)
           navigate('/order-confirmation', {
             state: {
@@ -163,9 +227,9 @@ export default function Checkout() {
             },
           })
         } else {
-          clearCart()
-          setOrderSubmissionSuccess(true)
-          navigate(`/payment?orderId=${order._id}&method=${paymentMethod}`)
+          navigate(`/payment?orderId=${order._id}&method=${paymentMethod}`, {
+            state: { checkoutKey },
+          })
         }
       } else {
         setError(response.data.message || 'Failed to create order')
@@ -175,6 +239,9 @@ export default function Checkout() {
         ? 'Your session has expired. Please log in again.'
         : err.response?.data?.message || 'Failed to create order'
       setError(errMsg)
+    } finally {
+      submissionLock.current = false
+      setIsSubmitting(false)
     }
   }
 
@@ -374,11 +441,11 @@ export default function Checkout() {
 
             <button
               onClick={handlePlaceOrder}
-              disabled={addresses.length === 0 || !selectedAddressId}
+              disabled={addresses.length === 0 || !selectedAddressId || isSubmitting}
               className="w-full bg-regal-gold text-surface-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-regal-gold/90 transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-sm">lock</span>
-              Place Order
+              {isSubmitting ? 'Processing...' : 'Place Order'}
             </button>
           </div>
         </div>
