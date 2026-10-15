@@ -85,23 +85,10 @@ export default function QuotationPreviewModal({
           >
             {/* Header */}
             <div className="mb-8 flex items-start justify-between border-b-2 border-deep-emerald pb-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 shrink-0 items-center justify-center">
-                  <img
-                    src="/assets/icons/logo.jpeg"
-                    alt="JKR Jewellery"
-                    className="h-full w-full object-contain"
-                  />
-                </div>
-
-                <div>
-                  <h1 className="font-playfair text-2xl font-bold text-deep-emerald">
-                    JKR Jewellery
-                  </h1>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Crafting timeless elegance since 2017
-                  </p>
-                </div>
+              <div>
+                <h1 className="font-playfair text-2xl font-bold text-deep-emerald">
+                  JKR Jewellery
+                </h1>
               </div>
 
               <div className="text-right">
