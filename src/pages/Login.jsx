@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
@@ -8,15 +8,33 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [redirectTo, setRedirectTo] = useState('')
 
   const navigate = useNavigate()
   const location = useLocation()
-  const { login } = useAuth()
+  const { login, isAuthenticated } = useAuth()
 
-  const from = location.state?.from?.pathname || '/account'
+  const requestedLocation = location.state?.from
+  const requestedPath = typeof requestedLocation === 'string'
+    ? requestedLocation
+    : requestedLocation?.pathname
+      ? `${requestedLocation.pathname}${requestedLocation.search || ''}${requestedLocation.hash || ''}`
+      : '/account'
+  // Only accept app-relative destinations. A login redirect must not send a
+  // customer to an external URL or back into an admin-only section.
+  const from = requestedPath.startsWith('/') && !requestedPath.startsWith('//')
+    ? requestedPath
+    : '/account'
+
+  useEffect(() => {
+    if (isAuthenticated && redirectTo) {
+      navigate(redirectTo, { replace: true })
+    }
+  }, [isAuthenticated, navigate, redirectTo])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (loading) return
     setError('')
     setLoading(true)
 
@@ -26,10 +44,14 @@ export default function Login() {
 
       const data = await login(normalizedIdentifier, trimmedPassword)
 
-      const targetPath = data?.isAdmin ? '/admin' : from
-      navigate(targetPath, { replace: true })
+      const targetPath = data?.isAdmin
+        ? '/admin'
+        : from.startsWith('/admin')
+          ? '/account'
+          : from
+      setRedirectTo(targetPath)
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Unable to sign in. Please try again.')
     } finally {
       setLoading(false)
     }
