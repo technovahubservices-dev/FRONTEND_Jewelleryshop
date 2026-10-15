@@ -204,7 +204,7 @@ export default function ProductGallery({ images = [], video = '', productName = 
         <div className="md:col-span-10">
           <div
             ref={mainImageRef}
-            className="relative bg-surface-container-low rounded-xl overflow-hidden aspect-[4/5] cursor-zoom-in"
+            className="relative bg-surface-container-low rounded-xl overflow-hidden aspect-[4/5] cursor-default"
             onClick={currentItem.type === 'image' ? openLightbox : undefined}
           >
             {!mainImgLoaded && currentItem.type === 'image' && (
