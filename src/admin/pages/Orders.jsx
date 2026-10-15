@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { adminOrderAPI } from '../../services/api'
@@ -48,6 +48,7 @@ const ORDER_WORKFLOW = {
 }
 
 const getOrderId = (order) => order?._id || order?.id
+const ORDERS_PER_PAGE = 15
 
 const getOrderFormState = (order) => ({
   status: order?.status || 'new',
@@ -60,6 +61,8 @@ export default function Orders() {
   const { isAdmin } = useAuth()
   const navigate = useNavigate()
   const [orders, setOrders] = useState([])
+  const [totalOrders, setTotalOrders] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -68,49 +71,78 @@ export default function Orders() {
   const [viewOrder, setViewOrder] = useState(null)
   const [updateForm, setUpdateForm] = useState({ status: '', paymentStatus: '', shippingStatus: '', note: '' })
   const [updating, setUpdating] = useState(false)
+  const [exporting, setExporting] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const requestSequence = useRef(0)
 
   useEffect(() => {
-    fetchOrders()
-  }, [])
-
-  const filteredOrders = orders.filter(order => {
-    if (!searchTerm.trim()) return true
-    const term = searchTerm.toLowerCase()
-    const orderId = (order._id || order.id).toString().toLowerCase()
-    const customerName = (order.user?.name || order.user?.email || '').toLowerCase()
-    return orderId.includes(term) || customerName.includes(term)
-  }).filter(order => {
-    if (statusFilter === 'all') return true
-    return order.status === statusFilter
-  })
-
-  const fetchOrders = async () => {
-    setLoading(true)
-    setError('')
-    try {
-      const response = await adminOrderAPI.getAll()
-      if (response.data.success) {
-        setOrders(response.data.data || [])
-      } else {
-        setError(response.data.message || 'Failed to fetch orders')
+    const requestId = ++requestSequence.current
+    const fetchOrders = async () => {
+      setLoading(true)
+      setError('')
+      try {
+        const params = {
+          page: currentPage,
+          limit: ORDERS_PER_PAGE,
+          ...(searchTerm.trim() ? { search: searchTerm.trim() } : {}),
+          ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+        }
+        const response = await adminOrderAPI.getAll(params)
+        if (requestId !== requestSequence.current) return
+        if (response.data.success) {
+          const nextOrders = response.data.data || []
+          setOrders(nextOrders)
+          setTotalOrders(Number(response.data.total ?? nextOrders.length))
+        } else {
+          setError(response.data.message || 'Failed to fetch orders')
+        }
+      } catch (err) {
+        if (requestId === requestSequence.current) {
+          setError(err.response?.data?.message || 'Failed to fetch orders')
+        }
+      } finally {
+        if (requestId === requestSequence.current) setLoading(false)
       }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to fetch orders')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleDownloadExcel = () => {
-    if (!filteredOrders.length) {
-      setError('No orders available to export')
-      setSuccessMessage('')
-      return
     }
 
+    fetchOrders()
+    return () => {
+      requestSequence.current += 1
+    }
+  }, [currentPage, searchTerm, statusFilter, refreshKey])
+
+  const pageCount = Math.max(1, Math.ceil(totalOrders / ORDERS_PER_PAGE))
+  const filteredOrders = orders
+  const firstOrderNumber = totalOrders === 0 ? 0 : (currentPage - 1) * ORDERS_PER_PAGE + 1
+  const lastOrderNumber = Math.min(currentPage * ORDERS_PER_PAGE, totalOrders)
+
+  useEffect(() => {
+    if (currentPage > pageCount) setCurrentPage(pageCount)
+  }, [currentPage, pageCount])
+
+  const handleDownloadExcel = async () => {
+    setExporting(true)
     try {
-      const exportData = filteredOrders.map((order) => ({
+      const filterParams = {
+        ...(searchTerm.trim() ? { search: searchTerm.trim() } : {}),
+        ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+      }
+      const firstPage = await adminOrderAPI.getAll({ ...filterParams, page: 1, limit: 100 })
+      const exportOrders = firstPage.data.data || []
+      const totalPages = Number(firstPage.data.pages) || 1
+      for (let page = 2; page <= totalPages; page += 1) {
+        const response = await adminOrderAPI.getAll({ ...filterParams, page, limit: 100 })
+        exportOrders.push(...(response.data.data || []))
+      }
+
+      if (!exportOrders.length) {
+        setError('No orders available to export')
+        setSuccessMessage('')
+        return
+      }
+
+      const exportData = exportOrders.map((order) => ({
         'Order ID': (order._id || order.id).toString().slice(-6).toUpperCase(),
         Date: formatDate(order.createdAt),
         Customer: order.user?.name || order.user?.email || 'Guest',
@@ -150,6 +182,8 @@ export default function Orders() {
       console.error('Excel export error:', err)
       setError('Failed to download Excel file')
       setSuccessMessage('')
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -205,11 +239,11 @@ export default function Orders() {
         setTimeout(() => setSuccessMessage(''), 3000)
         setViewOrder(updatedOrder)
         setUpdateForm(getOrderFormState(updatedOrder))
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            getOrderId(order) === getOrderId(updatedOrder) ? updatedOrder : order
-          )
-        )
+        setOrders((prevOrders) => prevOrders.map((order) =>
+          getOrderId(order) === getOrderId(updatedOrder) ? updatedOrder : order
+        ))
+        // Refresh server-side filters/counts when an update changes this order's status.
+        setRefreshKey((key) => key + 1)
       } else {
         setError(response.data.message || 'Failed to update order')
       }
@@ -228,7 +262,8 @@ export default function Orders() {
     if (!deleteConfirmId) return
     try {
       await adminOrderAPI.delete(deleteConfirmId)
-      setOrders(orders.filter(o => (o._id || o.id) !== deleteConfirmId))
+      setOrders((prevOrders) => prevOrders.filter((order) => getOrderId(order) !== deleteConfirmId))
+      setTotalOrders((total) => Math.max(0, total - 1))
       setSuccessMessage('Order deleted successfully')
       setError('')
       setTimeout(() => setSuccessMessage(''), 3000)
@@ -386,7 +421,10 @@ export default function Orders() {
               placeholder="Search by Order ID or Customer..."
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value)
+                setCurrentPage(1)
+              }}
             />
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
@@ -394,7 +432,10 @@ export default function Orders() {
               <select
                 className="w-full appearance-none bg-surface-white border border-outline-variant focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald py-2.5 pl-4 pr-10 text-sm font-body-md text-on-surface rounded cursor-pointer transition-all"
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value)
+                  setCurrentPage(1)
+                }}
               >
                 <option value="all">All Statuses</option>
                 {ORDER_STATES.map((s) => (
@@ -405,11 +446,12 @@ export default function Orders() {
             <button
               type="button"
               onClick={handleDownloadExcel}
+              disabled={exporting}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-transparent text-charcoal-text border border-outline-variant font-label-caps text-[10px] rounded hover:bg-surface-container-low transition-colors"
               title="Download Excel"
             >
               <span className="material-symbols-outlined text-sm">download</span>
-              Export
+              {exporting ? 'Exporting...' : 'Export'}
             </button>
           </div>
         </div>
@@ -522,6 +564,42 @@ export default function Orders() {
               </table>
             </div>
           )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-1 text-sm text-on-surface-variant">
+          <p aria-live="polite">
+            Showing {firstOrderNumber}–{lastOrderNumber} of {totalOrders} orders
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+              disabled={currentPage <= 1 || loading}
+              className="px-3 py-2 border border-outline-variant rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-container-low"
+            >
+              Previous
+            </button>
+            {Array.from({ length: pageCount }, (_, index) => index + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                aria-current={currentPage === page ? 'page' : undefined}
+                aria-label={`Page ${page}`}
+                className={`min-w-9 px-3 py-2 border rounded ${currentPage === page ? 'bg-deep-emerald text-white border-deep-emerald' : 'border-outline-variant hover:bg-surface-container-low'}`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))}
+              disabled={currentPage >= pageCount || loading}
+              className="px-3 py-2 border border-outline-variant rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-surface-container-low"
+            >
+              Next
+            </button>
+          </div>
         </div>
 
       {viewOrder && (
