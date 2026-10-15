@@ -1,4 +1,4 @@
-import { DualVideoInput, DualImageInput, ListCardItem, EmptyState } from './ContentManagementShared'
+import { DualVideoInput, ListCardItem, EmptyState } from './ContentManagementShared'
 
 export default function VideoReelsTab({ settings, updateSetting, toggleItem, deleteItem, addItem, handleFileUpload, onPreview }) {
   const videoReels = settings?.videoReels || []
@@ -16,8 +16,8 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
                 key={reel._id || reel.id || idx}
                 item={reel}
                 index={idx}
-                 imageField="thumbnail"
-                 onPreview={onPreview && reel.videoUrl ? (val) => onPreview(val, reel.title) : undefined}
+                imageField="videoUrl"
+                onPreview={onPreview && reel.videoUrl ? () => onPreview(reel.videoUrl, reel.title) : undefined}
                 fields={[
                   { key: 'videoUrl', label: 'Video URL', component: (val, onChange) => (
                     <DualVideoInput
@@ -29,15 +29,6 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
                     />
                   )},
                   { key: 'sku', label: 'SKU Code', placeholder: 'Enter product SKU' },
-                  { key: 'thumbnail', label: 'Thumbnail', component: (val, onChange) => (
-                    <DualImageInput
-                      label="Thumbnail"
-                      showLabel={false}
-                      value={val || ''}
-                      onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
-                      fileInputRef={{ current: { handleUpload: handleFileUpload } }}
-                    />
-                  )},
                 ]}
                 onChange={(i, key, val) => {
                   const updated = [...(settings.videoReels || [])]
@@ -53,7 +44,7 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
         )}
         <button
           type="button"
-          onClick={() => addItem('videoReels', { videoUrl: '', sku: '', thumbnail: '', isActive: true })}
+          onClick={() => addItem('videoReels', { videoUrl: '', sku: '', isActive: true })}
           className="inline-flex items-center gap-2 px-4 py-2.5 bg-deep-emerald text-surface-white font-label-caps text-xs rounded hover:bg-deep-emerald/90 transition-colors"
         >
           <span className="material-symbols-outlined text-sm">add</span>
