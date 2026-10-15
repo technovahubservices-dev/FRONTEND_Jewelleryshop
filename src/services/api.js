@@ -105,7 +105,16 @@ export const productAPI = {
   delete: (id) =>
     api.delete(`/products/${id}`),
 
-  transform: (p) => ({
+  transform: (p) => {
+    const originalPrice = Number(p?.price)
+    const discountPrice = Number(p?.discountPrice)
+    const hasValidDiscount = Number.isFinite(originalPrice)
+      && originalPrice > 0
+      && Number.isFinite(discountPrice)
+      && discountPrice > 0
+      && discountPrice < originalPrice
+
+    return {
     id: p._id,
     name: p.name,
     category: p.category,
@@ -116,30 +125,23 @@ export const productAPI = {
     bridal: p.bridal || false,
     wedding: p.wedding || false,
 
-    price:
-      p.discountPrice > 0
-        ? p.discountPrice
-        : p.price,
+    price: hasValidDiscount ? discountPrice : (Number.isFinite(originalPrice) ? originalPrice : 0),
 
-    originalPrice:
-      p.price > 0 && p.discountPrice > 0
-        ? p.price
-        : null,
+    originalPrice: hasValidDiscount ? originalPrice : null,
 
     discount:
-      p.discountPrice > 0 && p.price > 0
+      hasValidDiscount
         ? `${Math.round(
-            ((p.price - p.discountPrice) / p.price) * 100
+            ((originalPrice - discountPrice) / originalPrice) * 100
           )}% OFF`
         : null,
 
     discountAmount:
-      p.price > 0 && p.discountPrice > 0
-        ? Math.round(p.price - p.discountPrice)
+      hasValidDiscount
+        ? Math.round(originalPrice - discountPrice)
         : 0,
 
-    isOnSale:
-      p.discountPrice > 0 && p.price > 0,
+    isOnSale: hasValidDiscount,
 
     image:
       typeof p.primaryImage === 'string'
@@ -191,7 +193,8 @@ export const productAPI = {
     status: p.status || 'active',
     tags: p.tags || [],
     slug: p.slug,
-  }),
+    }
+  },
 }
 
 /* =========================

@@ -451,25 +451,17 @@ export default function AddProductModal({
       newErrors.category = 'Category is required';
     }
 
-    if (formData.price && formData.discountPrice) {
-      const priceVal = parseFloat(formData.price);
-      const discountVal = parseFloat(formData.discountPrice);
+    const priceValue = formData.price === '' ? null : Number(formData.price)
+    const discountValue = formData.discountPrice === '' ? null : Number(formData.discountPrice)
 
-      if (
-        !isNaN(priceVal) &&
-        !isNaN(discountVal) &&
-        discountVal >= priceVal
-      ) {
-        newErrors.discountPrice =
-          'Discount price must be less than regular price';
-      }
+    if (priceValue !== null && (!Number.isFinite(priceValue) || priceValue < 0)) {
+      newErrors.price = 'Price must be a valid non-negative number'
     }
 
-    if (
-      formData.price &&
-      isNaN(parseFloat(formData.price))
-    ) {
-      newErrors.price = 'Price must be a valid number';
+    if (discountValue !== null && (!Number.isFinite(discountValue) || discountValue < 0)) {
+      newErrors.discountPrice = 'Discount price must be a valid non-negative number'
+    } else if (discountValue !== null && discountValue > 0 && (priceValue === null || discountValue >= priceValue)) {
+      newErrors.discountPrice = 'Discount price must be less than regular price'
     }
 
     if (
@@ -748,7 +740,7 @@ export default function AddProductModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Price
+                Original Price
               </label>
 
               <input

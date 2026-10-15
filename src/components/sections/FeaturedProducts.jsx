@@ -51,15 +51,15 @@ export default function FeaturedProducts({ title, description }) {
     ? dynamicFeatured.map((fp) => {
         const product = fp.product
         const transform = product ? productAPI.transform(product) : {}
-        const price = product ? Number(product.discountPrice > 0 ? product.discountPrice : product.price) : 0
+        const price = product ? transform.price : 0
         return {
           id: typeof product === 'string' ? product : (product?._id || product?.id || fp._id),
           name: fp.title || transform.name || product?.name || 'Product',
           image: fp.image || transform.image || 'https://placehold.co/400x400',
           description: fp.description || transform.description || '',
           price: price,
-          originalPrice: product && product.discountPrice > 0 ? Number(product.price) : null,
-          discount: product && product.discountPrice > 0 ? `${Math.round(((Number(product.price) - Number(product.discountPrice)) / Number(product.price)) * 100)}% OFF` : null,
+          originalPrice: product ? transform.originalPrice : null,
+          discount: product ? transform.discount : null,
           isNew: transform.isNew || false,
           isBestSeller: transform.isBestSeller || false,
           isFeatured: true,

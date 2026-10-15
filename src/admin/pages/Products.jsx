@@ -540,7 +540,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
     const formatCurrency = (price, discountPrice) => {
 
-      if (discountPrice && discountPrice > 0) {
+      if (Number(discountPrice) > 0 && Number(discountPrice) < Number(price)) {
 
         return `₹${Number(discountPrice).toLocaleString('en-IN')}`;
 
