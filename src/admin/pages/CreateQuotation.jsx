@@ -33,6 +33,19 @@ const normalizeProduct = (raw) => {
     return fallback
   }
 
+  const rawPrice = Number(get(['price', 'Price']) || 0)
+  const originalPrice = Number(raw.originalPrice ?? rawPrice)
+  const storedDiscountPercent = get(['discountPercent'], null)
+  const legacyDiscountPrice = Number(get(['discountPrice']) || 0)
+  const discountPercent = storedDiscountPercent !== null
+    ? Number(storedDiscountPercent)
+    : originalPrice > 0 && legacyDiscountPrice > 0 && legacyDiscountPrice < originalPrice
+      ? ((originalPrice - legacyDiscountPrice) / originalPrice) * 100
+      : 0
+  const sellingPrice = Number.isFinite(Number(raw.sellingPrice))
+    ? Number(raw.sellingPrice)
+    : Number((originalPrice * (1 - discountPercent / 100)).toFixed(2))
+
   return {
     _id: get(['_id', 'id']) || undefined,
     id: get(['_id', 'id']) || undefined,
@@ -44,8 +57,10 @@ const normalizeProduct = (raw) => {
     weight: get(['weight', 'Weight']) || '',
     diamondWeight: get(['diamondWeight']) || '0',
     diamondShape: get(['diamondShape']) || 'N/A',
-    price: Number(get(['price', 'Price']) || 0),
-    discountPrice: Number(get(['discountPrice']) || 0),
+    price: sellingPrice,
+    sellingPrice,
+    originalPrice,
+    discountPercent,
     category: get(['category', 'Category']) || '',
   }
 }
@@ -259,12 +274,9 @@ export default function CreateQuotation() {
        */
       if (
         !Number.isFinite(Number(item.price)) ||
-        Number(item.price) <= 0
+        Number(item.price) < 0
       ) {
-        nextItem.price =
-  Number(selected.discountPrice) > 0
-    ? Number(selected.discountPrice)
-    : Number(selected.price) || 0
+        nextItem.price = Number(selected.sellingPrice ?? selected.price) || 0
       }
 
       if (
@@ -343,10 +355,7 @@ export default function CreateQuotation() {
               selected.sku ||
               selected.SKU ||
               '',
-            price:
-  Number(selected.discountPrice) > 0
-    ? Number(selected.discountPrice)
-    : Number(selected.price) || 0,
+            price: Number(selected.sellingPrice ?? selected.price) || 0,
             discount: 0,
             gst: DEFAULT_GST,
           }
@@ -935,7 +944,7 @@ export default function CreateQuotation() {
         (item) =>
           !item.productName ||
           !item.sku ||
-          Number(item.price) <= 0 ||
+          Number(item.price) < 0 ||
           Number(item.qty) <= 0
       )
 

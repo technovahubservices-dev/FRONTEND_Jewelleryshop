@@ -108,11 +108,29 @@ export const productAPI = {
   transform: (p) => {
     const originalPrice = Number(p?.price)
     const discountPrice = Number(p?.discountPrice)
+    const hasStoredPercent = p?.pricingMode
+      ? p.pricingMode === 'percentage'
+      : p?.discountPercent !== undefined && p?.discountPercent !== null && p?.discountPercent !== ''
+    const derivedLegacyPercent = Number.isFinite(originalPrice) && originalPrice > 0
+      && Number.isFinite(discountPrice) && discountPrice > 0 && discountPrice < originalPrice
+      ? ((originalPrice - discountPrice) / originalPrice) * 100
+      : 0
+    const discountPercent = hasStoredPercent
+      ? Number(p.discountPercent)
+      : p?.pricingMode === 'none'
+        ? 0
+        : derivedLegacyPercent
     const hasValidDiscount = Number.isFinite(originalPrice)
       && originalPrice > 0
-      && Number.isFinite(discountPrice)
-      && discountPrice > 0
-      && discountPrice < originalPrice
+      && Number.isFinite(discountPercent)
+      && discountPercent > 0
+      && discountPercent <= 100
+    const legacyFixedDiscount = p?.pricingMode === 'legacy-fixed' && derivedLegacyPercent > 0
+    const sellingPrice = legacyFixedDiscount
+      ? discountPrice
+      : hasValidDiscount
+        ? Number((originalPrice * (1 - discountPercent / 100)).toFixed(2))
+      : Number.isFinite(originalPrice) ? originalPrice : 0
 
     return {
     id: p._id,
@@ -125,20 +143,21 @@ export const productAPI = {
     bridal: p.bridal || false,
     wedding: p.wedding || false,
 
-    price: hasValidDiscount ? discountPrice : (Number.isFinite(originalPrice) ? originalPrice : 0),
+    price: sellingPrice,
+    sellingPrice,
 
     originalPrice: hasValidDiscount ? originalPrice : null,
+    discountPercent: Number.isFinite(discountPercent) ? Number(discountPercent.toFixed(2)) : 0,
+    pricingMode: p?.pricingMode || (hasStoredPercent ? 'percentage' : legacyFixedDiscount ? 'legacy-fixed' : 'none'),
 
     discount:
       hasValidDiscount
-        ? `${Math.round(
-            ((originalPrice - discountPrice) / originalPrice) * 100
-          )}% OFF`
+        ? `${Number.isInteger(discountPercent) ? discountPercent : Number(discountPercent.toFixed(2))}% OFF`
         : null,
 
     discountAmount:
       hasValidDiscount
-        ? Math.round(originalPrice - discountPrice)
+        ? Number((originalPrice - sellingPrice).toFixed(2))
         : 0,
 
     isOnSale: hasValidDiscount,

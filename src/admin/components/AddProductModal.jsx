@@ -37,7 +37,7 @@ const initialFormState = {
   sku: '',
   description: '',
   price: '',
-  discountPrice: '',
+  discountPercent: '0',
   stock: '',
   category: '',
   subcategory: '',
@@ -50,6 +50,25 @@ const initialFormState = {
   isBestSeller: false,
   isNewArrival: false,
 };
+
+const getStoredDiscountPercent = (product) => {
+  if (product?.pricingMode !== 'legacy-fixed'
+    && product?.discountPercent !== undefined && product?.discountPercent !== null) {
+    return String(product.discountPercent)
+  }
+
+  // Older products stored the sale amount in rupees. Convert that amount to
+  // its equivalent percentage for this form; never treat the amount itself
+  // as a percentage.
+  const price = Number(product?.price)
+  const legacyDiscountPrice = Number(product?.discountPrice)
+  if (Number.isFinite(price) && price > 0
+    && Number.isFinite(legacyDiscountPrice)
+    && legacyDiscountPrice > 0 && legacyDiscountPrice < price) {
+    return String(Number((((price - legacyDiscountPrice) / price) * 100).toFixed(6)))
+  }
+  return '0'
+}
 
 export default function AddProductModal({
   isOpen,
@@ -66,7 +85,7 @@ export default function AddProductModal({
           sku: product.sku || '',
           description: product.description || '',
           price: product.price || '',
-          discountPrice: product.discountPrice || '',
+          discountPercent: getStoredDiscountPercent(product),
           stock: product.stock || '',
           category: product.category || '',
         subcategory: product.subcategory || '',
@@ -149,7 +168,7 @@ export default function AddProductModal({
         sku: product.sku || '',
         description: product.description || '',
         price: product.price || '',
-        discountPrice: product.discountPrice || '',
+        discountPercent: getStoredDiscountPercent(product),
         stock: product.stock || '',
         category: product.category || '',
         subcategory: product.subcategory || '',
@@ -452,16 +471,17 @@ export default function AddProductModal({
     }
 
     const priceValue = formData.price === '' ? null : Number(formData.price)
-    const discountValue = formData.discountPrice === '' ? null : Number(formData.discountPrice)
+    const discountValue = formData.discountPercent === '' ? null : Number(formData.discountPercent)
 
     if (priceValue !== null && (!Number.isFinite(priceValue) || priceValue < 0)) {
       newErrors.price = 'Price must be a valid non-negative number'
     }
 
-    if (discountValue !== null && (!Number.isFinite(discountValue) || discountValue < 0)) {
-      newErrors.discountPrice = 'Discount price must be a valid non-negative number'
-    } else if (discountValue !== null && discountValue > 0 && (priceValue === null || discountValue >= priceValue)) {
-      newErrors.discountPrice = 'Discount price must be less than regular price'
+    if (discountValue !== null
+      && (!Number.isFinite(discountValue) || discountValue < 0 || discountValue > 100)) {
+      newErrors.discountPercent = 'Discount must be a percentage between 0 and 100'
+    } else if (discountValue > 0 && (!Number.isFinite(priceValue) || priceValue <= 0)) {
+      newErrors.discountPercent = 'Enter an original price to calculate the discount'
     }
 
     if (
@@ -763,27 +783,28 @@ export default function AddProductModal({
 
             <div>
               <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-                Discount Price
+                Discount (%)
               </label>
 
               <input
                 type="number"
-                name="discountPrice"
-                value={formData.discountPrice}
+                name="discountPercent"
+                value={formData.discountPercent}
                 onChange={handleInputChange}
                 className={`w-full px-4 py-2.5 border ${
-                  errors.discountPrice
+                  errors.discountPercent
                     ? 'border-error'
                     : 'border-outline-variant'
                 } rounded focus:border-deep-emerald focus:ring-1 focus:ring-deep-emerald text-sm font-body-md`}
-                placeholder="0.00"
+                placeholder="0"
                 min="0"
-                step="0.01"
+                max="100"
+                step="any"
+                aria-label="Discount percentage"
               />
-
-              {errors.discountPrice && (
+              {errors.discountPercent && (
                 <p className="text-error text-xs mt-1">
-                  {errors.discountPrice}
+                  {errors.discountPercent}
                 </p>
               )}
             </div>

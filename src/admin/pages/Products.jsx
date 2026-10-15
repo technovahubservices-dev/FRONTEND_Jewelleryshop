@@ -350,9 +350,11 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
           Metal: product.metal || '',
 
-          Price: Number(product.price || 0),
+          'Original Price': Number(product.price || 0),
 
-          'Discount Price': Number(product.discountPrice || 0),
+          'Discount (%)': Number(product.discountPercent || 0),
+
+          'Selling Price': Number(product.sellingPrice ?? product.price ?? 0),
 
           Stock: Number(product.stock || 0),
 
@@ -538,18 +540,9 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
 
 
-    const formatCurrency = (price, discountPrice) => {
-
-      if (Number(discountPrice) > 0 && Number(discountPrice) < Number(price)) {
-
-        return `₹${Number(discountPrice).toLocaleString('en-IN')}`;
-
-      }
-
-      if (!price && price !== 0) return '-';
-
-      return `₹${Number(price).toLocaleString('en-IN')}`;
-
+    const formatCurrency = (product) => {
+      const price = Number(product.sellingPrice ?? product.price)
+      return Number.isFinite(price) ? `₹${price.toLocaleString('en-IN')}` : '-'
     };
 
 
@@ -1020,7 +1013,7 @@ import { resolveImageUrl } from '../../utils/apiUrl';
 
                           <td className="py-4 px-4 text-right font-semibold">
 
-                            {formatCurrency(product.price, product.discountPrice)}
+                            {formatCurrency(product)}
 
                           </td>
 
