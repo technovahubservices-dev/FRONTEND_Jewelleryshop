@@ -102,7 +102,7 @@ export const PreviewModal = ({ isOpen, onClose, media }) => {
   )
 }
 
-export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
+export const DualVideoInput = ({ label, value, onChange, fileInputRef, showLabel = true }) => {
   const [uploaded, setUploaded] = useState(false)
   const inputRef = useRef(null)
   const safeValue = typeof value === 'string' ? value : ''
@@ -112,9 +112,11 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-end gap-3">
       <div className="flex-1">
-        <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
-          {label}
-        </label>
+        {showLabel && label && (
+          <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
+            {label}
+          </label>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-3 min-w-0">
           <input
@@ -198,7 +200,7 @@ export const DualVideoInput = ({ label, value, onChange, fileInputRef }) => {
   )
 }
 
-export const DualImageInput = ({ label, value, onChange, fileInputRef, showUrlInput = true }) => {
+export const DualImageInput = ({ label, value, onChange, fileInputRef, showUrlInput = true, showLabel = true }) => {
   const [uploaded, setUploaded] = useState(false)
   const inputRef = useRef(null)
   const safeValue = typeof value === 'string' ? value : ''
@@ -206,7 +208,7 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef, showUrlIn
   return (
     <div className="flex flex-col sm:flex-row sm:items-end gap-3">
       <div className="flex-1">
-        {label && (
+        {showLabel && label && (
           <label className="block font-label-caps text-xs text-on-surface-variant mb-1">
             {label}
           </label>
@@ -281,9 +283,6 @@ export const DualImageInput = ({ label, value, onChange, fileInputRef, showUrlIn
               e.target.style.display = 'none'
             }}
           />
-          <span className="text-[10px] font-label-caps text-on-surface-variant mt-1">
-            Preview
-          </span>
         </div>
       )}
     </div>
@@ -321,19 +320,6 @@ export const ListCardItem = ({ item, index, fields, onChange, onDelete, onToggle
 
   return (
     <div className="p-3 sm:p-4 bg-surface-white rounded-lg border border-outline-variant/50">
-      {hasThumb && (
-        <div className="mb-4">
-          <div className="w-20 h-20 rounded overflow-hidden bg-surface-container-low border border-outline-variant/30">
-            <img
-              src={resolveImageUrl(safeThumbValue)}
-              alt="thumb"
-              className="w-full h-full object-cover"
-              onError={(e) => { e.target.style.display = 'none' }}
-            />
-          </div>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
         {fields.map((field) => (
           <div key={field.key} className={field.fullWidth ? 'md:col-span-2' : ''}>

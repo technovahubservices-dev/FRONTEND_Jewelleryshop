@@ -64,6 +64,7 @@ export default function HeroTab({ settings, updateSetting, toggleItem, deleteIte
                   { key: 'image', label: 'Image', component: (val, onChange) => (
                     <DualImageInput
                       label="Image"
+                      showLabel={false}
                       value={val || ''}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
                       fileInputRef={{ current: { handleUpload: handleFileUpload } }}

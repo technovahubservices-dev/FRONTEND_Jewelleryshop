@@ -26,6 +26,7 @@ export default function TestimonialsTab({ settings, updateSetting, toggleItem, d
                   { key: 'image', label: 'Image', component: (val, onChange) => (
                     <DualImageInput
                       label="Image"
+                      showLabel={false}
                       value={val || ''}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
                       fileInputRef={{ current: { handleUpload: handleFileUpload, useGenericMedia: true } }}

@@ -22,6 +22,7 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
                   { key: 'videoUrl', label: 'Video URL', component: (val, onChange) => (
                     <DualVideoInput
                       label="Video"
+                      showLabel={false}
                       value={val || ''}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
                       fileInputRef={{ current: { handleUpload: handleFileUpload } }}
@@ -31,6 +32,7 @@ export default function VideoReelsTab({ settings, updateSetting, toggleItem, del
                   { key: 'thumbnail', label: 'Thumbnail', component: (val, onChange) => (
                     <DualImageInput
                       label="Thumbnail"
+                      showLabel={false}
                       value={val || ''}
                       onChange={(res) => onChange(res.type === 'url' ? res.value : val)}
                       fileInputRef={{ current: { handleUpload: handleFileUpload } }}
