@@ -22,7 +22,7 @@ export default function App() {
       <WishlistProvider>
         <div className="font-body-md text-on-background min-h-screen flex flex-col antialiased">
         {!isAdminRoute && <Header />}
-        {pathname !== '/' && !isAdminRoute && pathname !== '/login' && (<div className="max-w-container-max mx-auto w-full px-margin-desktop pt-4"><BackButton /></div>)}
+        {pathname !== '/' && !isAdminRoute && pathname !== '/login' && (<div className="max-w-container-max mx-auto w-full px-margin-desktop pt-4"><BackButton fallbackTo={pathname === '/cart' ? '/shop' : undefined} /></div>)}
         <AppRoutes />
         {!isAdminRoute && <Footer />}
       </div>

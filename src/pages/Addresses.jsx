@@ -87,16 +87,17 @@ export default function Addresses() {
 
     try {
       if (editingAddress) {
-        await userAPI.updateAddress(editingAddress._id, formData)
+        const response = await userAPI.updateAddress(editingAddress._id, formData)
+        if (response.data.success) setAddresses(response.data.data || [])
         setSuccessMessage('Address updated successfully')
       } else {
-        await userAPI.addAddress(formData)
+        const response = await userAPI.addAddress(formData)
+        if (response.data.success) setAddresses(response.data.data || [])
         setSuccessMessage('Address added successfully')
       }
       setIsModalOpen(false)
       setEditingAddress(null)
       setFormData({ fullName: '', phone: '', address: '', landmark: '', city: '', state: '', pincode: '', isDefault: false })
-      fetchAddresses()
       setTimeout(() => setSuccessMessage(''), 3000)
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to save address')

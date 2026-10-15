@@ -1,11 +1,15 @@
 import { useNavigate } from 'react-router-dom'
 
-export default function BackButton({ to, className = '', children, ...props }) {
+export default function BackButton({ to, fallbackTo, className = '', children, ...props }) {
   const navigate = useNavigate()
 
   const handleClick = (e) => {
     if (to) {
       navigate(to)
+    } else if (Number.isInteger(window.history.state?.idx) && window.history.state.idx > 0) {
+      navigate(-1)
+    } else if (fallbackTo) {
+      navigate(fallbackTo, { replace: true })
     } else {
       navigate(-1)
     }
