@@ -25,6 +25,15 @@ export default function ProductDetails() {
   const { addItem } = useCart()
   const { isInWishlist, toggle } = useWishlist()
   const isWishlisted = product ? isInWishlist(product.id) : false
+  const availableStock = product && Number.isFinite(product.stock) ? product.stock : null
+  const canPurchase = availableStock !== null && availableStock > 0
+  const isOutOfStock = availableStock === 0
+
+  useEffect(() => {
+    if (availableStock !== null && availableStock > 0) {
+      setQuantity((current) => Math.min(current, availableStock))
+    }
+  }, [availableStock])
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -63,7 +72,37 @@ export default function ProductDetails() {
       };
       fetchRelated();
     }
-  }, [product, id]);
+  }, [product?.category, id]);
+
+  // Revalidate availability periodically and when the customer returns to this tab.
+  useEffect(() => {
+    if (!product) return undefined;
+
+    let active = true;
+    const refreshAvailability = async () => {
+      try {
+        const response = await productAPI.getById(id)
+        if (active && response.data.success) {
+          setProduct(productAPI.transform(response.data.data))
+        }
+      } catch (err) {
+        console.error('Failed to refresh product availability:', err)
+      }
+    }
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') refreshAvailability()
+    }
+    const intervalId = window.setInterval(refreshAvailability, 30000)
+    window.addEventListener('focus', refreshAvailability)
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      active = false
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', refreshAvailability)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [id, Boolean(product)])
 
   if (loading) {
     return (
@@ -179,6 +218,18 @@ export default function ProductDetails() {
                )}
              </div>
              <p className="text-xs text-on-surface-variant mt-1">Inclusive of all taxes</p>
+             {isOutOfStock ? (
+               <div role="status" className="mt-3">
+                 <span className="inline-flex items-center rounded bg-error px-3 py-1.5 text-sm font-bold tracking-wide text-surface-white">
+                   OUT OF STOCK
+                 </span>
+                 <p className="mt-2 text-sm font-semibold text-error">This product is currently out of stock.</p>
+               </div>
+             ) : !canPurchase ? (
+               <p role="status" className="mt-3 text-sm font-semibold text-error">
+                 Stock availability could not be confirmed. Please try again shortly.
+               </p>
+             ) : null}
            </div>
           {/* Size Selector */}
           <div className="mb-8">
@@ -243,8 +294,10 @@ export default function ProductDetails() {
                  <span className="w-12 text-center font-body-md text-body-md text-primary">{quantity}</span>
                  <button
                    type="button"
-                   onClick={() => setQuantity(quantity + 1)}
-                   className="w-9 h-9 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:border-deep-emerald hover:text-deep-emerald transition-colors"
+                   onClick={() => setQuantity(Math.min(availableStock ?? 1, quantity + 1))}
+                   disabled={!canPurchase || quantity >= availableStock}
+                   aria-label="Increase quantity"
+                   className="w-9 h-9 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:border-deep-emerald hover:text-deep-emerald transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                  >
                    <span className="material-symbols-outlined text-[16px]">add</span>
                  </button>
@@ -253,12 +306,13 @@ export default function ProductDetails() {
 
              {/* Add to Cart */}
              <button
+               disabled={!canPurchase || quantity > availableStock}
                onClick={() => {
                  addItem(product, quantity)
                  setSuccessMessage(`Added ${quantity} ${quantity === 1 ? 'item' : 'items'} to cart`)
                  setTimeout(() => setSuccessMessage(''), 3000)
                }}
-               className="w-full bg-regal-gold text-surface-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-regal-gold/90 transition-colors shadow-sm flex items-center justify-center gap-2"
+               className="w-full bg-regal-gold text-surface-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-regal-gold/90 transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
              >
                <span className="material-symbols-outlined text-lg">shopping_cart</span>
                Add to Cart
@@ -266,11 +320,12 @@ export default function ProductDetails() {
 
              {/* Buy Now */}
              <button
+               disabled={!canPurchase || quantity > availableStock}
                onClick={() => {
                  addItem(product, quantity)
                  navigate('/checkout')
                }}
-               className="w-full bg-deep-emerald text-surface-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-deep-emerald/90 transition-colors shadow-sm flex items-center justify-center gap-2"
+               className="w-full bg-deep-emerald text-surface-white py-4 rounded-lg font-label-caps text-label-caps uppercase hover:bg-deep-emerald/90 transition-colors shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
              >
                <span className="material-symbols-outlined text-lg">flash_on</span>
                Buy Now

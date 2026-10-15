@@ -169,6 +169,10 @@ export const productAPI = {
     isNew: p.isNewArrival,
     isBestSeller: p.isBestSeller,
     isFeatured: p.isFeatured,
+    stock: (typeof p.stock === 'number' || (typeof p.stock === 'string' && p.stock.trim() !== '')) &&
+      Number.isSafeInteger(Number(p.stock))
+      ? Number(p.stock)
+      : null,
 
     SKU: p.sku,
 

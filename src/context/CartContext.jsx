@@ -58,11 +58,14 @@ export const CartProvider = ({ children }) => {
       removeItem(id)
       return
     }
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    )
+    setItems((prev) => prev.map((item) => {
+      if (item.id !== id) return item
+      const stock = Number(item.stock)
+      if (newQuantity > item.quantity && (!Number.isSafeInteger(stock) || newQuantity > stock)) {
+        return item
+      }
+      return { ...item, quantity: newQuantity }
+    }))
   }
 
   const clearCart = useCallback(() => {

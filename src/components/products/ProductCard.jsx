@@ -15,6 +15,7 @@ export default function ProductCard({ product, imagePriority = false }) {
     image,
     images = [],
     isOnSale,
+    stock,
   } = product
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -27,6 +28,7 @@ export default function ProductCard({ product, imagePriority = false }) {
   const allImages = (images.length > 0 ? images : [image]).filter(Boolean)
   const hasMultiple = allImages.length > 1
   const showSaleBadge = isOnSale || Boolean(discount && originalPrice)
+  const stockKnown = Number.isFinite(stock)
 
   const cardRef = useRef(null)
 
@@ -227,6 +229,16 @@ decoding="async"
               {discount}
             </span>
           )}
+
+          {!stockKnown ? (
+            <span className="absolute top-3 right-3 inline-flex items-center px-2 py-1 rounded bg-charcoal-text/80 text-surface-white text-[10px] font-label-caps tracking-wide">
+              AVAILABILITY UNKNOWN
+            </span>
+          ) : stock <= 0 ? (
+            <span className="absolute top-3 right-3 inline-flex items-center px-2 py-1 rounded bg-error text-surface-white text-[10px] font-label-caps tracking-wide">
+              OUT OF STOCK
+            </span>
+          ) : null}
 
           {/* New badge */}
           {product.isNew && !showSaleBadge && (

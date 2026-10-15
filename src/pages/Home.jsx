@@ -552,6 +552,16 @@ export default function Home() {
                 </span>
               )}
 
+              {!Number.isFinite(product.stock) ? (
+                <span className="absolute top-3 right-3 bg-charcoal-text/80 text-surface-white text-[10px] font-label-caps px-3 py-1.5 rounded-full uppercase tracking-wider">
+                  AVAILABILITY UNKNOWN
+                </span>
+              ) : product.stock <= 0 ? (
+                <span className="absolute top-3 right-3 bg-error text-surface-white text-[10px] font-label-caps px-3 py-1.5 rounded-full uppercase tracking-wider">
+                  OUT OF STOCK
+                </span>
+              ) : null}
+
               {product.isNew &&
                 !product.discount && (
                   <span className="absolute top-3 left-3 bg-charcoal-text text-surface-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">

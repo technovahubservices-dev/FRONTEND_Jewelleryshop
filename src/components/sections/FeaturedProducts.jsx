@@ -158,6 +158,16 @@ export default function FeaturedProducts({ title, description }) {
                     </span>
                   )}
 
+                  {!Number.isFinite(product.stock) ? (
+                    <span className="absolute top-2 right-2 bg-charcoal-text/80 text-surface-white text-[10px] font-label-caps px-2 py-0.5 rounded">
+                      AVAILABILITY UNKNOWN
+                    </span>
+                  ) : product.stock <= 0 ? (
+                    <span className="absolute top-2 right-2 bg-error text-surface-white text-[10px] font-label-caps px-2 py-0.5 rounded">
+                      OUT OF STOCK
+                    </span>
+                  ) : null}
+
                   {product.isNew && !product.originalPrice && (
                     <span className="absolute top-2 left-2 bg-regal-gold text-surface-white text-[10px] font-label-caps px-2 py-0.5 rounded-full">
                       New

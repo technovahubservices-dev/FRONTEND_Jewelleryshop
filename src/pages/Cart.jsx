@@ -82,7 +82,10 @@ export default function Cart() {
                 <span className="w-8 text-center font-body-md text-body-md text-primary">{item.quantity}</span>
                 <button
                   onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                  className="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:border-deep-emerald hover:text-deep-emerald transition-colors"
+                  disabled={!Number.isFinite(item.stock) || item.quantity >= item.stock}
+                  aria-label={`Increase quantity of ${item.name}`}
+                  title={!Number.isFinite(item.stock) ? 'Stock availability is unknown' : undefined}
+                  className="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:border-deep-emerald hover:text-deep-emerald transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined text-[14px]">add</span>
                 </button>
